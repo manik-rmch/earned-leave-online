@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ডিজিটাল ছুটির হিসাব (Leave Ledger)</title>
+    <link href="https://fonts.maateen.me/nikosh/font.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nikosh', 'Kalpurush', 'Segoe UI', Tahoma, sans-serif;
+            font-size: 16px;
+            background-color: #f4f7f6;
+            margin: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #27ae60;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 150px));
+            gap: 15px;
+            margin-bottom: 20px;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+        label {
+            font-weight: bold;
+            font-size: 14px;
+            color: #34495e;
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            grid-column: 1 / -1;
+            padding: 10px 20px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #219653;
+        }
+
+        /* ===== সার্ভিস বুক টেবিল ===== */
+        .table-wrap {
+            overflow-x: auto;
+            margin-top: 25px;
+        }
+        table {
+            width: 100%;
+            min-width: 1800px;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #bdc3c7;
+            text-align: center;
+            padding: 4px 3px;
+        }
+        th {
+            background-color: #2e7d32;
+            color: white;
+            font-weight: bold;
+            vertical-align: middle;
+        }
+        .sub-header th {
+            background-color: #388e3c;
+            color: white;
+            font-size: 11px;
+        }
+        .bmd-row td {
+            background-color: #388e3c;
+            color: white;
+            font-weight: bold;
+            letter-spacing: 3px;
+            padding: 2px;
+            font-size: 11px;
+        }
+        .result-row td {
+            font-weight: bold;
+            background-color: #e8f5e9;
+            color: #333;
+        }
+        .note {
+            font-size: 12px;
+            color: #555;
+            margin-top: 10px;
+        }
+    
+        
+        input, select, button { font-family: inherit; font-size: inherit; }
+        button { font-size: 16px; }
+        .dtc { white-space: nowrap; min-width: 92px; }
+        label.req::after { content: " *"; color: #c0392b; }
+        .wide { grid-column: span 2; }
+        .rst { display: flex; align-items: flex-end; gap: 10px; }
+        .btn-print { background: #2980b9; border-color: #2980b9; }
+        .btn-print:hover { background: #21618c; }
+        #leaveType, #remark, .btn-reset { height: 40px; }
+        .btn-reset { grid-column: auto; box-sizing: border-box; padding: 8px 16px; font-size: inherit; line-height: normal; border: 1px solid #7f8c8d; background: #7f8c8d; }
+        .btn-reset:hover { background: #636e72; }
+                .top-bar { display: flex; margin-bottom: 15px; }
+        .btn-home { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #e2e8f0; color: #334155; text-decoration: none; font-size: 15px; font-weight: 600; border-radius: 8px; transition: .3s; }
+        .btn-home:hover { background: #27ae60; color: #fff; transform: translateY(-2px); }
+        .author-box { margin-top: 25px; padding: 15px; background-color: rgb(244, 248, 251); border: 1px solid rgb(225, 232, 237); border-radius: 10px; text-align: center; line-height: 1.6; }
+        .author-title { color: rgb(11, 83, 69); font-weight: bold; font-size: 18px; }
+        .author-name { color: rgb(44, 62, 80); font-size: 18px; }
+        .author-details { color: rgb(52, 73, 94); font-size: 15px; }
+        .author-mobile { color: rgb(11, 83, 69); font-weight: bold; font-size: 16px; margin-top: 4px; }
+
+        /* ===== প্রিন্ট (Landscape, সার্ভিস বুক পুরো প্রস্থে) ===== */
+        .print-author { display: none; }
+        @page { size: A4 landscape; margin: 7mm; }
+        @media print {
+            body { margin: 0; background: #fff; }
+            .container { max-width: none; padding: 0; box-shadow: none; border-radius: 0; }
+            .print-author { display: block; text-align: center; font-size: 11px; line-height: 1.5; color: #000; margin-bottom: 4px; }
+            .top-bar, .form-group, #undoBtn, .note, .author-box, .cal-pop { display: none !important; }
+            h2 { font-size: 15px; margin: 0 0 6px; padding-bottom: 4px; color: #000; border-bottom: 1px solid #000; }
+            .table-wrap { overflow: visible; margin: 0; }
+            table { min-width: 0; width: 100%; font-size: 10px; }
+            th, td { padding: 2px 1px; border: 1px solid #000; color: #000; }
+            th, .sub-header th, .bmd-row td { background: #e6e6e6 !important; color: #000 !important; font-size: 9px; letter-spacing: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .result-row td { background: #fff !important; font-weight: bold; font-size: 10.5px; }
+            .dtc { min-width: 0; }
+            thead { display: table-header-group; }
+            tr { page-break-inside: avoid; }
+        }
+        /* তারিখ ইনপুট (ক্যালেন্ডার ও ডিডি/এমএম/ইয়ইয়ই) */
+        :root{--cal:#27ae60}
+        .f{padding:8px 12px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:text}
+        .f label{margin-bottom:2px}
+        .f input.dt{border:0;padding:3px 0;font-size:16px;outline:0;background:transparent;width:100%}
+        .f:focus-within{border-color:#27ae60;box-shadow:0 0 5px rgba(39,174,96,.3)}
+        .f.bad{border-color:#c0392b}
+        .cal-pop button,.cal-pop select{font-family:inherit}
+        .cal-pop button{grid-column:auto;padding:0;box-sizing:border-box;transition:none;line-height:normal}
+        .cal-pop{position:absolute;z-index:1000;width:300px;background:#fff;border:1px solid #d9dde2;border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.22);padding:12px;font-size:15px;color:#333;text-align:left}
+        .cal-hd{display:flex;gap:4px;align-items:center;margin-bottom:8px}
+        .cal-hd button{flex:none;width:28px;height:30px;border:0;border-radius:6px;background:#f1f3f5;cursor:pointer;font-size:16px;color:#333}
+        .cal-hd button:hover{background:#e3e7ea}
+        .cal-hd select{flex:1;min-width:0;height:30px;border:1px solid #ccc;border-radius:6px;font-size:14px;background:#fff;padding:0 2px;cursor:pointer;color:#333}
+        .cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+        .cal-g b{font-size:12px;color:#888;padding:4px 0}
+        .cal-g button{height:34px;border:0;border-radius:6px;background:none;cursor:pointer;font-size:15px;color:#222}
+        .cal-g button:hover{background:#eef1f4}
+        .cal-g .tod{box-shadow:inset 0 0 0 1px var(--cal)}
+        .cal-g .sel,.cal-g .sel:hover{background:var(--cal);color:#fff}
+        .cal-ft{display:flex;justify-content:space-between;margin-top:8px;border-top:1px solid #eee;padding-top:6px}
+        .cal-ft button{border:0;background:none;color:var(--cal);font-size:14px;font-weight:700;cursor:pointer;padding:4px 8px}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="top-bar"><a href="https://manik-rmch.github.io/dashboard" class="btn-home"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3z"/></svg> হোম</a></div>
+    <div class="print-author"><strong>প্রস্তুতকারক: মোঃ মানিক</strong><br>গাড়ি চালক, রাজশাহী মেডিকেল কলেজ হাসপাতাল, রাজশাহী। &nbsp;|&nbsp; <strong>মোবাইল: ০১৭২৯-৮১৫২৯১</strong></div>
+    <h2>অনলাইন অর্জিত ছুটি (Earned Leave) ক্যালকুলেটর</h2>
+    
+    <div class="form-group">
+        <div class="f">
+            <label class="req" for="dutyFrom_t">ডিউটি শুরু (হইতে)</label>
+            <input type="text" class="dt" id="dutyFrom_t" inputmode="numeric" autocomplete="off" placeholder="dd/mm/yyyy"><input type="date" id="dutyFrom" hidden>
+        </div>
+        <div class="f">
+            <label class="req" for="dutyTo_t">ডিউটি শেষ (পর্যন্ত)</label>
+            <input type="text" class="dt" id="dutyTo_t" inputmode="numeric" autocomplete="off" placeholder="dd/mm/yyyy"><input type="date" id="dutyTo" hidden>
+        </div>
+        <div class="f">
+            <label class="req" for="leaveFrom_t">ছুটি শুরু (হইতে)</label>
+            <input type="text" class="dt" id="leaveFrom_t" inputmode="numeric" autocomplete="off" placeholder="dd/mm/yyyy"><input type="date" id="leaveFrom" hidden>
+        </div>
+        <div class="f">
+            <label class="req" for="leaveTo_t">ছুটি শেষ (পর্যন্ত)</label>
+            <input type="text" class="dt" id="leaveTo_t" inputmode="numeric" autocomplete="off" placeholder="dd/mm/yyyy"><input type="date" id="leaveTo" hidden>
+        </div>
+        <div class="wide">
+            <label class="req">ছুটির প্রকার</label>
+            <select id="leaveType">
+                <option value="">ছুটির প্রকার বাছুন</option>
+                <option value="EL_FAP">EL FAP-অর্জিত ছুটি (পূর্ণ গড় বেতনে)</option>
+                <option value="EL_HAP">EL HAP-অর্জিত ছুটি (অর্ধ গড় বেতনে)</option>
+                <option value="XL_LWP">XL LWP-অসাধারণ ছুটি (বিনা বেতনে ছুটি)</option>
+                <option value="Others">Others-অন্যান্য ছুটি (বেতন সহ)</option>
+            </select>
+        </div>
+        <div>
+            <label class="req">মন্তব্য (ছুটির বিবরণ)</label>
+            <select id="remark">
+                <option value="">মন্তব্য বাছুন</option>
+                <option value="Department Leave">Department Leave</option>
+                <option value="Disability Leave">Disability Leave</option>
+                <option value="Ex-BD Leave">Ex-BD Leave</option>
+                <option value="Hospital Leave">Hospital Leave</option>
+                <option value="Maternity Leave">Maternity Leave</option>
+                <option value="Quarantine Leave">Quarantine Leave</option>
+                <option value="Rest &amp; Rec. Leave">Rest &amp; Rec. Leave</option>
+                <option value="Sickness Leave">Sickness Leave</option>
+                <option value="Study Leave">Study Leave</option>
+                <option value="Vacation Leave">Vacation Leave</option>
+            </select>
+        </div>
+        <div class="rst"><button type="button" class="btn-reset" onclick="resetForm()">রিসেট</button>
+            <button type="button" class="btn-reset btn-print" onclick="printLedger()">🖨 প্রিন্ট</button></div>
+        <button onclick="calculateLeave()">সার্ভিস বুকে হিসাব যুক্ত করুন</button>
+    </div>
+
+    <div class="table-wrap">
+    <table id="ledgerTable">
+        <thead>
+            <tr>
+                <th colspan="5">কার্যকাল</th>
+                <th colspan="2">অর্জিত ছুটি</th>
+                <th colspan="2">মোট অর্জিত ছুটি</th>
+                <th rowspan="3">৪ মাসের<br>অতিরিক্ত অর্জিত<br>পূর্ণ গড় বেতনে<br>মোট জমা<br>ছুটি</th>
+                <th colspan="8">ছুটি ভোগ করিয়াছে</th>
+                <th colspan="2">ছুটি ভোগ করার পর<br>অবশিষ্ট ছুটি</th>
+                <th rowspan="3">মন্তব্য<br>(ছুটির বিবরণ)</th>
+            </tr>
+            <tr class="sub-header">
+                <th rowspan="2">হইতে</th>
+                <th rowspan="2">পর্যন্ত</th>
+                <th colspan="3">সময়কাল</th>
+                <th>পূর্ণ গড় বেতনে ছুটি (১/১১)</th>
+                <th>অর্ধ গড় বেতনে ছুটি (১/১২)</th>
+                <th>পূর্ণ গড় বেতনে ছুটি</th>
+                <th>অর্ধ গড় বেতনে ছুটি</th>
+                <th rowspan="2">হইতে</th>
+                <th rowspan="2">পর্যন্ত</th>
+                <th rowspan="2">ছুটির প্রকার</th>
+                <th>পূর্ণ গড় বেতনে ছুটি</th>
+                <th>অর্ধ গড় বেতনে ছুটি</th>
+                <th>*বিনা বেতনে ছুটি</th>
+                <th>*বেতন সহ অন্যান্য ছুটি</th>
+                <th>মোট ভোগকৃত ছুটি</th>
+                <th>পূর্ণ গড় বেতনে ছুটি (১/১১)</th>
+                <th>অর্ধ গড় বেতনে ছুটি (১/১২)</th>
+            </tr>
+            <tr class="bmd-row">
+                <td>ব</td>
+                <td>মা</td>
+                <td>দি</td>
+                <td>ব মা দি</td>
+                <td>ব মা দি</td>
+                <td>ব মা দি</td>
+                <td>ব মা দি</td>
+                <td>ব মা দি</td>
+                <td>ব মা দি</td>
+                <td>ব মা দি</td>
+                <td>ব মা দি</td>
+                <td>ব মা দি</td>
+                <td>ব মা দি</td>
+                <td>ব মা দি</td>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- ডাটা এখানে ডাইনামিকালি যুক্ত হবে -->
+        </tbody>
+    </table>
+    </div>
+    <button type="button" id="undoBtn" class="btn-reset" style="margin-top:12px" onclick="undoLast()" hidden>↩ সর্বশেষ সারি মুছে সংশোধন করুন</button>
+    <p class="note">
+        নিয়ম: ১১ দিনে ১ দিন পূর্ণ গড় বেতনে ও ১২ দিনে ১ দিন অর্ধ গড় বেতনে ছুটি অর্জিত হয় (কর্মকাল থেকে ভোগ করা ছুটির দিন বাদ দিয়ে)।
+        পূর্ণ গড় ছুটি একত্রে সর্বোচ্চ ৪ মাস (১২০ দিন) জমা থাকে; অর্ধ গড় ছুটির জমার সীমা নেই।
+        দ্বিতীয় সারি থেকে আগের সারির অবশিষ্ট ছুটি স্বয়ংক্রিয়ভাবে জের হিসেবে যুক্ত হয়।
+    </p>
+    <div class="author-box"><span class="author-title">প্রস্তুতকারক:</span> <span class="author-name">মোঃ মানিক</span><br><div class="author-details">গাড়ি চালক, রাজশাহী মেডিকেল কলেজ হাসপাতাল, রাজশাহী।</div><div class="author-mobile">মোবাইল: ০১৭২৯-৮১৫২৯১</div></div>
+</div>
+
+<script>
+    const DAY = 1000 * 60 * 60 * 24;
+    const FOUR_MONTH_LIMIT = 120; // ৪ মাস = ১২০ দিন
+
+    // জের টানার জন্য আগের সারির অবশিষ্ট ছুটি
+    let lastRemainingFull = null;
+    let lastRemainingHalf = null;
+    let lastLeaveEnd = null; // আগের সারির ছুটি শেষের তারিখ
+    const ledgerHistory = []; // সংশোধনের (সর্বশেষ সারি ফেরত আনার) জন্য
+
+    // সময় অঞ্চলের ঝামেলা এড়াতে স্থানীয় তারিখ
+    function parseD(str) {
+        return new Date(str + "T00:00:00");
+    }
+
+    // তারিখ ফরম্যাট: 29-Sep-26
+    function fmtDate(str) {
+        if (!str) return "-";
+        const m = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        const d = parseD(str);
+        return String(d.getDate()).padStart(2, "0") + "-" + m[d.getMonth()] + "-" + String(d.getFullYear()).slice(-2);
+    }
+
+    // বছর-মাস-দিন হিসাব (শেষ দিন সহ)
+    function ymd(from, to) {
+        const end = new Date(to);
+        end.setDate(end.getDate() + 1);
+        let y = end.getFullYear() - from.getFullYear();
+        let m = end.getMonth() - from.getMonth();
+        let d = end.getDate() - from.getDate();
+        if (d < 0) {
+            m--;
+            d += new Date(end.getFullYear(), end.getMonth(), 0).getDate();
+        }
+        if (m < 0) { y--; m += 12; }
+        return [y, m, d];
+    }
+
+    function printLedger() {
+        if (!document.querySelector("#ledgerTable tbody tr")) {
+            alert("সার্ভিস বুকে প্রিন্ট করার মতো কোনো হিসাব যুক্ত করা হয়নি।");
+            return;
+        }
+        window.print();
+    }
+
+    function resetForm() {
+        ["dutyFrom","dutyTo","leaveFrom","leaveTo"].forEach(function (i) {
+            const t = document.getElementById(i + "_t");
+            t.value = ""; t._p = "";
+            document.getElementById(i).value = "";
+            t.closest(".f").classList.remove("bad");
+        });
+        document.getElementById("leaveType").selectedIndex = 0;
+        document.getElementById("remark").selectedIndex = 0;
+    }
+
+    // সর্বশেষ সারি মুছে তথ্যগুলো ফর্মে ফিরিয়ে আনা (সংশোধনের জন্য)
+    function undoLast() {
+        const last = ledgerHistory[ledgerHistory.length - 1];
+        if (!last) return;
+        if (!confirm("সর্বশেষ সারিটি সার্ভিস বুক থেকে মুছে ফেলে তথ্যগুলো ফর্মে ফিরিয়ে আনা হবে। ঠিক আছে?")) return;
+        ledgerHistory.pop();
+        const rows = document.querySelectorAll("#ledgerTable tbody tr");
+        rows[rows.length - 1].remove();
+        lastRemainingFull = last.rf;
+        lastRemainingHalf = last.rh;
+        lastLeaveEnd = last.le;
+        ["dutyFrom","dutyTo","leaveFrom","leaveTo"].forEach(function (i) {
+            const v = last.inp[i], t = document.getElementById(i + "_t");
+            document.getElementById(i).value = v;
+            t.value = v.slice(8) + "/" + v.slice(5, 7) + "/" + v.slice(0, 4);
+            t._p = t.value;
+            t.closest(".f").classList.remove("bad");
+        });
+        document.getElementById("leaveType").value = last.inp.leaveType;
+        document.getElementById("remark").value = last.inp.remark;
+        document.getElementById("undoBtn").hidden = ledgerHistory.length === 0;
+    }
+
+    function calculateLeave() {
+        // ইনপুট ভ্যালু গ্রহণ
+        const dutyFromVal = document.getElementById('dutyFrom').value;
+        const dutyToVal = document.getElementById('dutyTo').value;
+        const leaveFromVal = document.getElementById('leaveFrom').value;
+        const leaveToVal = document.getElementById('leaveTo').value;
+        const leaveType = document.getElementById('leaveType').value;
+        const leaveTypeText = document.getElementById('leaveType').selectedOptions[0].text;
+        const remarkVal = document.getElementById('remark').value;
+        const remarkText = document.getElementById('remark').selectedOptions[0].text;
+
+        // সবগুলো ঘর বাধ্যতামূলক
+        const miss = [];
+        if (!dutyFromVal) miss.push("ডিউটি শুরু (হইতে)");
+        if (!dutyToVal) miss.push("ডিউটি শেষ (পর্যন্ত)");
+        if (!leaveFromVal) miss.push("ছুটি শুরু (হইতে)");
+        if (!leaveToVal) miss.push("ছুটি শেষ (পর্যন্ত)");
+        if (!leaveType) miss.push("ছুটির প্রকার");
+        if (!remarkVal) miss.push("মন্তব্য (ছুটির বিবরণ)");
+        if (miss.length) {
+            alert("সবগুলো ঘর পূরণ করা বাধ্যতামূলক। অপূর্ণ: " + miss.join(", "));
+            return;
+        }
+        const dutyFrom = parseD(dutyFromVal);
+        const dutyTo = parseD(dutyToVal);
+        if (isNaN(dutyFrom) || isNaN(dutyTo) || dutyTo < dutyFrom) {
+            alert("অনুগ্রহ করে ডিউটির সঠিক তারিখ প্রদান করুন।");
+            return;
+        }
+
+        // তারিখের ধারাবাহিকতা যাচাই
+        const isoOf = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+        const nextDay = (s) => { const d = parseD(s); d.setDate(d.getDate() + 1); return isoOf(d); };
+        const dmy = (s) => s.slice(8) + "/" + s.slice(5, 7) + "/" + s.slice(0, 4);
+        if (lastLeaveEnd !== null && dutyFromVal !== nextDay(lastLeaveEnd)) {
+            alert("আগের সারিতে ছুটি " + dmy(lastLeaveEnd) + " তারিখে শেষ হয়েছে। তাই পরবর্তী কার্যকাল অবশ্যই " + dmy(nextDay(lastLeaveEnd)) + " তারিখ থেকে শুরু হতে হবে।");
+            return;
+        }
+        if (leaveFromVal !== nextDay(dutyToVal)) {
+            alert("ছুটি কার্যকাল শেষের পরের দিন, অর্থাৎ " + dmy(nextDay(dutyToVal)) + " তারিখ থেকে শুরু হতে হবে।");
+            return;
+        }
+        if (leaveToVal < leaveFromVal) {
+            alert("ছুটির শেষ তারিখ শুরুর তারিখের আগে হতে পারে না।");
+            return;
+        }
+
+        // কর্মকাল গণনা (শেষ দিন সহ)
+        const grossDutyDays = Math.round((dutyTo - dutyFrom) / DAY) + 1;
+        const [dy, dm, dd] = ymd(dutyFrom, dutyTo);
+
+        // ভোগকৃত ছুটি গণনা
+        let leaveDays = 0;
+        let overlapDays = 0; // কর্মকালের ভেতরে পড়া ছুটির দিন
+        let leaveFromStr = "-";
+        let leaveToStr = "-";
+
+        if (leaveFromVal && leaveToVal) {
+            const lFrom = parseD(leaveFromVal);
+            const lTo = parseD(leaveToVal);
+            if (lTo >= lFrom) {
+                leaveDays = Math.round((lTo - lFrom) / DAY) + 1;
+                leaveFromStr = fmtDate(leaveFromVal);
+                leaveToStr = fmtDate(leaveToVal);
+
+                // কর্মকালের সঙ্গে মিলে যাওয়া ছুটির দিন বাদ যাবে
+                const oStart = lFrom > dutyFrom ? lFrom : dutyFrom;
+                const oEnd = lTo < dutyTo ? lTo : dutyTo;
+                if (oEnd >= oStart) {
+                    overlapDays = Math.round((oEnd - oStart) / DAY) + 1;
+                }
+            }
+        }
+
+        // নিট কর্মকাল (ছুটির দিন বাদে)
+        const netDutyDays = Math.max(grossDutyDays - overlapDays, 0);
+
+        // অর্জিত ছুটি গণনা (১/১১ এবং ১/১২ নিয়ম, ভগ্নাংশ বাদ)
+        const earnedFull = Math.floor(netDutyDays / 11);
+        const earnedHalf = Math.floor(netDutyDays / 12);
+
+        // জের (প্রথম সারিতে ফর্মের মান, পরের সারিতে আগের সারির অবশিষ্ট)
+        const prevFull = lastRemainingFull === null ? 0 : lastRemainingFull;
+        const prevHalf = lastRemainingHalf === null ? 0 : lastRemainingHalf;
+
+        // মোট অর্জিত ছুটি
+        const totalAccumulatedFull = prevFull + earnedFull;
+        const totalAccumulatedHalf = prevHalf + earnedHalf;
+
+        // ৪ মাসের (১২০ দিন) সীমার সঙ্গে পার্থক্য
+        const fourMonthDiff = totalAccumulatedFull - FOUR_MONTH_LIMIT;
+
+        // ছুটির প্রকার অনুযায়ী কলাম ভাগ
+        const takenFull   = leaveType === "EL_FAP" ? leaveDays : 0;
+        const takenHalf   = leaveType === "EL_HAP" ? leaveDays : 0;
+        const takenUnpaid = leaveType === "XL_LWP" ? leaveDays : 0;
+        const takenOthers = leaveType === "Others" ? leaveDays : 0;
+        const takenTotal  = takenFull + takenHalf + takenUnpaid + takenOthers;
+
+        // অবশিষ্ট ছুটি গণনা (শুধু EL ছুটি কাটা যায়)
+        const remainingFull = totalAccumulatedFull - takenFull;
+        const remainingHalf = totalAccumulatedHalf - takenHalf;
+
+        if (remainingFull < 0 || remainingHalf < 0) {
+            alert("সতর্কতা: পাওনা ছুটির চেয়ে বেশি ছুটি নেওয়া হয়েছে।");
+        }
+
+        ledgerHistory.push({
+            inp: { dutyFrom: dutyFromVal, dutyTo: dutyToVal, leaveFrom: leaveFromVal, leaveTo: leaveToVal, leaveType: leaveType, remark: remarkVal },
+            rf: lastRemainingFull, rh: lastRemainingHalf, le: lastLeaveEnd
+        });
+        lastRemainingFull = remainingFull;
+        lastRemainingHalf = remainingHalf;
+
+        const typeShort = { EL_FAP: "EL FAP", EL_HAP: "EL HAP", XL_LWP: "XL LWP", Others: "Others" }[leaveType];
+
+        // টেবিলে রো (Row) যুক্ত করা
+        const tableBody = document.querySelector("#ledgerTable tbody");
+        const newRow = document.createElement("tr");
+        newRow.className = "result-row";
+
+        newRow.innerHTML = `
+            <td class="dtc">${fmtDate(dutyFromVal)}</td>
+            <td class="dtc">${fmtDate(dutyToVal)}</td>
+            <td>${dy}</td>
+            <td>${dm}</td>
+            <td>${dd}</td>
+            <td>${earnedFull}</td>
+            <td>${earnedHalf}</td>
+            <td>${totalAccumulatedFull}</td>
+            <td>${totalAccumulatedHalf}</td>
+            <td>${fourMonthDiff}</td>
+            <td class="dtc">${leaveFromStr}</td>
+            <td class="dtc">${leaveToStr}</td>
+            <td>${typeShort}</td>
+            <td>${takenFull}</td>
+            <td>${takenHalf}</td>
+            <td>${takenUnpaid}</td>
+            <td>${takenOthers}</td>
+            <td>${takenTotal}</td>
+            <td>${remainingFull}</td>
+            <td>${remainingHalf}</td>
+            <td>${remarkText}</td>
+        `;
+
+        tableBody.appendChild(newRow);
+        lastLeaveEnd = leaveToVal;
+        document.getElementById("undoBtn").hidden = false;
+    }
+</script>
+<script>
+(function(){
+var BN="০১২৩৪৫৬৭৮৯",MN=["জানুয়ারি","ফেব্রুয়ারি","মার্চ","এপ্রিল","মে","জুন","জুলাই","আগস্ট","সেপ্টেম্বর","অক্টোবর","নভেম্বর","ডিসেম্বর"],BADD="সঠিক তারিখ দিন, যেমন ০৭/০৫/২০২৫";
+function $(i){return document.getElementById(i)}
+function bn(n){return String(n).replace(/\d/g,function(d){return BN[d]})}
+function en(s){return s.replace(/[০-৯]/g,function(c){return BN.indexOf(c)})}
+function grp(n){var s=String(n),l=s.slice(-3),r=s.slice(0,-3);return bn(r?r.replace(/\B(?=(\d{2})+(?!\d))/g,",")+","+l:l)}
+function dim(y,m){return new Date(y,m+1,0).getDate()}
+function setV(el,v){el.value=v;el._p=v}
+function maskEl(el,L,S){var pv=el._p||"",nv=en(el.value),c=el.selectionStart,T=L.reduce(function(a,b){return a+b}),z=function(x){return x==="_"||/\d/.test(x)},i,t,k=0,n=0,q=0,raw,pos,o="",p=0,s;
+if(c==null)c=nv.length;var re=Math.max(0,pv.length-(nv.length-c)),a=0;
+while(a<c&&a<re&&pv[a]===nv[a])a++;
+var ins=nv.slice(a,c).replace(/\D/g,""),rem=re-a,del=!ins&&rem>0;
+if(del){if(!/\d/.test(pv.slice(a,re))){i=a-1;while(i>=0&&!/\d/.test(pv[i]))i--;if(i>=0){a=i;re=i+1}else re=a}
+if(re>a){raw=/[0-9_]/.test(pv.slice(re))?pv.slice(0,a)+pv.slice(a,re).replace(/\d/g,"_")+pv.slice(re):pv.slice(0,a)+pv.slice(re)}else raw=pv;pos=a}
+else if(ins){t=a;while(t<pv.length&&!z(pv[t]))t++;var full=(pv.match(/\d/g)||[]).length>=T&&pv.indexOf("_")<0;
+if(rem===0&&ins.length===1&&t<pv.length&&(pv[t]==="_"||full)){raw=pv.slice(0,t)+ins+pv.slice(t+1);pos=t+1}else{raw=pv.slice(0,a)+ins+pv.slice(re);pos=a+ins.length}}
+else{raw=nv;pos=c}
+var v=raw.replace(/[^0-9_]/g,"").slice(0,T).replace(/_+$/,"");
+for(i=0;i<Math.min(pos,raw.length);i++)if(z(raw[i]))k++;
+for(i=0;i<L.length;i++){s=v.slice(p,p+L[i]);if(!s)break;o+=s;p+=L[i];if(s.length===L[i]&&i<L.length-1&&(p<v.length||!del))o+=S[i]}
+for(;q<o.length&&n<k;q++)if(z(o[q]))n++;
+if(!del)while(q<o.length&&!z(o[q])&&k>0)q++;
+setV(el,o);try{el.setSelectionRange(q,q)}catch(e){}}
+function D(s){var m=/^(\d\d)\/(\d\d)\/(\d{4})$/.exec(s);if(!m)return(s.length<10||s.indexOf("_")>=0)?null:false;var d=+m[1],o=+m[2]-1,y=+m[3];return(y<1900||y>2100||o>11||d<1||d>dim(y,o))?false:{y:y,m:o,d:d}}
+function fmtD(o){return bn(o.d)+" "+MN[o.m]+" "+bn(o.y)}
+function two(n){return("0"+n).slice(-2)}
+function dstr(o){return two(o.d)+"/"+two(o.m+1)+"/"+o.y}
+function today(){var t=new Date();return{y:t.getFullYear(),m:t.getMonth(),d:t.getDate()}}
+function days(a,b){return Math.round((Date.UTC(b.y,b.m,b.d)-Date.UTC(a.y,a.m,a.d))/864e5)}
+function ymd(a,b){var y=b.y-a.y,m=b.m-a.m,d=b.d-a.d;if(d<0){m--;d+=b.m?dim(b.y,b.m-1):31}if(m<0){y--;m+=12}return{y:y,m:m,d:d}}
+function onDate(id,fn){var el=$(id);el.addEventListener("input",function(){maskEl(el,[2,2,4],["/","/"]);if(fn)fn()})}
+function boxClick(){document.querySelectorAll(".f").forEach(function(b){b.addEventListener("click",function(e){var i=b.querySelector("input");if(i&&e.target!==i&&e.target.tagName!=="BUTTON")i.focus()})})}
+window.attachCal=function(){};
+(function(){
+if(!window.matchMedia||!matchMedia("(hover:hover) and (pointer:fine)").matches)return;
+var WD=["শনি","রবি","সোম","মঙ্গল","বুধ","বৃহ","শুক্র"],pop,cur,vy,vm,LO=1930,HI=2100;
+function render(){var t=today(),s=D(cur.value),i,h='<div class="cal-hd"><button type="button" data-a="py" title="গত বছর">«</button><button type="button" data-a="pm" title="গত মাস">‹</button><select data-a="m">';
+for(i=0;i<12;i++)h+='<option value="'+i+'"'+(i===vm?" selected":"")+">"+MN[i]+"</option>";
+h+='</select><select data-a="y">';for(i=LO;i<=HI;i++)h+='<option value="'+i+'"'+(i===vy?" selected":"")+">"+bn(i)+"</option>";
+h+='</select><button type="button" data-a="nm" title="পরের মাস">›</button><button type="button" data-a="ny" title="পরের বছর">»</button></div><div class="cal-g">';
+WD.forEach(function(w){h+="<b>"+w+"</b>"});
+var off=(new Date(vy,vm,1).getDay()+1)%7,n=dim(vy,vm);
+for(i=0;i<off;i++)h+="<span></span>";
+for(i=1;i<=n;i++){var c=(s&&s.y===vy&&s.m===vm&&s.d===i?" sel":"")+(t.y===vy&&t.m===vm&&t.d===i?" tod":"");h+='<button type="button" data-d="'+i+'" class="'+c+'">'+bn(i)+"</button>"}
+pop.innerHTML=h+'</div><div class="cal-ft"><button type="button" data-a="t">আজ</button><button type="button" data-a="x">মুছুন</button></div>'}
+function close(){if(pop)pop.style.display="none";cur=null}
+function pick(o){var el=cur;setV(el,o?dstr(o):"");el.dispatchEvent(new Event("input",{bubbles:true}));close()}
+function go(d){var t=vy*12+vm+d,y=Math.floor(t/12);if(y<LO||y>HI)return;vy=y;vm=t-y*12}
+function build(){pop=document.createElement("div");pop.className="cal-pop";pop.style.display="none";
+pop.addEventListener("mousedown",function(e){if(!/SELECT|OPTION/.test(e.target.tagName))e.preventDefault()});
+pop.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var a=b.dataset.a;if(b.dataset.d)return pick({y:vy,m:vm,d:+b.dataset.d});
+if(a==="py")vy=Math.max(LO,vy-1);else if(a==="ny")vy=Math.min(HI,vy+1);else if(a==="pm")go(-1);else if(a==="nm")go(1);else if(a==="t")return pick(today());else if(a==="x")return pick(null);render()});
+pop.addEventListener("change",function(e){var a=e.target.dataset.a;if(a==="m")vm=+e.target.value;if(a==="y")vy=+e.target.value;render()});
+document.body.appendChild(pop);
+document.addEventListener("mousedown",function(e){if(!cur)return;var bx=cur.closest(".f")||cur;if(!pop.contains(e.target)&&!bx.contains(e.target))close()});
+document.addEventListener("keydown",function(e){if(cur&&(e.key==="Escape"||e.key==="Tab"))close()})}
+function open(el){if(!pop)build();cur=el;var s=D(el.value),t=today();if(s){vy=s.y;vm=s.m}else{vy=Math.max(LO,Math.min(HI,t.y+(el._dy||0)));vm=t.m}
+render();var b=(el.closest(".f")||el).getBoundingClientRect();pop.style.display="block";
+var w=pop.offsetWidth,h=pop.offsetHeight,l=Math.min(b.left+scrollX,scrollX+document.documentElement.clientWidth-w-8),tp=b.bottom+scrollY+4;
+if(b.bottom+h+8>innerHeight&&b.top>h+8)tp=b.top+scrollY-h-4;
+pop.style.left=Math.max(8,l)+"px";pop.style.top=tp+"px"}
+window.attachCal=function(id,dy){var el=$(id);el._dy=dy||0;(el.closest(".f")||el).addEventListener("click",function(){open(el)});
+el.addEventListener("input",function(){if(cur===el){if(D(el.value)){close();return}render()}})}
+})();
+
+var iso=function(o){return o.y+"-"+two(o.m+1)+"-"+two(o.d)};
+["dutyFrom","dutyTo","leaveFrom","leaveTo"].forEach(function(id){
+var h=document.getElementById(id),t=document.getElementById(id+"_t"),b=t.closest(".f");
+function sync(){var o=D(t.value);h.value=o?iso(o):"";b.classList.toggle("bad",o===false)}
+t.addEventListener("input",function(){maskEl(t,[2,2,4],["/","/"]);sync()});
+var m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(h.value);if(m)setV(t,m[3]+"/"+m[2]+"/"+m[1]);
+attachCal(id+"_t")});
+boxClick();
+})();
+</script>
+
+
+</body>
+</html>
