@@ -122,7 +122,6 @@
         .rst { display: flex; align-items: flex-end; gap: 10px; }
         .btn-print { background: #2980b9; border-color: #2980b9; }
         .btn-print:hover { background: #21618c; }
-        #leaveType, #remark, .btn-reset { height: 40px; }
         .btn-reset { grid-column: auto; box-sizing: border-box; padding: 8px 16px; font-size: inherit; line-height: normal; border: 1px solid #7f8c8d; background: #7f8c8d; }
         .btn-reset:hover { background: #636e72; }
                 .top-bar { display: flex; margin-bottom: 15px; }
@@ -134,6 +133,18 @@
         .author-details { color: rgb(52, 73, 94); font-size: 15px; }
         .author-mobile { color: rgb(11, 83, 69); font-weight: bold; font-size: 16px; margin-top: 4px; }
 
+        /* ===== বাটন (হোমের মতো) ও ইনপুট বক্সের পেশাদার বিন্যাস ===== */
+        .top-bar { flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 22px; }
+        .top-bar button.btn-home { border: none; cursor: pointer; font-family: inherit; line-height: normal; grid-column: auto; }
+        .top-bar [hidden] { display: none; }
+        .form-group { grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 20px; }
+        .f { min-height: 66px; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; transition: border-color .2s, box-shadow .2s; }
+        .f label { font-size: 13px; color: #5d6d7e; margin-bottom: 2px; }
+        .f input.dt, .f select { font-size: 17px; color: #1b2631; }
+        .f select { border: 0; padding: 3px 0; background: transparent; outline: 0; width: 100%; height: auto; cursor: pointer; }
+        .wide { grid-column: span 2; }
+        @media (max-width: 900px) { .form-group { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 560px) { .form-group { grid-template-columns: 1fr; padding: 14px; } .wide { grid-column: auto; } }
         /* ===== প্রিন্ট (Landscape, সার্ভিস বুক পুরো প্রস্থে) ===== */
         .print-author { display: none; }
         @page { size: A4 landscape; margin: 7mm; }
@@ -179,7 +190,11 @@
 <body>
 
 <div class="container">
-    <div class="top-bar"><a href="https://manik-rmch.github.io/dashboard" class="btn-home"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3z"/></svg> হোম</a></div>
+    <div class="top-bar"><a href="https://manik-rmch.github.io/dashboard" class="btn-home"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3z"/></svg> হোম</a>
+        <button type="button" class="btn-home" onclick="resetForm()">রিসেট</button>
+        <button type="button" class="btn-home" onclick="printLedger()">প্রিন্ট</button>
+        <button type="button" class="btn-home" id="undoBtn" onclick="undoLast()" hidden>সর্বশেষ সারি মুছে সংশোধন করুন</button>
+    </div>
     <div class="print-author"><strong>প্রস্তুতকারক: মোঃ মানিক</strong><br>গাড়ি চালক, রাজশাহী মেডিকেল কলেজ হাসপাতাল, রাজশাহী। &nbsp;|&nbsp; <strong>মোবাইল: ০১৭২৯-৮১৫২৯১</strong></div>
     <h2>অনলাইন অর্জিত ছুটি (Earned Leave) ক্যালকুলেটর</h2>
     
@@ -200,8 +215,8 @@
             <label class="req" for="leaveTo_t">ছুটি শেষ (পর্যন্ত)</label>
             <input type="text" class="dt" id="leaveTo_t" inputmode="numeric" autocomplete="off" placeholder="dd/mm/yyyy"><input type="date" id="leaveTo" hidden>
         </div>
-        <div class="wide">
-            <label class="req">ছুটির প্রকার</label>
+        <div class="f wide">
+            <label class="req" for="leaveType">ছুটির প্রকার</label>
             <select id="leaveType">
                 <option value="">ছুটির প্রকার বাছুন</option>
                 <option value="EL_FAP">EL FAP-অর্জিত ছুটি (পূর্ণ গড় বেতনে)</option>
@@ -210,8 +225,8 @@
                 <option value="Others">Others-অন্যান্য ছুটি (বেতন সহ)</option>
             </select>
         </div>
-        <div>
-            <label class="req">মন্তব্য (ছুটির বিবরণ)</label>
+        <div class="f wide">
+            <label class="req" for="remark">মন্তব্য (ছুটির বিবরণ)</label>
             <select id="remark">
                 <option value="">মন্তব্য বাছুন</option>
                 <option value="Department Leave">Department Leave</option>
@@ -226,8 +241,6 @@
                 <option value="Vacation Leave">Vacation Leave</option>
             </select>
         </div>
-        <div class="rst"><button type="button" class="btn-reset" onclick="resetForm()">রিসেট</button>
-            <button type="button" class="btn-reset btn-print" onclick="printLedger()">🖨 প্রিন্ট</button></div>
         <button onclick="calculateLeave()">সার্ভিস বুকে হিসাব যুক্ত করুন</button>
     </div>
 
@@ -284,7 +297,6 @@
         </tbody>
     </table>
     </div>
-    <button type="button" id="undoBtn" class="btn-reset" style="margin-top:12px" onclick="undoLast()" hidden>↩ সর্বশেষ সারি মুছে সংশোধন করুন</button>
     <p class="note">
         নিয়ম: ১১ দিনে ১ দিন পূর্ণ গড় বেতনে ও ১২ দিনে ১ দিন অর্ধ গড় বেতনে ছুটি অর্জিত হয় (কর্মকাল থেকে ভোগ করা ছুটির দিন বাদ দিয়ে)।
         পূর্ণ গড় ছুটি একত্রে সর্বোচ্চ ৪ মাস (১২০ দিন) জমা থাকে; অর্ধ গড় ছুটির জমার সীমা নেই।
