@@ -7,7 +7,7 @@
     <link href="https://fonts.maateen.me/nikosh/font.css" rel="stylesheet">
     <style>
         body {
-            font-family: 'Nikosh', 'Kalpurush', 'Segoe UI', Tahoma, sans-serif;
+            font-family: 'Noto Sans Bengali','Hind Siliguri',Kalpurush,SolaimanLipi,'Nirmala UI','Vrinda',Arial,sans-serif;
             font-size: 16px;
             background-color: #f4f7f6;
             margin: 20px;
@@ -23,9 +23,9 @@
         }
         h2 {
             text-align: center;
-            color: #2c3e50;
+            color: #1b2f3d;
             margin-bottom: 25px;
-            border-bottom: 2px solid #27ae60;
+            border-bottom: 2px solid #0f766e;
             padding-bottom: 10px;
         }
         .form-group {
@@ -41,7 +41,7 @@
         label {
             font-weight: bold;
             font-size: 14px;
-            color: #34495e;
+            color: #0f4c5c;
             display: block;
             margin-bottom: 5px;
         }
@@ -55,7 +55,7 @@
         button {
             grid-column: 1 / -1;
             padding: 10px 20px;
-            background-color: #27ae60;
+            background-color: #0f766e;
             color: white;
             border: none;
             border-radius: 4px;
@@ -64,7 +64,7 @@
             transition: background 0.3s;
         }
         button:hover {
-            background-color: #219653;
+            background-color: #0f766e;
         }
 
         /* ===== সার্ভিস বুক টেবিল ===== */
@@ -84,18 +84,18 @@
             padding: 4px 3px;
         }
         th {
-            background-color: #2e7d32;
+            background-color: #0b5f58;
             color: white;
             font-weight: bold;
             vertical-align: middle;
         }
         .sub-header th {
-            background-color: #388e3c;
+            background-color: #0b5f58;
             color: white;
             font-size: 11px;
         }
         .bmd-row td {
-            background-color: #388e3c;
+            background-color: #0b5f58;
             color: white;
             font-weight: bold;
             letter-spacing: 3px;
@@ -104,7 +104,7 @@
         }
         .result-row td {
             font-weight: bold;
-            background-color: #e8f5e9;
+            background-color: #e3f4f1;
             color: #333;
         }
         .note {
@@ -120,17 +120,17 @@
         label.req::after { content: " *"; color: #c0392b; }
         .wide { grid-column: span 2; }
         .rst { display: flex; align-items: flex-end; gap: 10px; }
-        .btn-print { background: #2980b9; border-color: #2980b9; }
-        .btn-print:hover { background: #21618c; }
+        .btn-print { background: #0f4c5c; border-color: #0f4c5c; }
+        .btn-print:hover { background: #0b3a47; }
         .btn-reset { grid-column: auto; box-sizing: border-box; padding: 8px 16px; font-size: inherit; line-height: normal; border: 1px solid #7f8c8d; background: #7f8c8d; }
         .btn-reset:hover { background: #636e72; }
                 .top-bar { display: flex; margin-bottom: 15px; }
         .btn-home { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #e2e8f0; color: #334155; text-decoration: none; font-size: 15px; font-weight: 600; border-radius: 8px; transition: .3s; }
-        .btn-home:hover { background: #27ae60; color: #fff; transform: translateY(-2px); }
+        .btn-home:hover { background: #0f766e; color: #fff; transform: translateY(-2px); }
         .author-box { margin-top: 25px; padding: 15px; background-color: rgb(244, 248, 251); border: 1px solid rgb(225, 232, 237); border-radius: 10px; text-align: center; line-height: 1.6; }
         .author-title { color: rgb(11, 83, 69); font-weight: bold; font-size: 18px; }
-        .author-name { color: rgb(44, 62, 80); font-size: 18px; }
-        .author-details { color: rgb(52, 73, 94); font-size: 15px; }
+        .author-name { color: rgb(27, 47, 61); font-size: 18px; }
+        .author-details { color: rgb(15, 76, 92); font-size: 15px; }
         .author-mobile { color: rgb(11, 83, 69); font-weight: bold; font-size: 16px; margin-top: 4px; }
 
         /* ===== বাটন (হোমের মতো) ও ইনপুট বক্সের পেশাদার বিন্যাস ===== */
@@ -140,7 +140,7 @@
         .form-group { grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 20px; }
         .f { min-height: 66px; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; transition: border-color .2s, box-shadow .2s; }
         .f label { font-size: 13px; color: #5d6d7e; margin-bottom: 2px; }
-        .f input.dt, .f select { font-size: 17px; color: #1b2631; }
+        .f input.dt, .f select { font-size: 17px; color: #102d3b; }
         .f select { border: 0; padding: 3px 0; background: transparent; outline: 0; width: 100%; height: auto; cursor: pointer; }
         .wide { grid-column: span 2; }
         @media (max-width: 900px) { .form-group { grid-template-columns: repeat(2, 1fr); } }
@@ -164,30 +164,89 @@
             tr { page-break-inside: avoid; }
         }
         /* তারিখ ইনপুট (ক্যালেন্ডার ও ডিডি/এমএম/ইয়ইয়ই) */
-        :root{--cal:#27ae60}
+        :root{--cal:#0f766e}
         .f{padding:8px 12px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:text}
         .f label{margin-bottom:2px}
         .f input.dt{border:0;padding:3px 0;font-size:16px;outline:0;background:transparent;width:100%}
-        .f:focus-within{border-color:#27ae60;box-shadow:0 0 5px rgba(39,174,96,.3)}
+        .f:focus-within{border-color:#0f766e;box-shadow:0 0 5px rgba(39,174,96,.3)}
         .f.bad{border-color:#c0392b}
         .cal-pop button,.cal-pop select{font-family:inherit}
         .cal-pop button{grid-column:auto;padding:0;box-sizing:border-box;transition:none;line-height:normal}
-        .cal-pop{position:absolute;z-index:1000;width:300px;background:#fff;border:1px solid #d9dde2;border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.22);padding:12px;font-size:15px;color:#333;text-align:left}
-        .cal-hd{display:flex;gap:4px;align-items:center;margin-bottom:8px}
-        .cal-hd button{flex:none;width:28px;height:30px;border:0;border-radius:6px;background:#f1f3f5;cursor:pointer;font-size:16px;color:#333}
-        .cal-hd button:hover{background:#e3e7ea}
-        .cal-hd select{flex:1;min-width:0;height:30px;border:1px solid #ccc;border-radius:6px;font-size:14px;background:#fff;padding:0 2px;cursor:pointer;color:#333}
-        .cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
-        .cal-g b{font-size:12px;color:#888;padding:4px 0}
-        .cal-g button{height:34px;border:0;border-radius:6px;background:none;cursor:pointer;font-size:15px;color:#222}
-        .cal-g button:hover{background:#eef1f4}
-        .cal-g .tod{box-shadow:inset 0 0 0 1px var(--cal)}
-        .cal-g .sel,.cal-g .sel:hover{background:var(--cal);color:#fff}
-        .cal-ft{display:flex;justify-content:space-between;margin-top:8px;border-top:1px solid #eee;padding-top:6px}
-        .cal-ft button{border:0;background:none;color:var(--cal);font-size:14px;font-weight:700;cursor:pointer;padding:4px 8px}
+        .cal-pop{position:absolute;z-index:1000;width:17em;max-width:calc(100vw - 16px);box-sizing:border-box;padding:.2em .2em .3em;background:#fff;border:1px solid #c5c5c5;border-radius:3px;box-shadow:0 4px 14px rgba(0,0,0,.25);font-size:15px;color:#333;text-align:left}
+        .cal-pop .cal-hd{display:flex;align-items:center;gap:4px;padding:.25em;margin-bottom:6px;background:#e9e9e9;border:1px solid #ddd;border-radius:3px}
+        .cal-pop .cal-hd button{flex:none;width:1.9em;height:1.9em;padding:0;margin:0;border:1px solid transparent;border-radius:3px;background:transparent;color:#333;font-size:11px;line-height:normal;cursor:pointer;grid-column:auto;transition:none;font-family:inherit}
+        .cal-pop .cal-hd button:hover{background:#ededed;border-color:#ccc}
+        .cal-pop .cal-hd select{flex:1;min-width:0;height:auto;padding:1px;border:1px solid #ccc;border-radius:3px;background:#fff;color:#333;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+        .cal-pop .cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center}
+        .cal-pop .cal-g b{padding:.4em 0;font-size:12px;color:#333}
+        .cal-pop .cal-g button{height:auto;padding:.25em .35em;border:1px solid #c5c5c5;border-radius:0;background:#f6f6f6;color:#454545;font:inherit;font-size:14px;text-align:right;line-height:normal;cursor:pointer;grid-column:auto;transition:none}
+        .cal-pop .cal-g button:hover{background:#ededed;border-color:#ccc;color:#2b2b2b}
+        .cal-pop .cal-g button.tod{background:#fffa90;border-color:#dad55e;color:#777620}
+        .cal-pop .cal-g button.sel,.cal-pop .cal-g button.sel:hover{background:#007fff;border-color:#003eff;color:#fff}
+        .cal-pop .cal-ft{display:flex;justify-content:space-between;margin-top:8px;padding:0 .2em}
+        .cal-pop .cal-ft button{height:auto;padding:.3em .9em;border:1px solid #c5c5c5;border-radius:3px;background:#f6f6f6;color:#454545;font:inherit;font-size:14px;line-height:normal;cursor:pointer;grid-column:auto;transition:none}
+        .cal-pop .cal-ft button:hover{background:#ededed;border-color:#ccc}
     </style>
+<meta name="theme-color" content="#0f4c5c">
+<style id="hisabpata-theme">
+/* ======================================================================
+   হিসাবপাতা থিম — ড্যাশবোর্ডের সাথে একই রং, ফন্ট, হেডার ও ফুটার।
+   (এটি শুধু চেহারা বদলায়; ক্যালকুলেটরের কোনো হিসাব/ফাংশন বদলায় না।)
+   ====================================================================== */
+:root{--hp-primary:#0f766e;--hp-dark:#0f4c5c;--hp-soft:#e3f4f1;--hp-ink:#1b2f3d;--hp-muted:#55687a;--hp-line:#dde6ec;--hp-page:#f2f6f8}
+
+.hp-header{background:linear-gradient(120deg,#0f766e,#164e63);color:#fff;padding:16px}
+.hp-header-inner{width:min(1120px,100%);margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 12px}
+.hp-brand{display:flex;align-items:center;gap:11px;color:#fff;text-decoration:none;min-width:0}
+.hp-mark{flex:0 0 auto;width:44px;height:44px;display:grid;place-items:center;border-radius:14px;background:rgba(255,255,255,.17);border:1px solid rgba(255,255,255,.22);font-size:24px;font-weight:700;line-height:1}
+.hp-name{display:block;font-size:23px;font-weight:800;letter-spacing:-.3px;line-height:1.25}
+.hp-tag{display:block;font-size:12px;opacity:.85;line-height:1.3}
+.hp-pill{flex:0 1 auto;font-size:13px;padding:8px 12px;border:1px solid rgba(255,255,255,.3);border-radius:999px;white-space:nowrap}
+.hp-footer{background:#102d3b;color:#d7e4e9;padding:22px 16px;font-size:13px;line-height:1.6}
+.hp-footer-inner{width:min(1120px,100%);margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:14px}
+.hp-footer strong{color:#fff}
+.hp-note{color:#a9c0ca}
+.hp-center{text-align:center}
+.hp-sub{font-size:12px;color:#a9c0ca;margin-top:2px}
+@media (max-width:650px){.hp-footer-inner{flex-direction:column;text-align:center;gap:4px}}
+@media (max-width:560px){.hp-name{font-size:20px}.hp-mark{width:40px;height:40px;font-size:22px}.hp-pill{font-size:12px;padding:7px 10px}}
+@media (max-width:380px){.hp-pill{font-size:11px;padding:6px 9px}}
+
+@media screen{
+  html{background:var(--hp-page)}
+  body{
+    background:var(--hp-page) !important;background-image:none !important;
+    font-family:'Noto Sans Bengali','Hind Siliguri',Kalpurush,SolaimanLipi,'Nirmala UI','Vrinda',Arial,sans-serif !important;
+    color:var(--hp-ink);
+    display:block !important;margin:0 !important;padding:0 !important;min-height:100vh;
+  }
+  body > .container, body > .calculator-card{
+    margin:22px auto !important;width:calc(100% - 28px) !important;box-sizing:border-box !important;
+    border-radius:16px !important;border:1px solid var(--hp-line);
+    box-shadow:0 10px 30px rgba(20,48,60,.09) !important;
+  }
+  button,input,select,textarea{font-family:inherit}
+  .top-bar .btn-home{
+    background:var(--hp-soft) !important;color:var(--hp-dark) !important;border:1px solid #cfeae5 !important;
+    border-radius:999px !important;
+  }
+  .top-bar .btn-home:hover{background:#cfeae5 !important}
+}
+@media print{.hp-header,.hp-footer{display:none !important}}
+@media screen{.author-box{display:none !important}}
+</style>
 </head>
 <body>
+<header class="hp-header">
+  <div class="hp-header-inner">
+    <a class="hp-brand" href="https://manik-rmch.github.io/dashboard/" aria-label="হিসাবপাতা — ড্যাশবোর্ডে ফিরুন">
+      <span class="hp-mark" aria-hidden="true">হি</span>
+      <span><span class="hp-name">হিসাবপাতা</span><span class="hp-tag">বাংলা স্মার্ট টুলস</span></span>
+    </a>
+    <span class="hp-pill">সহজ হিসাব • এক জায়গায়</span>
+  </div>
+</header>
+
 
 <div class="container">
     <div class="top-bar"><a href="https://manik-rmch.github.io/dashboard" class="btn-home"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3z"/></svg> হোম</a>
@@ -572,10 +631,10 @@ window.attachCal=function(){};
 (function(){
 if(!window.matchMedia||!matchMedia("(hover:hover) and (pointer:fine)").matches)return;
 var WD=["শনি","রবি","সোম","মঙ্গল","বুধ","বৃহ","শুক্র"],pop,cur,vy,vm,LO=1930,HI=2100;
-function render(){var t=today(),s=D(cur.value),i,h='<div class="cal-hd"><button type="button" data-a="py" title="গত বছর">«</button><button type="button" data-a="pm" title="গত মাস">‹</button><select data-a="m">';
+function render(){var t=today(),s=D(cur.value),i,h='<div class="cal-hd"><button type="button" data-a="pm" title="গত মাস">◀</button><select data-a="m">';
 for(i=0;i<12;i++)h+='<option value="'+i+'"'+(i===vm?" selected":"")+">"+MN[i]+"</option>";
 h+='</select><select data-a="y">';for(i=LO;i<=HI;i++)h+='<option value="'+i+'"'+(i===vy?" selected":"")+">"+bn(i)+"</option>";
-h+='</select><button type="button" data-a="nm" title="পরের মাস">›</button><button type="button" data-a="ny" title="পরের বছর">»</button></div><div class="cal-g">';
+h+='</select><button type="button" data-a="nm" title="পরের মাস">▶</button></div><div class="cal-g">';
 WD.forEach(function(w){h+="<b>"+w+"</b>"});
 var off=(new Date(vy,vm,1).getDay()+1)%7,n=dim(vy,vm);
 for(i=0;i<off;i++)h+="<span></span>";
@@ -613,5 +672,16 @@ boxClick();
 </script>
 
 
+
+<footer class="hp-footer">
+  <div class="hp-footer-inner">
+    <div><strong>হিসাবপাতা</strong> · বাংলা স্মার্ট টুলস</div>
+    <div class="hp-center">
+      <div>পরিকল্পনা ও প্রস্তুতিতে: মোঃ মানিক</div>
+      <div class="hp-sub">গাড়ি চালক, রাজশাহী মেডিকেল কলেজ হাসপাতাল, রাজশাহী। মোবাইলঃ ০১৭২৯-৮১৫২৯১</div>
+    </div>
+    <div class="hp-note">সহজ হিসাব, সবার জন্য</div>
+  </div>
+</footer>
 </body>
 </html>
