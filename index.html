@@ -892,6 +892,15 @@
         });
     }).observe(document.body, { childList: true, subtree: true, characterData: true });
 
+    // ---------- সার্ভার আগেই জাগিয়ে রাখা (লগইন/হিসাব দ্রুত করতে) ----------
+    function warmUp() {
+        if (API_URL.indexOf("PASTE") === 0 || document.hidden) return;
+        try { fetch(API_URL, { mode: "no-cors" }); } catch (e) {}
+    }
+    warmUp();
+    setInterval(warmUp, 240000);
+    document.addEventListener("visibilitychange", function () { if (!document.hidden) warmUp(); });
+
     route();
 })();
 </script>
