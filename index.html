@@ -74,7 +74,7 @@
         }
         table {
             width: 100%;
-            min-width: 1800px;
+            min-width: 2000px;
             border-collapse: collapse;
             font-size: 14px;
         }
@@ -147,12 +147,14 @@
         @media (max-width: 560px) { .form-group { grid-template-columns: 1fr; padding: 14px; } .wide { grid-column: auto; } }
         /* ===== প্রিন্ট (Landscape, সার্ভিস বুক পুরো প্রস্থে) ===== */
         .print-author { display: none; }
+        .print-person { display: none; }
         @page { size: A4 landscape; margin: 7mm; }
         @media print {
             body { margin: 0; background: #fff; }
             .container { max-width: none; padding: 0; box-shadow: none; border-radius: 0; }
             .print-author { display: block; text-align: center; font-size: 11px; line-height: 1.5; color: #000; margin-bottom: 4px; }
-            .top-bar, .form-group, #undoBtn, .note, .author-box, .cal-pop { display: none !important; }
+            .print-person { display: block; text-align: center; font-size: 12px; font-weight: bold; color: #000; margin-bottom: 4px; }
+            .top-bar, .form-group, #undoBtn, .note, .author-box, .cal-pop, .person-panel, .modal, .busy, .gate, #adminPanel { display: none !important; }
             h2 { font-size: 15px; margin: 0 0 6px; padding-bottom: 4px; color: #000; border-bottom: 1px solid #000; }
             .table-wrap { overflow: visible; margin: 0; }
             table { min-width: 0; width: 100%; font-size: 10px; }
@@ -160,6 +162,7 @@
             th, .sub-header th, .bmd-row td { background: #e6e6e6 !important; color: #000 !important; font-size: 9px; letter-spacing: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .result-row td { background: #fff !important; font-weight: bold; font-size: 10.5px; }
             .dtc { min-width: 0; }
+            .ymd span { min-width: 1.3em; }
             thead { display: table-header-group; }
             tr { page-break-inside: avoid; }
         }
@@ -235,6 +238,66 @@
 @media print{.hp-header,.hp-footer{display:none !important}}
 @media screen{.author-box{display:none !important}}
 </style>
+<style id="auth-style">
+/* ===== লগইন, অ্যাডমিন প্যানেল, সার্ভিস বুক নির্বাচন, পপআপ ===== */
+[hidden]{display:none !important}
+.gate{max-width:460px !important}
+.gate h2{font-size:22px}
+.fld{margin-bottom:14px}
+.fld label{margin-bottom:4px}
+.fld input{padding:10px;font-size:16px;border-radius:8px}
+.pbtn{display:inline-block;grid-column:auto;padding:10px 18px;background:#0f766e;color:#fff;border:0;border-radius:8px;font:inherit;font-size:16px;cursor:pointer}
+.pbtn:hover{background:#0b5f58}
+.pbtn.sec{background:#e2e8f0;color:#334155}
+.pbtn.sec:hover{background:#cbd5e1}
+.pbtn.danger{background:#c0392b}
+.pbtn.danger:hover{background:#a5301f}
+.pbtn.sm{padding:5px 11px;font-size:13px;border-radius:6px}
+.pbtn.full{width:100%}
+.hint{font-size:13px;color:#55687a;margin-top:6px;line-height:1.5}
+.who{margin-left:auto;font-size:15px;color:#0f4c5c;font-weight:600}
+.top-bar .who + button{margin-left:0}
+.person-panel{background:#f6fafb;border:1px solid #dde6ec;border-radius:12px;padding:16px;margin-bottom:18px}
+.person-panel h3{margin:0 0 10px;color:#0f4c5c;font-size:18px}
+.ps-row{display:flex;flex-wrap:wrap;gap:10px}
+.ps-row input{flex:1 1 280px;width:auto;padding:10px;font-size:16px;border-radius:8px}
+.ps-list{margin-top:12px;display:grid;gap:8px}
+.ps-item{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;background:#fff;border:1px solid #dde6ec;border-radius:10px;padding:10px 14px}
+.ps-item b{color:#1b2f3d}
+.ps-item span{color:#55687a;font-size:14px}
+.ps-new{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px;background:#fff;border:1px dashed #0f766e;border-radius:10px;padding:14px}
+.ps-new .acts{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap}
+@media (max-width:560px){.ps-new{grid-template-columns:1fr}}
+.banner{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px}
+.banner .nm{font-size:19px;font-weight:700;color:#0b5345}
+.banner .sub{font-size:14px;color:#55687a}
+.ymd{white-space:nowrap}
+.ymd span{display:inline-block;min-width:1.7em;text-align:center}
+.modal{position:fixed;inset:0;background:rgba(15,40,50,.55);display:flex;align-items:center;justify-content:center;z-index:3000}
+.modal .box{background:#fff;border-radius:16px;padding:26px 28px;max-width:430px;width:calc(100% - 40px);text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.modal .ico{width:64px;height:64px;border-radius:50%;margin:0 auto 12px;display:grid;place-items:center;font-size:36px;font-weight:700;color:#fff;background:#0f766e}
+.modal.error .ico{background:#c0392b}
+.modal.warn .ico{background:#d68910}
+.modal h3{margin:0 0 8px;color:#1b2f3d;font-size:20px}
+.modal p{margin:0 0 18px;color:#55687a;line-height:1.6;white-space:pre-line}
+.busy{position:fixed;inset:0;background:rgba(255,255,255,.65);display:flex;align-items:center;justify-content:center;z-index:4000;font-size:18px;color:#0f4c5c;font-weight:600}
+.msg-err{color:#c0392b;font-size:14px;min-height:20px;margin-bottom:8px}
+.adm-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.adm-tabs button{grid-column:auto;background:#e2e8f0;color:#334155;border-radius:999px;padding:8px 16px;font-size:15px}
+.adm-tabs button.on{background:#0f766e;color:#fff}
+.adm-card{background:#f6fafb;border:1px solid #dde6ec;border-radius:12px;padding:16px;margin-bottom:18px}
+.adm-card h3{margin:0 0 12px;color:#0f4c5c;font-size:18px}
+.adm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.adm-card input{padding:9px;border-radius:8px}
+.adm-table{min-width:0;width:100%;font-size:14px}
+.adm-table th{background:#0b5f58;padding:8px}
+.adm-table td{padding:7px 6px;background:#fff}
+.adm-table td.l{text-align:left}
+.adm-scroll{overflow-x:auto}
+.tag{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.tag.on{background:#d5f5e3;color:#1e8449}
+.tag.off{background:#fadbd8;color:#a93226}
+</style>
 </head>
 <body>
 <header class="hp-header">
@@ -247,16 +310,86 @@
   </div>
 </header>
 
+<!-- ======================= ইউজার লগইন ======================= -->
+<div class="container gate" id="userGate" hidden>
+    <h2>লগইন করুন</h2>
+    <form id="loginForm" autocomplete="on">
+        <div class="fld"><label for="lgUser">ইউজারনেম</label><input id="lgUser" name="username" autocomplete="username" autocapitalize="none" required></div>
+        <div class="fld"><label for="lgPass">পাসওয়ার্ড</label><input id="lgPass" name="password" type="password" autocomplete="current-password" required></div>
+        <div class="msg-err" id="lgErr"></div>
+        <button type="submit" class="pbtn full">প্রবেশ করুন</button>
+    </form>
+    <p class="hint">ইউজারনেম ও পাসওয়ার্ড না থাকলে আপনার অ্যাডমিনের সাথে যোগাযোগ করুন।</p>
+</div>
 
-<div class="container">
+<!-- ======================= অ্যাডমিন লগইন ======================= -->
+<div class="container gate" id="adminGate" hidden>
+    <h2>অ্যাডমিন লগইন</h2>
+    <form id="adminLoginForm" autocomplete="off">
+        <div class="fld"><label for="adUser">অ্যাডমিন ইউজারনেম</label><input id="adUser" autocomplete="username" autocapitalize="none" required></div>
+        <div class="fld"><label for="adPass">অ্যাডমিন পাসওয়ার্ড</label><input id="adPass" type="password" autocomplete="current-password" required></div>
+        <div class="hint">অ্যাডমিন পাসওয়ার্ড অবশ্যই শক্তিশালী হতে হবে: কমপক্ষে ১০ অক্ষর, বড় হাতের ও ছোট হাতের ইংরেজি অক্ষর, সংখ্যা এবং একটি চিহ্ন (যেমন @ # !)।</div>
+        <div class="msg-err" id="adErr"></div>
+        <button type="submit" class="pbtn full">অ্যাডমিন হিসেবে প্রবেশ</button>
+    </form>
+    <p class="hint"><a href="#" id="toUserLogin">← সাধারণ লগইনে ফিরুন</a></p>
+</div>
+
+<!-- ======================= অ্যাডমিন প্যানেল ======================= -->
+<div class="container" id="adminPanel" hidden>
+    <div class="top-bar">
+        <a href="#" class="btn-home" id="admToApp">← ক্যালকুলেটর</a>
+        <span class="who">অ্যাডমিন প্যানেল</span>
+        <button type="button" class="btn-home" id="admLogout">লগআউট</button>
+    </div>
+    <h2>অ্যাডমিন প্যানেল</h2>
+    <div class="adm-tabs" id="admTabs">
+        <button type="button" data-t="users">ব্যবহারকারী</button>
+        <button type="button" data-t="persons">সার্ভিস বুক</button>
+        <button type="button" data-t="settings">হিসাবের নিয়ম</button>
+        <button type="button" data-t="pass">অ্যাডমিন পাসওয়ার্ড</button>
+        <button type="button" data-t="log">কার্যকলাপ লগ</button>
+    </div>
+    <div id="admBody"></div>
+</div>
+
+<!-- ======================= মূল ক্যালকুলেটর ======================= -->
+<div class="container" id="appView" hidden>
     <div class="top-bar"><a href="https://manik-rmch.github.io/dashboard" class="btn-home"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3z"/></svg> হোম</a>
-        <button type="button" class="btn-home" onclick="resetForm()">রিসেট</button>
-        <button type="button" class="btn-home" onclick="printLedger()">প্রিন্ট</button>
-        <button type="button" class="btn-home" id="undoBtn" onclick="undoLast()" hidden>সর্বশেষ সারি মুছে সংশোধন করুন</button>
+        <button type="button" class="btn-home" id="resetBtn">রিসেট</button>
+        <button type="button" class="btn-home" id="printBtn">প্রিন্ট</button>
+        <button type="button" class="btn-home" id="undoBtn" hidden>সর্বশেষ সারি মুছে সংশোধন করুন</button>
+        <span class="who" id="whoName"></span>
+        <button type="button" class="btn-home" id="logoutBtn">লগআউট</button>
     </div>
     <div class="print-author"><strong>প্রস্তুতকারক: মোঃ মানিক</strong><br>গাড়ি চালক, রাজশাহী মেডিকেল কলেজ হাসপাতাল, রাজশাহী। &nbsp;|&nbsp; <strong>মোবাইল: ০১৭২৯-৮১৫২৯১</strong></div>
     <h2>অনলাইন অর্জিত ছুটি (Earned Leave) ক্যালকুলেটর</h2>
-    
+
+    <!-- সার্ভিস বুক নির্বাচন -->
+    <section class="person-panel">
+        <div id="personPick">
+            <h3>সার্ভিস বুক নির্বাচন করুন</h3>
+            <div class="ps-row">
+                <input id="psQuery" placeholder="ব্যক্তির নাম / জাতীয় পরিচয়পত্র নম্বর / মোবাইল নম্বর" autocomplete="off">
+                <button type="button" class="pbtn" id="psSearch">অনুসন্ধান</button>
+                <button type="button" class="pbtn sec" id="psNew">+ নতুন সার্ভিস বুক</button>
+            </div>
+            <div class="ps-list" id="psResults"></div>
+            <div class="ps-new" id="psNewBox" hidden>
+                <div class="fld"><label for="pnName">ব্যক্তির নাম</label><input id="pnName" autocomplete="off"></div>
+                <div class="fld"><label for="pnKey">জাতীয় পরিচয়পত্র নম্বর / মোবাইল নম্বর</label><input id="pnKey" inputmode="numeric" autocomplete="off"></div>
+                <div class="acts"><button type="button" class="pbtn" id="pnSave">সার্ভিস বুক তৈরি করুন</button><button type="button" class="pbtn sec" id="pnCancel">বাতিল</button></div>
+            </div>
+        </div>
+        <div class="banner" id="personBanner" hidden>
+            <div><div class="nm" id="bnName"></div><div class="sub" id="bnSub"></div></div>
+            <button type="button" class="pbtn sec" id="psChange">অন্য ব্যক্তির সার্ভিস বুক</button>
+        </div>
+    </section>
+
+    <div id="bookArea" hidden>
+    <div class="print-person" id="printPerson"></div>
+
     <div class="form-group">
         <div class="f">
             <label class="req" for="dutyFrom_t">ডিউটি শুরু (হইতে)</label>
@@ -285,9 +418,9 @@
             </select>
         </div>
         <div class="f wide">
-            <label class="req" for="remark">মন্তব্য (ছুটির বিবরণ)</label>
+            <label for="remark">মন্তব্য (ছুটির বিবরণ) — ঐচ্ছিক</label>
             <select id="remark">
-                <option value="">মন্তব্য বাছুন</option>
+                <option value="">মন্তব্য বাছুন (ঐচ্ছিক)</option>
                 <option value="Department Leave">Department Leave</option>
                 <option value="Disability Leave">Disability Leave</option>
                 <option value="Ex-BD Leave">Ex-BD Leave</option>
@@ -300,7 +433,7 @@
                 <option value="Vacation Leave">Vacation Leave</option>
             </select>
         </div>
-        <button onclick="calculateLeave()">সার্ভিস বুকে হিসাব যুক্ত করুন</button>
+        <button type="button" id="addBtn">সার্ভিস বুকে হিসাব যুক্ত করুন</button>
     </div>
 
     <div class="table-wrap">
@@ -310,7 +443,7 @@
                 <th colspan="5">কার্যকাল</th>
                 <th colspan="2">অর্জিত ছুটি</th>
                 <th colspan="2">মোট অর্জিত ছুটি</th>
-                <th rowspan="3">৪ মাসের<br>অতিরিক্ত অর্জিত<br>পূর্ণ গড় বেতনে<br>মোট জমা<br>ছুটি</th>
+                <!-- "৪ মাসের অতিরিক্ত অর্জিত পূর্ণ গড় বেতনে মোট জমা ছুটি" কলামটি আপাতত বাদ দেওয়া হয়েছে -->
                 <th colspan="8">ছুটি ভোগ করিয়াছে</th>
                 <th colspan="2">ছুটি ভোগ করার পর<br>অবশিষ্ট ছুটি</th>
                 <th rowspan="3">মন্তব্য<br>(ছুটির বিবরণ)</th>
@@ -360,239 +493,398 @@
         নিয়ম: ১১ দিনে ১ দিন পূর্ণ গড় বেতনে ও ১২ দিনে ১ দিন অর্ধ গড় বেতনে ছুটি অর্জিত হয় (কর্মকাল থেকে ভোগ করা ছুটির দিন বাদ দিয়ে)।
         পূর্ণ গড় ছুটি একত্রে সর্বোচ্চ ৪ মাস (১২০ দিন) জমা থাকে; অর্ধ গড় ছুটির জমার সীমা নেই।
         দ্বিতীয় সারি থেকে আগের সারির অবশিষ্ট ছুটি স্বয়ংক্রিয়ভাবে জের হিসেবে যুক্ত হয়।
+        ছুটির পরিমাণ ব-মা-দি রূপে দেখানো হয় (১ মাস = ৩০ দিন, ১ বছর = ১২ মাস ধরে)।
     </p>
+    </div>
     <div class="author-box"><span class="author-title">প্রস্তুতকারক:</span> <span class="author-name">মোঃ মানিক</span><br><div class="author-details">গাড়ি চালক, রাজশাহী মেডিকেল কলেজ হাসপাতাল, রাজশাহী।</div><div class="author-mobile">মোবাইল: ০১৭২৯-৮১৫২৯১</div></div>
 </div>
 
+<!-- পপআপ বার্তা -->
+<div class="modal" id="okModal" hidden>
+    <div class="box" role="dialog" aria-modal="true">
+        <div class="ico" id="mIcon">✓</div>
+        <h3 id="mTitle"></h3>
+        <p id="mMsg"></p>
+        <button type="button" class="pbtn" id="okBtn">ঠিক আছে</button>
+    </div>
+</div>
+<div class="busy" id="busy" hidden>অপেক্ষা করুন…</div>
+
 <script>
-    const DAY = 1000 * 60 * 60 * 24;
-    const FOUR_MONTH_LIMIT = 120; // ৪ মাস = ১২০ দিন
+(function () {
+    // ★★★ Google Apps Script ওয়েব অ্যাপের লিংক এখানে বসান (SETUP গাইড দেখুন) ★★★
+    var API_URL = "https://script.google.com/macros/s/AKfycby6gkLw8jAlauqlvDbyLslz7UxTw_s7oYguk2yCv69UwePNptZA5ms7Kfa0W5M6Y5kZ/exec";
 
-    // জের টানার জন্য আগের সারির অবশিষ্ট ছুটি
-    let lastRemainingFull = null;
-    let lastRemainingHalf = null;
-    let lastLeaveEnd = null; // আগের সারির ছুটি শেষের তারিখ
-    const ledgerHistory = []; // সংশোধনের (সর্বশেষ সারি ফেরত আনার) জন্য
+    function $(i) { return document.getElementById(i); }
+    function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+    var S = { person: null, rows: [], cfg: { dpm: 30, mpy: 12 } };
+    var busyN = 0;
+    function busy(n) { busyN += n; $("busy").hidden = busyN <= 0; }
+    function tok(w) { try { return sessionStorage.getItem(w === "admin" ? "el_adm" : "el_tok"); } catch (e) { return null; } }
+    function setTok(w, v) { try { var k = w === "admin" ? "el_adm" : "el_tok"; if (v) sessionStorage.setItem(k, v); else sessionStorage.removeItem(k); } catch (e) {} }
 
-    // সময় অঞ্চলের ঝামেলা এড়াতে স্থানীয় তারিখ
-    function parseD(str) {
-        return new Date(str + "T00:00:00");
+    // ---------- পপআপ ----------
+    var modalClose = null;
+    function showModal(kind, title, msg, onClose) {
+        var prev = document.activeElement;
+        var m = $("okModal");
+        m.className = "modal " + kind;
+        $("mIcon").textContent = kind === "success" ? "✓" : "!";
+        $("mTitle").textContent = title;
+        $("mMsg").textContent = msg || "";
+        m.hidden = false;
+        modalClose = function () {
+            m.hidden = true; modalClose = null;
+            if (onClose) onClose(); else if (prev && prev.focus) prev.focus();
+        };
+        $("okBtn").focus();
+    }
+    $("okBtn").addEventListener("click", function () { if (modalClose) modalClose(); });
+    $("okBtn").addEventListener("keydown", function (e) { if (e.key === "Tab") e.preventDefault(); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && modalClose) modalClose(); });
+
+    // ---------- সার্ভার যোগাযোগ ----------
+    function api(action, data, who) {
+        data = data || {}; data.action = action;
+        var t = tok(who === "admin" ? "admin" : "user"); if (t) data.token = t;
+        if (API_URL.indexOf("PASTE") === 0) return Promise.reject(new Error("ব্যাকএন্ডের লিংক এখনো বসানো হয়নি। (index.html-এ API_URL বসান)"));
+        busy(1);
+        return fetch(API_URL, { method: "POST", body: JSON.stringify(data) })
+            .then(function (r) { return r.json(); })
+            .then(function (j) {
+                busy(-1);
+                if (!j.ok) { var e = new Error(j.msg); e.code = j.code; throw e; }
+                return j.data;
+            }, function () {
+                busy(-1);
+                throw new Error("সার্ভারের সাথে যোগাযোগ করা যায়নি। ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।");
+            });
+    }
+    function handleErr(e) {
+        if (e && e.code === "AUTH") { setTok("user", null); view("userGate"); $("lgErr").textContent = e.message; return; }
+        showModal("error", "সমস্যা হয়েছে", e && e.message ? e.message : "অজানা সমস্যা");
     }
 
-    // তারিখ ফরম্যাট: 29-Sep-26
-    function fmtDate(str) {
-        if (!str) return "-";
-        const m = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-        const d = parseD(str);
-        return String(d.getDate()).padStart(2, "0") + "-" + m[d.getMonth()] + "-" + String(d.getFullYear()).slice(-2);
-    }
-
-    // বছর-মাস-দিন হিসাব (শেষ দিন সহ)
-    function ymd(from, to) {
-        const end = new Date(to);
-        end.setDate(end.getDate() + 1);
-        let y = end.getFullYear() - from.getFullYear();
-        let m = end.getMonth() - from.getMonth();
-        let d = end.getDate() - from.getDate();
-        if (d < 0) {
-            m--;
-            d += new Date(end.getFullYear(), end.getMonth(), 0).getDate();
+    // ---------- পৃষ্ঠা পরিবর্তন ----------
+    var VIEWS = ["userGate", "adminGate", "adminPanel", "appView"];
+    function view(v) { VIEWS.forEach(function (x) { $(x).hidden = (x !== v); }); }
+    function route() {
+        if (location.hash === "#admin") {
+            if (tok("admin")) {
+                api("adminPing", {}, "admin").then(function () { view("adminPanel"); loadTab(); })
+                    .catch(function () { setTok("admin", null); view("adminGate"); $("adUser").focus(); });
+            } else { view("adminGate"); $("adUser").focus(); }
+        } else {
+            if (tok("user")) {
+                api("ping", {}, "user").then(enterApp).catch(function () { setTok("user", null); view("userGate"); $("lgUser").focus(); });
+            } else { view("userGate"); $("lgUser").focus(); }
         }
-        if (m < 0) { y--; m += 12; }
-        return [y, m, d];
+    }
+    window.addEventListener("hashchange", route);
+    $("toUserLogin").addEventListener("click", function (e) { e.preventDefault(); history.replaceState(null, "", location.pathname + location.search); route(); });
+    $("admToApp").addEventListener("click", function (e) { e.preventDefault(); history.replaceState(null, "", location.pathname + location.search); route(); });
+
+    // ---------- ইউজার লগইন ----------
+    $("loginForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        $("lgErr").textContent = "";
+        api("userLogin", { username: $("lgUser").value, password: $("lgPass").value }).then(function (d) {
+            setTok("user", d.token); $("lgPass").value = "";
+            enterApp(d);
+        }).catch(function (er) { $("lgErr").textContent = er.message; });
+    });
+    function enterApp(d) {
+        if (d.cfg) S.cfg = d.cfg;
+        $("whoName").textContent = d.name || "";
+        view("appView");
+        if (!S.person) { $("psQuery").focus(); }
+    }
+    $("logoutBtn").addEventListener("click", function () {
+        api("logout", {}, "user").catch(function () {});
+        setTok("user", null); S.person = null; S.rows = [];
+        clearPerson(); view("userGate"); $("lgUser").focus();
+    });
+
+    // ---------- সার্ভিস বুক নির্বাচন ----------
+    function doSearch() {
+        var q = $("psQuery").value.trim();
+        if (!q) { showModal("error", "অনুসন্ধান", "নাম, জাতীয় পরিচয়পত্র নম্বর বা মোবাইল নম্বর লিখুন।"); return; }
+        api("personSearch", { q: q }).then(function (d) {
+            var box = $("psResults");
+            if (!d.people.length) { box.innerHTML = '<div class="hint">কোনো সার্ভিস বুক পাওয়া যায়নি। নতুন সার্ভিস বুক তৈরি করতে "+ নতুন সার্ভিস বুক" চাপুন।</div>'; return; }
+            box.innerHTML = d.people.map(function (p) {
+                return '<div class="ps-item"><div><b>' + esc(p.name) + '</b> <span>— ' + esc(p.key) + '</span></div><button type="button" class="pbtn sm" data-id="' + esc(p.id) + '">সার্ভিস বুক খুলুন</button></div>';
+            }).join("");
+        }).catch(handleErr);
+    }
+    $("psSearch").addEventListener("click", doSearch);
+    $("psQuery").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); doSearch(); } });
+    $("psResults").addEventListener("click", function (e) {
+        var b = e.target.closest("button[data-id]"); if (!b) return;
+        api("personLoad", { personId: b.dataset.id }).then(setPerson).catch(handleErr);
+    });
+    $("psNew").addEventListener("click", function () { $("psNewBox").hidden = false; $("pnName").value = $("psQuery").value.replace(/[\d\s+-]/g, "") ? $("psQuery").value : ""; $("pnName").focus(); });
+    $("pnCancel").addEventListener("click", function () { $("psNewBox").hidden = true; });
+    function createPerson() {
+        api("personCreate", { name: $("pnName").value, key: $("pnKey").value }).then(function (d) {
+            $("psNewBox").hidden = true; $("pnName").value = ""; $("pnKey").value = "";
+            setPerson(d);
+        }).catch(handleErr);
+    }
+    $("pnSave").addEventListener("click", createPerson);
+    ["pnName", "pnKey"].forEach(function (id) {
+        $(id).addEventListener("keydown", function (e) {
+            if (e.key !== "Enter") return; e.preventDefault();
+            if (id === "pnName") $("pnKey").focus(); else createPerson();
+        });
+    });
+
+    function clearPerson() {
+        S.person = null; S.rows = [];
+        $("personPick").hidden = false; $("personBanner").hidden = true; $("bookArea").hidden = true;
+        $("psResults").innerHTML = ""; $("psQuery").value = ""; $("psNewBox").hidden = true;
+        $("undoBtn").hidden = true; resetForm();
+    }
+    $("psChange").addEventListener("click", function () { clearPerson(); $("psQuery").focus(); });
+
+    function nextDay(iso) { var d = new Date(iso + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10); }
+    function dmy(s) { return s.slice(8) + "/" + s.slice(5, 7) + "/" + s.slice(0, 4); }
+
+    function setPerson(d) {
+        S.person = d.person; S.rows = d.rows || []; if (d.cfg) S.cfg = d.cfg;
+        resetForm();
+        renderBook();
+        $("personPick").hidden = true; $("personBanner").hidden = false; $("bookArea").hidden = false;
+        $("dutyFrom_t").focus();
+    }
+    function renderBook() {
+        var p = S.person;
+        $("bnName").textContent = p.name;
+        var sub = "পরিচয়/মোবাইল: " + p.key;
+        if (S.rows.length) sub += "  |  পরবর্তী কার্যকাল শুরু হবে: " + dmy(nextDay(S.rows[S.rows.length - 1].leaveTo));
+        $("bnSub").textContent = sub;
+        $("printPerson").textContent = "নাম: " + p.name + "   |   জাতীয় পরিচয়পত্র/মোবাইল: " + p.key;
+        $("ledgerTable").querySelector("tbody").innerHTML = S.rows.map(rowHTML).join("");
+        $("undoBtn").hidden = S.rows.length === 0;
     }
 
-    function printLedger() {
-        if (!document.querySelector("#ledgerTable tbody tr")) {
-            alert("সার্ভিস বুকে প্রিন্ট করার মতো কোনো হিসাব যুক্ত করা হয়নি।");
-            return;
-        }
-        window.print();
+    // ---------- সংখ্যা ও তারিখ প্রদর্শন ----------
+    var MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    function fmtDate(s) { if (!s) return "-"; return s.slice(8) + "-" + MON[+s.slice(5, 7) - 1] + "-" + s.slice(2, 4); }
+    function ymdCell(days) {
+        var neg = days < 0, a = Math.abs(days), dpm = S.cfg.dpm || 30, yr = dpm * (S.cfg.mpy || 12);
+        var y = Math.floor(a / yr), rem = a % yr, m = Math.floor(rem / dpm), d = rem % dpm;
+        return '<td class="ymd"><span>' + (neg ? "-" : "") + y + "</span><span>" + m + "</span><span>" + d + "</span></td>";
+    }
+    function rowHTML(r) {
+        return '<tr class="result-row">' +
+            '<td class="dtc">' + fmtDate(r.dutyFrom) + '</td><td class="dtc">' + fmtDate(r.dutyTo) + '</td>' +
+            "<td>" + r.dy + "</td><td>" + r.dm + "</td><td>" + r.dd + "</td>" +
+            ymdCell(r.earnedFull) + ymdCell(r.earnedHalf) + ymdCell(r.totalFull) + ymdCell(r.totalHalf) +
+            // (৪ মাসের অতিরিক্ত জমা ছুটির কলাম আপাতত বাদ)
+            '<td class="dtc">' + fmtDate(r.leaveFrom) + '</td><td class="dtc">' + fmtDate(r.leaveTo) + "</td>" +
+            "<td>" + esc(r.typeShort) + "</td>" +
+            ymdCell(r.takenFull) + ymdCell(r.takenHalf) + ymdCell(r.takenUnpaid) + ymdCell(r.takenOthers) + ymdCell(r.takenTotal) +
+            ymdCell(r.remFull) + ymdCell(r.remHalf) +
+            "<td>" + (esc(r.remark) || "-") + "</td></tr>";
+    }
+    function ymdText(days) {
+        var dpm = S.cfg.dpm || 30, yr = dpm * (S.cfg.mpy || 12), a = Math.abs(days);
+        return (days < 0 ? "-" : "") + Math.floor(a / yr) + " বছর " + Math.floor((a % yr) / dpm) + " মাস " + (a % dpm) + " দিন";
     }
 
+    // ---------- ফর্ম ----------
+    var DATE_IDS = ["dutyFrom", "dutyTo", "leaveFrom", "leaveTo"];
     function resetForm() {
-        ["dutyFrom","dutyTo","leaveFrom","leaveTo"].forEach(function (i) {
-            const t = document.getElementById(i + "_t");
-            t.value = ""; t._p = "";
-            document.getElementById(i).value = "";
+        DATE_IDS.forEach(function (i) {
+            var t = $(i + "_t"); t.value = ""; t._p = ""; $(i).value = "";
             t.closest(".f").classList.remove("bad");
         });
-        document.getElementById("leaveType").selectedIndex = 0;
-        document.getElementById("remark").selectedIndex = 0;
+        $("leaveType").selectedIndex = 0; $("remark").selectedIndex = 0;
     }
+    $("resetBtn").addEventListener("click", function () {
+        resetForm();
+        if (S.person) $("dutyFrom_t").focus();
+    });
+    $("printBtn").addEventListener("click", function () {
+        if (!S.person || !S.rows.length) { showModal("error", "প্রিন্ট", "সার্ভিস বুকে প্রিন্ট করার মতো কোনো হিসাব যুক্ত করা হয়নি।"); return; }
+        window.print();
+    });
 
-    // সর্বশেষ সারি মুছে তথ্যগুলো ফর্মে ফিরিয়ে আনা (সংশোধনের জন্য)
-    function undoLast() {
-        const last = ledgerHistory[ledgerHistory.length - 1];
-        if (!last) return;
+    function calc() {
+        var v = {
+            dutyFrom: $("dutyFrom").value, dutyTo: $("dutyTo").value,
+            leaveFrom: $("leaveFrom").value, leaveTo: $("leaveTo").value,
+            leaveType: $("leaveType").value, remark: $("remark").value
+        };
+        var miss = [];
+        if (!v.dutyFrom) miss.push("ডিউটি শুরু (হইতে)");
+        if (!v.dutyTo) miss.push("ডিউটি শেষ (পর্যন্ত)");
+        if (!v.leaveFrom) miss.push("ছুটি শুরু (হইতে)");
+        if (!v.leaveTo) miss.push("ছুটি শেষ (পর্যন্ত)");
+        if (!v.leaveType) miss.push("ছুটির প্রকার");
+        if (miss.length) { showModal("error", "তথ্য অসম্পূর্ণ", "সবগুলো বাধ্যতামূলক ঘর পূরণ করুন।\nঅপূর্ণ: " + miss.join(", ")); return; }
+        v.personId = S.person.id;
+        api("rowAdd", v).then(function (d) {
+            S.rows.push(d.row); renderBook();
+            var r = d.row;
+            var msg = "অবশিষ্ট পূর্ণ গড় বেতনে ছুটি: " + ymdText(r.remFull) + "\nঅবশিষ্ট অর্ধ গড় বেতনে ছুটি: " + ymdText(r.remHalf);
+            if (d.warning) msg = d.warning + "\n" + msg;
+            showModal(d.warning ? "warn" : "success", "সফলভাবে যুক্ত হয়েছে", "সার্ভিস বুকে হিসাব জমা হয়েছে।\n" + msg, function () { $("resetBtn").focus(); });
+        }).catch(handleErr);
+    }
+    $("addBtn").addEventListener("click", calc);
+
+    $("undoBtn").addEventListener("click", function () {
+        if (!S.person || !S.rows.length) return;
         if (!confirm("সর্বশেষ সারিটি সার্ভিস বুক থেকে মুছে ফেলে তথ্যগুলো ফর্মে ফিরিয়ে আনা হবে। ঠিক আছে?")) return;
-        ledgerHistory.pop();
-        const rows = document.querySelectorAll("#ledgerTable tbody tr");
-        rows[rows.length - 1].remove();
-        lastRemainingFull = last.rf;
-        lastRemainingHalf = last.rh;
-        lastLeaveEnd = last.le;
-        ["dutyFrom","dutyTo","leaveFrom","leaveTo"].forEach(function (i) {
-            const v = last.inp[i], t = document.getElementById(i + "_t");
-            document.getElementById(i).value = v;
-            t.value = v.slice(8) + "/" + v.slice(5, 7) + "/" + v.slice(0, 4);
-            t._p = t.value;
-            t.closest(".f").classList.remove("bad");
+        api("rowUndo", { personId: S.person.id }).then(function (d) {
+            S.rows = d.rows; renderBook();
+            DATE_IDS.forEach(function (i) {
+                var v = d.inputs[i], t = $(i + "_t");
+                $(i).value = v; t.value = v.slice(8) + "/" + v.slice(5, 7) + "/" + v.slice(0, 4); t._p = t.value;
+                t.closest(".f").classList.remove("bad");
+            });
+            $("leaveType").value = d.inputs.leaveType; $("remark").value = d.inputs.remark || "";
+        }).catch(handleErr);
+    });
+
+    // ---------- Enter বাটনে পরের ধাপে যাওয়া ----------
+    var ORDER = ["dutyFrom_t", "dutyTo_t", "leaveFrom_t", "leaveTo_t", "leaveType", "addBtn"];
+    document.addEventListener("keydown", function (e) {
+        if (e.key !== "Enter" || e.isComposing) return;
+        var i = ORDER.indexOf(e.target.id);
+        if (i < 0 || i >= ORDER.length - 1) return;   // addBtn ও রিসেট বাটন নিজেই Enter-এ কাজ করে
+        e.preventDefault();
+        $(ORDER[i + 1]).focus();
+    });
+
+    // =====================================================================
+    //                           অ্যাডমিন
+    // =====================================================================
+    function strongPw(p) { return p.length >= 10 && /[a-z]/.test(p) && /[A-Z]/.test(p) && /\d/.test(p) && /[^A-Za-z0-9]/.test(p); }
+    $("adminLoginForm").addEventListener("submit", function (e) {
+        e.preventDefault(); $("adErr").textContent = "";
+        var p = $("adPass").value;
+        if (!strongPw(p)) { $("adErr").textContent = "শক্তিশালী পাসওয়ার্ড ছাড়া অ্যাডমিন প্যানেলে প্রবেশ করা যাবে না (১০+ অক্ষর, বড় ও ছোট হাতের অক্ষর, সংখ্যা ও চিহ্ন)।"; return; }
+        api("adminLogin", { username: $("adUser").value, password: p }, "admin").then(function (d) {
+            setTok("admin", d.token); $("adPass").value = ""; view("adminPanel"); AD.tab = "users"; loadTab();
+        }).catch(function (er) { $("adErr").textContent = er.message; });
+    });
+    $("admLogout").addEventListener("click", function () {
+        api("logout", {}, "admin").catch(function () {});
+        setTok("admin", null); view("adminGate"); $("adUser").focus();
+    });
+
+    var AD = { tab: "users", editing: null, users: [], people: [] };
+    function admApi(a, d) {
+        return api(a, d || {}, "admin").catch(function (e) {
+            if (e.code === "AUTH") { setTok("admin", null); view("adminGate"); $("adErr").textContent = e.message; }
+            else showModal("error", "সমস্যা হয়েছে", e.message);
+            return null;
         });
-        document.getElementById("leaveType").value = last.inp.leaveType;
-        document.getElementById("remark").value = last.inp.remark;
-        document.getElementById("undoBtn").hidden = ledgerHistory.length === 0;
+    }
+    $("admTabs").addEventListener("click", function (e) {
+        var b = e.target.closest("button[data-t]"); if (!b) return;
+        AD.tab = b.dataset.t; AD.editing = null; loadTab();
+    });
+    function loadTab() {
+        var t = AD.tab;
+        [].forEach.call(document.querySelectorAll("#admTabs button"), function (b) { b.classList.toggle("on", b.dataset.t === t); });
+        if (t === "users") admApi("userList").then(function (d) { if (d) { AD.users = d.users; renderUsers(); } });
+        else if (t === "persons") admApi("personList").then(function (d) { if (d) { AD.people = d.people; renderPeople(); } });
+        else if (t === "settings") admApi("settingsGet").then(function (d) { if (d) renderSettings(d.settings); });
+        else if (t === "pass") renderPass();
+        else if (t === "log") admApi("logList").then(function (d) { if (d) renderLog(d.log); });
     }
 
-    function calculateLeave() {
-        // ইনপুট ভ্যালু গ্রহণ
-        const dutyFromVal = document.getElementById('dutyFrom').value;
-        const dutyToVal = document.getElementById('dutyTo').value;
-        const leaveFromVal = document.getElementById('leaveFrom').value;
-        const leaveToVal = document.getElementById('leaveTo').value;
-        const leaveType = document.getElementById('leaveType').value;
-        const leaveTypeText = document.getElementById('leaveType').selectedOptions[0].text;
-        const remarkVal = document.getElementById('remark').value;
-        const remarkText = document.getElementById('remark').selectedOptions[0].text;
-
-        // সবগুলো ঘর বাধ্যতামূলক
-        const miss = [];
-        if (!dutyFromVal) miss.push("ডিউটি শুরু (হইতে)");
-        if (!dutyToVal) miss.push("ডিউটি শেষ (পর্যন্ত)");
-        if (!leaveFromVal) miss.push("ছুটি শুরু (হইতে)");
-        if (!leaveToVal) miss.push("ছুটি শেষ (পর্যন্ত)");
-        if (!leaveType) miss.push("ছুটির প্রকার");
-        if (!remarkVal) miss.push("মন্তব্য (ছুটির বিবরণ)");
-        if (miss.length) {
-            alert("সবগুলো ঘর পূরণ করা বাধ্যতামূলক। অপূর্ণ: " + miss.join(", "));
-            return;
-        }
-        const dutyFrom = parseD(dutyFromVal);
-        const dutyTo = parseD(dutyToVal);
-        if (isNaN(dutyFrom) || isNaN(dutyTo) || dutyTo < dutyFrom) {
-            alert("অনুগ্রহ করে ডিউটির সঠিক তারিখ প্রদান করুন।");
-            return;
-        }
-
-        // তারিখের ধারাবাহিকতা যাচাই
-        const isoOf = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
-        const nextDay = (s) => { const d = parseD(s); d.setDate(d.getDate() + 1); return isoOf(d); };
-        const dmy = (s) => s.slice(8) + "/" + s.slice(5, 7) + "/" + s.slice(0, 4);
-        if (lastLeaveEnd !== null && dutyFromVal !== nextDay(lastLeaveEnd)) {
-            alert("আগের সারিতে ছুটি " + dmy(lastLeaveEnd) + " তারিখে শেষ হয়েছে। তাই পরবর্তী কার্যকাল অবশ্যই " + dmy(nextDay(lastLeaveEnd)) + " তারিখ থেকে শুরু হতে হবে।");
-            return;
-        }
-        if (leaveFromVal !== nextDay(dutyToVal)) {
-            alert("ছুটি কার্যকাল শেষের পরের দিন, অর্থাৎ " + dmy(nextDay(dutyToVal)) + " তারিখ থেকে শুরু হতে হবে।");
-            return;
-        }
-        if (leaveToVal < leaveFromVal) {
-            alert("ছুটির শেষ তারিখ শুরুর তারিখের আগে হতে পারে না।");
-            return;
-        }
-
-        // কর্মকাল গণনা (শেষ দিন সহ)
-        const grossDutyDays = Math.round((dutyTo - dutyFrom) / DAY) + 1;
-        const [dy, dm, dd] = ymd(dutyFrom, dutyTo);
-
-        // ভোগকৃত ছুটি গণনা
-        let leaveDays = 0;
-        let overlapDays = 0; // কর্মকালের ভেতরে পড়া ছুটির দিন
-        let leaveFromStr = "-";
-        let leaveToStr = "-";
-
-        if (leaveFromVal && leaveToVal) {
-            const lFrom = parseD(leaveFromVal);
-            const lTo = parseD(leaveToVal);
-            if (lTo >= lFrom) {
-                leaveDays = Math.round((lTo - lFrom) / DAY) + 1;
-                leaveFromStr = fmtDate(leaveFromVal);
-                leaveToStr = fmtDate(leaveToVal);
-
-                // কর্মকালের সঙ্গে মিলে যাওয়া ছুটির দিন বাদ যাবে
-                const oStart = lFrom > dutyFrom ? lFrom : dutyFrom;
-                const oEnd = lTo < dutyTo ? lTo : dutyTo;
-                if (oEnd >= oStart) {
-                    overlapDays = Math.round((oEnd - oStart) / DAY) + 1;
-                }
-            }
-        }
-
-        // নিট কর্মকাল (ছুটির দিন বাদে)
-        const netDutyDays = Math.max(grossDutyDays - overlapDays, 0);
-
-        // অর্জিত ছুটি গণনা (১/১১ এবং ১/১২ নিয়ম, ভগ্নাংশ বাদ)
-        const earnedFull = Math.floor(netDutyDays / 11);
-        const earnedHalf = Math.floor(netDutyDays / 12);
-
-        // জের (প্রথম সারিতে ফর্মের মান, পরের সারিতে আগের সারির অবশিষ্ট)
-        const prevFull = lastRemainingFull === null ? 0 : lastRemainingFull;
-        const prevHalf = lastRemainingHalf === null ? 0 : lastRemainingHalf;
-
-        // মোট অর্জিত ছুটি
-        const totalAccumulatedFull = prevFull + earnedFull;
-        const totalAccumulatedHalf = prevHalf + earnedHalf;
-
-        // ৪ মাসের (১২০ দিন) সীমার সঙ্গে পার্থক্য
-        const fourMonthDiff = totalAccumulatedFull - FOUR_MONTH_LIMIT;
-
-        // ছুটির প্রকার অনুযায়ী কলাম ভাগ
-        const takenFull   = leaveType === "EL_FAP" ? leaveDays : 0;
-        const takenHalf   = leaveType === "EL_HAP" ? leaveDays : 0;
-        const takenUnpaid = leaveType === "XL_LWP" ? leaveDays : 0;
-        const takenOthers = leaveType === "Others" ? leaveDays : 0;
-        const takenTotal  = takenFull + takenHalf + takenUnpaid + takenOthers;
-
-        // অবশিষ্ট ছুটি গণনা (শুধু EL ছুটি কাটা যায়)
-        const remainingFull = totalAccumulatedFull - takenFull;
-        const remainingHalf = totalAccumulatedHalf - takenHalf;
-
-        if (remainingFull < 0 || remainingHalf < 0) {
-            alert("সতর্কতা: পাওনা ছুটির চেয়ে বেশি ছুটি নেওয়া হয়েছে।");
-        }
-
-        ledgerHistory.push({
-            inp: { dutyFrom: dutyFromVal, dutyTo: dutyToVal, leaveFrom: leaveFromVal, leaveTo: leaveToVal, leaveType: leaveType, remark: remarkVal },
-            rf: lastRemainingFull, rh: lastRemainingHalf, le: lastLeaveEnd
+    function renderUsers() {
+        var ed = null; AD.users.forEach(function (u) { if (u.username === AD.editing) ed = u; });
+        var h = '<div class="adm-card"><h3>' + (ed ? "ব্যবহারকারী সম্পাদনা: " + esc(ed.username) : "নতুন ব্যবহারকারী যুক্ত করুন") + '</h3><div class="adm-grid">' +
+            '<div class="fld"><label>ইউজারনেম (ইংরেজি অক্ষর/সংখ্যা)</label><input id="uName" autocomplete="off" autocapitalize="none" ' + (ed ? 'value="' + esc(ed.username) + '" readonly' : "") + "></div>" +
+            '<div class="fld"><label>নাম (ঐচ্ছিক)</label><input id="uDisp" autocomplete="off" value="' + esc(ed ? ed.displayName : "") + '"></div>' +
+            '<div class="fld"><label>পাসওয়ার্ড ' + (ed ? "(না বদলাতে ফাঁকা রাখুন)" : "(কমপক্ষে ৬ অক্ষর)") + '</label><input id="uPass" autocomplete="new-password"></div></div>' +
+            '<button type="button" class="pbtn" data-act="uSave">সংরক্ষণ করুন</button> ' + (ed ? '<button type="button" class="pbtn sec" data-act="uCancel">বাতিল</button>' : "") + "</div>";
+        h += '<div class="adm-scroll"><table class="adm-table"><thead><tr><th>ইউজারনেম</th><th>নাম</th><th>অবস্থা</th><th>তৈরি</th><th>সর্বশেষ লগইন</th><th>কাজ</th></tr></thead><tbody>';
+        if (!AD.users.length) h += '<tr><td colspan="6">কোনো ব্যবহারকারী নেই। উপরে থেকে যুক্ত করুন।</td></tr>';
+        AD.users.forEach(function (u) {
+            var on = u.active === "Y";
+            h += "<tr><td>" + esc(u.username) + "</td><td>" + esc(u.displayName) + '</td><td><span class="tag ' + (on ? "on" : "off") + '">' + (on ? "সক্রিয়" : "নিষ্ক্রিয়") + "</span></td><td>" + esc(u.createdAt) + "</td><td>" + esc(u.lastLogin || "-") + "</td><td>" +
+                '<button type="button" class="pbtn sm" data-act="uEdit" data-id="' + esc(u.username) + '">সম্পাদনা</button> ' +
+                '<button type="button" class="pbtn sm sec" data-act="uToggle" data-id="' + esc(u.username) + '">' + (on ? "নিষ্ক্রিয় করুন" : "সক্রিয় করুন") + "</button> " +
+                '<button type="button" class="pbtn sm danger" data-act="uDel" data-id="' + esc(u.username) + '">মুছুন</button></td></tr>';
         });
-        lastRemainingFull = remainingFull;
-        lastRemainingHalf = remainingHalf;
-
-        const typeShort = { EL_FAP: "EL FAP", EL_HAP: "EL HAP", XL_LWP: "XL LWP", Others: "Others" }[leaveType];
-
-        // টেবিলে রো (Row) যুক্ত করা
-        const tableBody = document.querySelector("#ledgerTable tbody");
-        const newRow = document.createElement("tr");
-        newRow.className = "result-row";
-
-        newRow.innerHTML = `
-            <td class="dtc">${fmtDate(dutyFromVal)}</td>
-            <td class="dtc">${fmtDate(dutyToVal)}</td>
-            <td>${dy}</td>
-            <td>${dm}</td>
-            <td>${dd}</td>
-            <td>${earnedFull}</td>
-            <td>${earnedHalf}</td>
-            <td>${totalAccumulatedFull}</td>
-            <td>${totalAccumulatedHalf}</td>
-            <td>${fourMonthDiff}</td>
-            <td class="dtc">${leaveFromStr}</td>
-            <td class="dtc">${leaveToStr}</td>
-            <td>${typeShort}</td>
-            <td>${takenFull}</td>
-            <td>${takenHalf}</td>
-            <td>${takenUnpaid}</td>
-            <td>${takenOthers}</td>
-            <td>${takenTotal}</td>
-            <td>${remainingFull}</td>
-            <td>${remainingHalf}</td>
-            <td>${remarkText}</td>
-        `;
-
-        tableBody.appendChild(newRow);
-        lastLeaveEnd = leaveToVal;
-        document.getElementById("undoBtn").hidden = false;
+        $("admBody").innerHTML = h + "</tbody></table></div>";
     }
+
+    function renderPeople() {
+        var h = '<div class="hint" style="margin-bottom:10px">মোট সার্ভিস বুক: ' + AD.people.length + '</div><div class="adm-scroll"><table class="adm-table"><thead><tr><th>নাম</th><th>জাতীয় পরিচয়পত্র/মোবাইল</th><th>সারি সংখ্যা</th><th>তৈরি করেছেন</th><th>তৈরির সময়</th><th>কাজ</th></tr></thead><tbody>';
+        if (!AD.people.length) h += '<tr><td colspan="6">কোনো সার্ভিস বুক নেই।</td></tr>';
+        AD.people.forEach(function (p) {
+            h += '<tr><td class="l">' + esc(p.name) + "</td><td>" + esc(p.key) + "</td><td>" + p.rows + "</td><td>" + esc(p.createdBy) + "</td><td>" + esc(p.createdAt) + "</td><td>" +
+                '<button type="button" class="pbtn sm" data-act="pEdit" data-id="' + esc(p.id) + '">নাম/নম্বর সংশোধন</button> ' +
+                '<button type="button" class="pbtn sm danger" data-act="pDel" data-id="' + esc(p.id) + '">মুছুন</button></td></tr>';
+        });
+        $("admBody").innerHTML = h + "</tbody></table></div>";
+    }
+
+    function renderSettings(list) {
+        var h = '<div class="adm-card"><h3>হিসাবের নিয়ম (ফরমুলার মান)</h3><div class="adm-grid">';
+        list.forEach(function (s) { h += '<div class="fld"><label>' + esc(s.label) + '</label><input data-k="' + esc(s.key) + '" inputmode="numeric" value="' + esc(s.value) + '"></div>'; });
+        h += '</div><div class="hint">সতর্কতা: নিয়ম বদলালে শুধু ভবিষ্যতে যুক্ত হওয়া সারির হিসাব বদলাবে; আগের সারি অপরিবর্তিত থাকবে। টেবিলের হেডারের "১/১১", "১/১২" লেখা নিজে থেকে বদলায় না।</div><br><button type="button" class="pbtn" data-act="sSave">সংরক্ষণ করুন</button></div>';
+        $("admBody").innerHTML = h;
+    }
+
+    function renderPass() {
+        $("admBody").innerHTML = '<div class="adm-card"><h3>অ্যাডমিন পাসওয়ার্ড পরিবর্তন</h3><div class="adm-grid">' +
+            '<div class="fld"><label>বর্তমান পাসওয়ার্ড</label><input id="cpOld" type="password" autocomplete="current-password"></div>' +
+            '<div class="fld"><label>নতুন পাসওয়ার্ড</label><input id="cpNew" type="password" autocomplete="new-password"></div>' +
+            '<div class="fld"><label>নতুন পাসওয়ার্ড আবার</label><input id="cpNew2" type="password" autocomplete="new-password"></div></div>' +
+            '<div class="hint">কমপক্ষে ১০ অক্ষর; বড় হাতের ও ছোট হাতের ইংরেজি অক্ষর, সংখ্যা এবং একটি চিহ্ন (@ # ! ইত্যাদি) থাকতে হবে।</div><br>' +
+            '<button type="button" class="pbtn" data-act="cpSave">পাসওয়ার্ড বদলান</button></div>';
+    }
+
+    function renderLog(list) {
+        var h = '<div class="adm-scroll"><table class="adm-table"><thead><tr><th>সময়</th><th>ইউজার</th><th>কাজ</th><th>বিবরণ</th></tr></thead><tbody>';
+        if (!list.length) h += '<tr><td colspan="4">কোনো লগ নেই।</td></tr>';
+        list.forEach(function (x) { h += "<tr><td>" + esc(x.time) + "</td><td>" + esc(x.user) + "</td><td>" + esc(x.action) + '</td><td class="l">' + esc(x.detail) + "</td></tr>"; });
+        $("admBody").innerHTML = h + "</tbody></table></div>";
+    }
+
+    $("admBody").addEventListener("click", function (e) {
+        var b = e.target.closest("[data-act]"); if (!b) return;
+        var act = b.dataset.act, id = b.dataset.id;
+        if (act === "uSave") {
+            var ed = AD.editing, body = { username: $("uName").value, displayName: $("uDisp").value, password: $("uPass").value };
+            admApi(ed ? "userUpdate" : "userAdd", body).then(function (d) { if (d) { AD.editing = null; loadTab(); showModal("success", "সংরক্ষিত", ed ? "ব্যবহারকারীর তথ্য হালনাগাদ হয়েছে।" : "নতুন ব্যবহারকারী যুক্ত হয়েছে।"); } });
+        } else if (act === "uCancel") { AD.editing = null; renderUsers(); }
+        else if (act === "uEdit") { AD.editing = id; renderUsers(); }
+        else if (act === "uToggle") {
+            var u = AD.users.filter(function (x) { return x.username === id; })[0];
+            admApi("userUpdate", { username: id, active: u.active === "Y" ? "N" : "Y" }).then(function (d) { if (d) loadTab(); });
+        } else if (act === "uDel") {
+            if (confirm('ইউজার "' + id + '" স্থায়ীভাবে মুছে ফেলবেন?')) admApi("userDelete", { username: id }).then(function (d) { if (d) loadTab(); });
+        } else if (act === "pEdit") {
+            var p = AD.people.filter(function (x) { return x.id === id; })[0];
+            var nm = prompt("ব্যক্তির নাম:", p.name); if (nm === null) return;
+            var ky = prompt("জাতীয় পরিচয়পত্র/মোবাইল নম্বর:", p.key); if (ky === null) return;
+            admApi("personUpdate", { id: id, name: nm, key: ky }).then(function (d) { if (d) loadTab(); });
+        } else if (act === "pDel") {
+            var q = AD.people.filter(function (x) { return x.id === id; })[0];
+            if (confirm('"' + q.name + '" এর সার্ভিস বুক ও তার সব সারি (' + q.rows + 'টি) স্থায়ীভাবে মুছে যাবে। নিশ্চিত?')) admApi("personDelete", { id: id }).then(function (d) { if (d) loadTab(); });
+        } else if (act === "sSave") {
+            var vals = {}; [].forEach.call(document.querySelectorAll("#admBody input[data-k]"), function (i) { vals[i.dataset.k] = i.value; });
+            admApi("settingsSet", { values: vals }).then(function (d) { if (d) showModal("success", "সংরক্ষিত", "হিসাবের নিয়ম হালনাগাদ হয়েছে।"); });
+        } else if (act === "cpSave") {
+            var n1 = $("cpNew").value;
+            if (n1 !== $("cpNew2").value) { showModal("error", "মিলছে না", "নতুন পাসওয়ার্ড দুইবার একই হয়নি।"); return; }
+            if (!strongPw(n1)) { showModal("error", "দুর্বল পাসওয়ার্ড", "১০+ অক্ষর, বড় ও ছোট হাতের অক্ষর, সংখ্যা ও চিহ্ন থাকতে হবে।"); return; }
+            admApi("adminChangePassword", { oldPassword: $("cpOld").value, newPassword: n1 }).then(function (d) { if (d) { renderPass(); showModal("success", "সফল", "অ্যাডমিন পাসওয়ার্ড বদলানো হয়েছে।"); } });
+        }
+    });
+
+    route();
+})();
 </script>
 <script>
 (function(){
@@ -650,7 +942,7 @@ if(a==="py")vy=Math.max(LO,vy-1);else if(a==="ny")vy=Math.min(HI,vy+1);else if(a
 pop.addEventListener("change",function(e){var a=e.target.dataset.a;if(a==="m")vm=+e.target.value;if(a==="y")vy=+e.target.value;render()});
 document.body.appendChild(pop);
 document.addEventListener("mousedown",function(e){if(!cur)return;var bx=cur.closest(".f")||cur;if(!pop.contains(e.target)&&!bx.contains(e.target))close()});
-document.addEventListener("keydown",function(e){if(cur&&(e.key==="Escape"||e.key==="Tab"))close()})}
+document.addEventListener("keydown",function(e){if(cur&&(e.key==="Escape"||e.key==="Tab"||e.key==="Enter"))close()})}
 function open(el){if(!pop)build();cur=el;var s=D(el.value),t=today();if(s){vy=s.y;vm=s.m}else{vy=Math.max(LO,Math.min(HI,t.y+(el._dy||0)));vm=t.m}
 render();var b=(el.closest(".f")||el).getBoundingClientRect();pop.style.display="block";
 var w=pop.offsetWidth,h=pop.offsetHeight,l=Math.min(b.left+scrollX,scrollX+document.documentElement.clientWidth-w-8),tp=b.bottom+scrollY+4;
