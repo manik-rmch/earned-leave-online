@@ -73,16 +73,17 @@
             margin-top: 25px;
         }
         table {
-            width: 100%;
-            min-width: 2000px;
+            width: auto;
             border-collapse: collapse;
-            font-size: 14px;
+            font-size: 13px;
         }
         th, td {
             border: 1px solid #bdc3c7;
             text-align: center;
-            padding: 4px 3px;
+            padding: 3px 4px;
         }
+        td { white-space: nowrap; }
+        #ledgerTable th { font-size: 12px; padding: 3px 4px; }
         th {
             background-color: #0b5f58;
             color: white;
@@ -98,7 +99,7 @@
             background-color: #0b5f58;
             color: white;
             font-weight: bold;
-            letter-spacing: 3px;
+            letter-spacing: 0;
             padding: 2px;
             font-size: 11px;
         }
@@ -116,7 +117,7 @@
         
         input, select, button { font-family: inherit; font-size: inherit; }
         button { font-size: 16px; }
-        .dtc { white-space: nowrap; min-width: 92px; }
+        .dtc { white-space: nowrap; }
         label.req::after { content: " *"; color: #c0392b; }
         .wide { grid-column: span 2; }
         .rst { display: flex; align-items: flex-end; gap: 10px; }
@@ -157,12 +158,12 @@
             .top-bar, .form-group, #undoBtn, .note, .author-box, .cal-pop, .person-panel, .modal, .busy, .gate, #adminPanel { display: none !important; }
             h2 { font-size: 15px; margin: 0 0 6px; padding-bottom: 4px; color: #000; border-bottom: 1px solid #000; }
             .table-wrap { overflow: visible; margin: 0; }
-            table { min-width: 0; width: 100%; font-size: 10px; }
+            table { min-width: 0; width: 100%; font-size: 8.5px; }
+            td { white-space: nowrap; }
             th, td { padding: 2px 1px; border: 1px solid #000; color: #000; }
-            th, .sub-header th, .bmd-row td { background: #e6e6e6 !important; color: #000 !important; font-size: 9px; letter-spacing: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .result-row td { background: #fff !important; font-weight: bold; font-size: 10.5px; }
+            th, .sub-header th, .bmd-row td { background: #e6e6e6 !important; color: #000 !important; font-size: 7.5px; letter-spacing: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .result-row td { background: #fff !important; font-weight: bold; font-size: 8.5px; }
             .dtc { min-width: 0; }
-            .ymd span { min-width: 1.3em; }
             thead { display: table-header-group; }
             tr { page-break-inside: avoid; }
         }
@@ -271,8 +272,8 @@
 .banner{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px}
 .banner .nm{font-size:19px;font-weight:700;color:#0b5345}
 .banner .sub{font-size:14px;color:#55687a}
-.ymd{white-space:nowrap}
-.ymd span{display:inline-block;min-width:1.7em;text-align:center}
+#appView{max-width:1500px !important}
+.f.bad{background:#fdecea;border-color:#e74c3c;box-shadow:0 0 0 2px rgba(231,76,60,.25)}
 .modal{position:fixed;inset:0;background:rgba(15,40,50,.55);display:flex;align-items:center;justify-content:center;z-index:3000}
 .modal .box{background:#fff;border-radius:16px;padding:26px 28px;max-width:430px;width:calc(100% - 40px);text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.35)}
 .modal .ico{width:64px;height:64px;border-radius:50%;margin:0 auto 12px;display:grid;place-items:center;font-size:36px;font-weight:700;color:#fff;background:#0f766e}
@@ -393,19 +394,19 @@
     <div class="form-group">
         <div class="f">
             <label class="req" for="dutyFrom_t">ডিউটি শুরু (হইতে)</label>
-            <input type="text" class="dt" id="dutyFrom_t" inputmode="numeric" autocomplete="off" placeholder="dd/mm/yyyy"><input type="date" id="dutyFrom" hidden>
+            <input type="text" class="dt" id="dutyFrom_t" inputmode="numeric" autocomplete="off" placeholder="দিন/মাস/বছর"><input type="date" id="dutyFrom" hidden>
         </div>
         <div class="f">
             <label class="req" for="dutyTo_t">ডিউটি শেষ (পর্যন্ত)</label>
-            <input type="text" class="dt" id="dutyTo_t" inputmode="numeric" autocomplete="off" placeholder="dd/mm/yyyy"><input type="date" id="dutyTo" hidden>
+            <input type="text" class="dt" id="dutyTo_t" inputmode="numeric" autocomplete="off" placeholder="দিন/মাস/বছর"><input type="date" id="dutyTo" hidden>
         </div>
         <div class="f">
             <label class="req" for="leaveFrom_t">ছুটি শুরু (হইতে)</label>
-            <input type="text" class="dt" id="leaveFrom_t" inputmode="numeric" autocomplete="off" placeholder="dd/mm/yyyy"><input type="date" id="leaveFrom" hidden>
+            <input type="text" class="dt" id="leaveFrom_t" inputmode="numeric" autocomplete="off" placeholder="দিন/মাস/বছর"><input type="date" id="leaveFrom" hidden>
         </div>
         <div class="f">
             <label class="req" for="leaveTo_t">ছুটি শেষ (পর্যন্ত)</label>
-            <input type="text" class="dt" id="leaveTo_t" inputmode="numeric" autocomplete="off" placeholder="dd/mm/yyyy"><input type="date" id="leaveTo" hidden>
+            <input type="text" class="dt" id="leaveTo_t" inputmode="numeric" autocomplete="off" placeholder="দিন/মাস/বছর"><input type="date" id="leaveTo" hidden>
         </div>
         <div class="f wide">
             <label class="req" for="leaveType">ছুটির প্রকার</label>
@@ -441,47 +442,21 @@
         <thead>
             <tr>
                 <th colspan="5">কার্যকাল</th>
-                <th colspan="2">অর্জিত ছুটি</th>
-                <th colspan="2">মোট অর্জিত ছুটি</th>
-                <!-- "৪ মাসের অতিরিক্ত অর্জিত পূর্ণ গড় বেতনে মোট জমা ছুটি" কলামটি আপাতত বাদ দেওয়া হয়েছে -->
-                <th colspan="8">ছুটি ভোগ করিয়াছে</th>
-                <th colspan="2">ছুটি ভোগ করার পর<br>অবশিষ্ট ছুটি</th>
+                <th colspan="6">অর্জিত ছুটি</th>
+                <th colspan="6">মোট অর্জিত ছুটি</th>
+                <!-- "৪ মাসের অতিরিক্ত অর্জিত পূর্ণ গড় বেতনে মোট জমা ছুটি" কলামটি আপাতত বাদ -->
+                <th colspan="18">ছুটি ভোগ করিয়াছে</th>
+                <th colspan="6">ছুটি ভোগ করার পর<br>অবশিষ্ট ছুটি</th>
                 <th rowspan="3">মন্তব্য<br>(ছুটির বিবরণ)</th>
             </tr>
             <tr class="sub-header">
-                <th rowspan="2">হইতে</th>
-                <th rowspan="2">পর্যন্ত</th>
-                <th colspan="3">সময়কাল</th>
-                <th>পূর্ণ গড় বেতনে ছুটি (১/১১)</th>
-                <th>অর্ধ গড় বেতনে ছুটি (১/১২)</th>
-                <th>পূর্ণ গড় বেতনে ছুটি</th>
-                <th>অর্ধ গড় বেতনে ছুটি</th>
-                <th rowspan="2">হইতে</th>
-                <th rowspan="2">পর্যন্ত</th>
-                <th rowspan="2">ছুটির প্রকার</th>
-                <th>পূর্ণ গড় বেতনে ছুটি</th>
-                <th>অর্ধ গড় বেতনে ছুটি</th>
-                <th>*বিনা বেতনে ছুটি</th>
-                <th>*বেতন সহ অন্যান্য ছুটি</th>
-                <th>মোট ভোগকৃত ছুটি</th>
-                <th>পূর্ণ গড় বেতনে ছুটি (১/১১)</th>
-                <th>অর্ধ গড় বেতনে ছুটি (১/১২)</th>
+                <th rowspan="2">হইতে</th><th rowspan="2">পর্যন্ত</th>
+                <th colspan="3">সময়কাল</th><th colspan="3">পূর্ণ গড় বেতনে ছুটি (১/১১)</th><th colspan="3">অর্ধ গড় বেতনে ছুটি (১/১২)</th><th colspan="3">পূর্ণ গড় বেতনে ছুটি</th><th colspan="3">অর্ধ গড় বেতনে ছুটি</th>
+                <th rowspan="2">হইতে</th><th rowspan="2">পর্যন্ত</th><th rowspan="2">ছুটির প্রকার</th>
+                <th colspan="3">পূর্ণ গড় বেতনে ছুটি</th><th colspan="3">অর্ধ গড় বেতনে ছুটি</th><th colspan="3">*বিনা বেতনে ছুটি</th><th colspan="3">*বেতন সহ অন্যান্য ছুটি</th><th colspan="3">মোট ভোগকৃত ছুটি</th><th colspan="3">পূর্ণ গড় বেতনে ছুটি (১/১১)</th><th colspan="3">অর্ধ গড় বেতনে ছুটি (১/১২)</th>
             </tr>
             <tr class="bmd-row">
-                <td>ব</td>
-                <td>মা</td>
-                <td>দি</td>
-                <td>ব মা দি</td>
-                <td>ব মা দি</td>
-                <td>ব মা দি</td>
-                <td>ব মা দি</td>
-                <td>ব মা দি</td>
-                <td>ব মা দি</td>
-                <td>ব মা দি</td>
-                <td>ব মা দি</td>
-                <td>ব মা দি</td>
-                <td>ব মা দি</td>
-                <td>ব মা দি</td>
+                <td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td>
             </tr>
         </thead>
         <tbody>
@@ -489,7 +464,7 @@
         </tbody>
     </table>
     </div>
-    <p class="note">
+    <p class="note" hidden>
         নিয়ম: ১১ দিনে ১ দিন পূর্ণ গড় বেতনে ও ১২ দিনে ১ দিন অর্ধ গড় বেতনে ছুটি অর্জিত হয় (কর্মকাল থেকে ভোগ করা ছুটির দিন বাদ দিয়ে)।
         পূর্ণ গড় ছুটি একত্রে সর্বোচ্চ ৪ মাস (১২০ দিন) জমা থাকে; অর্ধ গড় ছুটির জমার সীমা নেই।
         দ্বিতীয় সারি থেকে আগের সারির অবশিষ্ট ছুটি স্বয়ংক্রিয়ভাবে জের হিসেবে যুক্ত হয়।
@@ -516,6 +491,9 @@
     var API_URL = "https://script.google.com/macros/s/AKfycby6gkLw8jAlauqlvDbyLslz7UxTw_s7oYguk2yCv69UwePNptZA5ms7Kfa0W5M6Y5kZ/exec";
 
     function $(i) { return document.getElementById(i); }
+    var BNd = "০১২৩৪৫৬৭৮৯";
+    function bn(s) { return String(s).replace(/\d/g, function (d) { return BNd[d]; }); }
+    function en(s) { return String(s).replace(/[০-৯]/g, function (c) { return BNd.indexOf(c); }); }
     function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
     var S = { person: null, rows: [], cfg: { dpm: 30, mpy: 12 } };
     var busyN = 0;
@@ -674,7 +652,7 @@
     function ymdCell(days) {
         var neg = days < 0, a = Math.abs(days), dpm = S.cfg.dpm || 30, yr = dpm * (S.cfg.mpy || 12);
         var y = Math.floor(a / yr), rem = a % yr, m = Math.floor(rem / dpm), d = rem % dpm;
-        return '<td class="ymd"><span>' + (neg ? "-" : "") + y + "</span><span>" + m + "</span><span>" + d + "</span></td>";
+        return "<td>" + (neg ? "-" : "") + y + "</td><td>" + m + "</td><td>" + d + "</td>";
     }
     function rowHTML(r) {
         return '<tr class="result-row">' +
@@ -723,6 +701,9 @@
         if (!v.leaveFrom) miss.push("ছুটি শুরু (হইতে)");
         if (!v.leaveTo) miss.push("ছুটি শেষ (পর্যন্ত)");
         if (!v.leaveType) miss.push("ছুটির প্রকার");
+        ["dutyFrom", "dutyTo", "leaveFrom", "leaveTo", "leaveType"].forEach(function (k) {
+            $(k === "leaveType" ? k : k + "_t").closest(".f").classList.toggle("bad", !v[k]);
+        });
         if (miss.length) { showModal("error", "তথ্য অসম্পূর্ণ", "সবগুলো বাধ্যতামূলক ঘর পূরণ করুন।\nঅপূর্ণ: " + miss.join(", ")); return; }
         v.personId = S.person.id;
         api("rowAdd", v).then(function (d) {
@@ -742,7 +723,7 @@
             S.rows = d.rows; renderBook();
             DATE_IDS.forEach(function (i) {
                 var v = d.inputs[i], t = $(i + "_t");
-                $(i).value = v; t.value = v.slice(8) + "/" + v.slice(5, 7) + "/" + v.slice(0, 4); t._p = t.value;
+                $(i).value = v; t._p = v.slice(8) + "/" + v.slice(5, 7) + "/" + v.slice(0, 4); t.value = bn(t._p);
                 t.closest(".f").classList.remove("bad");
             });
             $("leaveType").value = d.inputs.leaveType; $("remark").value = d.inputs.remark || "";
@@ -751,13 +732,21 @@
 
     // ---------- Enter বাটনে পরের ধাপে যাওয়া ----------
     var ORDER = ["dutyFrom_t", "dutyTo_t", "leaveFrom_t", "leaveTo_t", "leaveType", "addBtn"];
+    var FIELD = { dutyFrom_t: "dutyFrom", dutyTo_t: "dutyTo", leaveFrom_t: "leaveFrom", leaveTo_t: "leaveTo", leaveType: "leaveType" };
     document.addEventListener("keydown", function (e) {
         if (e.key !== "Enter" || e.isComposing) return;
         var i = ORDER.indexOf(e.target.id);
         if (i < 0 || i >= ORDER.length - 1) return;   // addBtn ও রিসেট বাটন নিজেই Enter-এ কাজ করে
         e.preventDefault();
+        var box = e.target.closest(".f");
+        if (!$(FIELD[e.target.id]).value) {          // তারিখ/প্রকার সঠিক না হলে পরের ধাপে যাবে না
+            box.classList.add("bad");
+            return;
+        }
+        box.classList.remove("bad");
         $(ORDER[i + 1]).focus();
     });
+    $("leaveType").addEventListener("change", function () { if (this.value) this.closest(".f").classList.remove("bad"); });
 
     // =====================================================================
     //                           অ্যাডমিন
@@ -830,7 +819,7 @@
 
     function renderSettings(list) {
         var h = '<div class="adm-card"><h3>হিসাবের নিয়ম (ফরমুলার মান)</h3><div class="adm-grid">';
-        list.forEach(function (s) { h += '<div class="fld"><label>' + esc(s.label) + '</label><input data-k="' + esc(s.key) + '" inputmode="numeric" value="' + esc(s.value) + '"></div>'; });
+        list.forEach(function (s) { h += '<div class="fld"><label>' + esc(s.label) + '</label><input data-k="' + esc(s.key) + '" inputmode="numeric" value="' + esc(bn(s.value)) + '"></div>'; });
         h += '</div><div class="hint">সতর্কতা: নিয়ম বদলালে শুধু ভবিষ্যতে যুক্ত হওয়া সারির হিসাব বদলাবে; আগের সারি অপরিবর্তিত থাকবে। টেবিলের হেডারের "১/১১", "১/১২" লেখা নিজে থেকে বদলায় না।</div><br><button type="button" class="pbtn" data-act="sSave">সংরক্ষণ করুন</button></div>';
         $("admBody").innerHTML = h;
     }
@@ -871,9 +860,9 @@
             admApi("personUpdate", { id: id, name: nm, key: ky }).then(function (d) { if (d) loadTab(); });
         } else if (act === "pDel") {
             var q = AD.people.filter(function (x) { return x.id === id; })[0];
-            if (confirm('"' + q.name + '" এর সার্ভিস বুক ও তার সব সারি (' + q.rows + 'টি) স্থায়ীভাবে মুছে যাবে। নিশ্চিত?')) admApi("personDelete", { id: id }).then(function (d) { if (d) loadTab(); });
+            if (confirm('"' + q.name + '" এর সার্ভিস বুক ও তার সব সারি (' + bn(q.rows) + 'টি) স্থায়ীভাবে মুছে যাবে। নিশ্চিত?')) admApi("personDelete", { id: id }).then(function (d) { if (d) loadTab(); });
         } else if (act === "sSave") {
-            var vals = {}; [].forEach.call(document.querySelectorAll("#admBody input[data-k]"), function (i) { vals[i.dataset.k] = i.value; });
+            var vals = {}; [].forEach.call(document.querySelectorAll("#admBody input[data-k]"), function (i) { vals[i.dataset.k] = en(i.value); });
             admApi("settingsSet", { values: vals }).then(function (d) { if (d) showModal("success", "সংরক্ষিত", "হিসাবের নিয়ম হালনাগাদ হয়েছে।"); });
         } else if (act === "cpSave") {
             var n1 = $("cpNew").value;
@@ -882,6 +871,26 @@
             admApi("adminChangePassword", { oldPassword: $("cpOld").value, newPassword: n1 }).then(function (d) { if (d) { renderPass(); showModal("success", "সফল", "অ্যাডমিন পাসওয়ার্ড বদলানো হয়েছে।"); } });
         }
     });
+
+    // ---------- সব সংখ্যা বাংলায় দেখানো ----------
+    function bnNode(n) {
+        if (n.nodeType === 3) {
+            var p = n.parentNode;
+            if (p && /^(SCRIPT|STYLE|TEXTAREA)$/.test(p.nodeName)) return;
+            if (/\d/.test(n.nodeValue)) n.nodeValue = bn(n.nodeValue);
+        } else if (n.nodeType === 1 && !/^(SCRIPT|STYLE)$/.test(n.nodeName)) {
+            var w = document.createTreeWalker(n, NodeFilter.SHOW_TEXT, null), x, list = [];
+            while ((x = w.nextNode())) list.push(x);
+            list.forEach(bnNode);
+        }
+    }
+    bnNode(document.body);
+    new MutationObserver(function (ms) {
+        ms.forEach(function (m) {
+            if (m.type === "characterData") bnNode(m.target);
+            else [].forEach.call(m.addedNodes, bnNode);
+        });
+    }).observe(document.body, { childList: true, subtree: true, characterData: true });
 
     route();
 })();
@@ -894,7 +903,7 @@ function bn(n){return String(n).replace(/\d/g,function(d){return BN[d]})}
 function en(s){return s.replace(/[০-৯]/g,function(c){return BN.indexOf(c)})}
 function grp(n){var s=String(n),l=s.slice(-3),r=s.slice(0,-3);return bn(r?r.replace(/\B(?=(\d{2})+(?!\d))/g,",")+","+l:l)}
 function dim(y,m){return new Date(y,m+1,0).getDate()}
-function setV(el,v){el.value=v;el._p=v}
+function setV(el,v){el.value=bn(v);el._p=v}
 function maskEl(el,L,S){var pv=el._p||"",nv=en(el.value),c=el.selectionStart,T=L.reduce(function(a,b){return a+b}),z=function(x){return x==="_"||/\d/.test(x)},i,t,k=0,n=0,q=0,raw,pos,o="",p=0,s;
 if(c==null)c=nv.length;var re=Math.max(0,pv.length-(nv.length-c)),a=0;
 while(a<c&&a<re&&pv[a]===nv[a])a++;
@@ -910,7 +919,7 @@ for(i=0;i<L.length;i++){s=v.slice(p,p+L[i]);if(!s)break;o+=s;p+=L[i];if(s.length
 for(;q<o.length&&n<k;q++)if(z(o[q]))n++;
 if(!del)while(q<o.length&&!z(o[q])&&k>0)q++;
 setV(el,o);try{el.setSelectionRange(q,q)}catch(e){}}
-function D(s){var m=/^(\d\d)\/(\d\d)\/(\d{4})$/.exec(s);if(!m)return(s.length<10||s.indexOf("_")>=0)?null:false;var d=+m[1],o=+m[2]-1,y=+m[3];return(y<1900||y>2100||o>11||d<1||d>dim(y,o))?false:{y:y,m:o,d:d}}
+function D(s){s=en(s);var m=/^(\d\d)\/(\d\d)\/(\d{4})$/.exec(s);if(!m)return(s.length<10||s.indexOf("_")>=0)?null:false;var d=+m[1],o=+m[2]-1,y=+m[3];return(y<1900||y>2100||o>11||d<1||d>dim(y,o))?false:{y:y,m:o,d:d}}
 function fmtD(o){return bn(o.d)+" "+MN[o.m]+" "+bn(o.y)}
 function two(n){return("0"+n).slice(-2)}
 function dstr(o){return two(o.d)+"/"+two(o.m+1)+"/"+o.y}
