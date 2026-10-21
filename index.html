@@ -342,6 +342,39 @@
 /* অ্যাডমিন: মন্তব্য তালিকা */
 .rm-edit{display:flex;gap:8px;flex-wrap:wrap}
 .rm-edit input{flex:1 1 220px;width:auto}
+/* ===== সংস্করণ ৫ ===== */
+/* হেডারের মাঝে শিরোনাম */
+.hp-title{flex:1 1 auto;text-align:center;font-size:20px;font-weight:700;color:#fff;padding:0 12px;line-height:1.35}
+@media (max-width:900px){.hp-title{order:3;flex:1 0 100%;font-size:16px;padding:0}}
+/* ব্যক্তির পরিচয় এক লাইনে */
+.person-line{font-size:19px;margin:0 0 16px;padding-bottom:10px;white-space:nowrap}
+.person-line b{color:#0b5345}
+.person-line .sep{margin:0 12px;color:#9db3bd;font-weight:400}
+@media (max-width:900px){.person-line{font-size:16px;white-space:normal}}
+.print-title{display:none}
+/* ইনপুট: বড় স্ক্রিনে ৬টি ঘর এক লাইনে (ছোট স্ক্রিনে আগের বিন্যাস) */
+@media (min-width:1100px){
+  .form-group{grid-template-columns:1fr 1fr 1fr 1fr 1.9fr 1.4fr;gap:10px;padding:12px 14px}
+  .form-group .wide{grid-column:auto}
+  .f{min-height:50px;padding:5px 10px}
+  .f label{font-size:12px}
+  .f input.dt,.f select{font-size:15px}
+}
+/* সার্ভিস বুক: সব তারিখের ঘর সমান, সব ব-মা-দি ঘর সমান, ছুটির প্রকার ও মন্তব্য ঘর সমান */
+#ledgerTable{table-layout:fixed;width:100%;min-width:1200px}
+#ledgerTable td{padding-left:1px;padding-right:1px}
+#ledgerTable tbody td:last-child{white-space:normal;word-break:break-word}
+/* পপআপ: ছোট ও গোছানো */
+.modal .box{padding:24px 26px;box-sizing:border-box}
+.modal.success .box{max-width:340px}
+.modal h3{margin:0 0 14px}
+.modal p{margin:0 0 16px}
+@media print{
+  .print-title{display:block;text-align:center;font-size:17px;font-weight:bold;color:#000;margin:0 0 6px;padding-bottom:4px;border-bottom:1px solid #000}
+  #personLine{display:none !important}
+  #ledgerTable{min-width:0 !important}
+  #ledgerTable tbody td:last-child{white-space:normal !important}
+}
 </style>
 </head>
 <body>
@@ -351,6 +384,7 @@
       <span class="hp-mark" aria-hidden="true">হি</span>
       <span><span class="hp-name">হিসাবপাতা</span><span class="hp-tag">বাংলা স্মার্ট টুলস</span></span>
     </a>
+    <div class="hp-title">অনলাইন অর্জিত ছুটি (Earned Leave) ক্যালকুলেটর</div>
     <span class="hp-pill">সহজ হিসাব • এক জায়গায়</span>
   </div>
 </header>
@@ -417,10 +451,10 @@
         </div>
     </div>
     <div class="print-author"><strong>প্রস্তুতকারক: মোঃ মানিক</strong><br>গাড়ি চালক, রাজশাহী মেডিকেল কলেজ হাসপাতাল, রাজশাহী। &nbsp;|&nbsp; <strong>মোবাইল: ০১৭২৯-৮১৫২৯১</strong></div>
-    <h2>অনলাইন অর্জিত ছুটি (Earned Leave) ক্যালকুলেটর</h2>
+    <h2 id="personLine" class="person-line" hidden></h2>
 
     <!-- সার্ভিস বুক নির্বাচন -->
-    <section class="person-panel">
+    <section class="person-panel" id="personPanel">
         <div id="personPick">
             <h3>সার্ভিস বুক নির্বাচন করুন</h3>
             <div class="ps-row">
@@ -435,12 +469,10 @@
                 <div class="acts"><button type="button" class="pbtn" id="pnSave">সার্ভিস বুক তৈরি করুন</button><button type="button" class="pbtn sec" id="pnCancel">বাতিল</button></div>
             </div>
         </div>
-        <div class="banner" id="personBanner" hidden>
-            <div><div class="nm" id="bnName"></div><div class="sub" id="bnSub"></div></div>
-        </div>
     </section>
 
     <div id="bookArea" hidden>
+    <div class="print-title">অনলাইন অর্জিত ছুটি (Earned Leave) ক্যালকুলেটর</div>
     <div class="print-person" id="printPerson"></div>
 
     <div class="form-group">
@@ -491,6 +523,7 @@
 
     <div class="table-wrap">
     <table id="ledgerTable">
+        <colgroup><col style="width:6%"><col style="width:6%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:6%"><col style="width:6%"><col style="width:7.5%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:7.5%"></colgroup>
         <thead>
             <tr>
                 <th colspan="5">কার্যকাল</th>
@@ -711,7 +744,7 @@
 
     function clearPerson() {
         S.person = null; S.rows = [];
-        $("personPick").hidden = false; $("personBanner").hidden = true; $("bookArea").hidden = true; $("psChange").hidden = true;
+        $("personPanel").hidden = false; $("personPick").hidden = false; $("personLine").hidden = true; $("bookArea").hidden = true; $("psChange").hidden = true;
         $("psResults").innerHTML = ""; $("psQuery").value = ""; $("psNewBox").hidden = true;
         $("undoBtn").hidden = true; resetForm();
     }
@@ -729,15 +762,14 @@
         S.person = d.person; S.rows = d.rows || []; if (d.cfg) S.cfg = d.cfg;
         resetForm();
         renderBook();
-        $("personPick").hidden = true; $("personBanner").hidden = false; $("bookArea").hidden = false; $("psChange").hidden = false;
+        $("personPanel").hidden = true; $("bookArea").hidden = false; $("psChange").hidden = false;
         $("dutyFrom_t").focus();
     }
     function renderBook() {
         var p = S.person;
-        $("bnName").textContent = p.name;
-        var sub = "পরিচয়/মোবাইল: " + p.key;
-        if (S.rows.length) sub += "  |  পরবর্তী কার্যকাল শুরু হবে: " + dmy(nextDay(S.rows[S.rows.length - 1].leaveTo));
-        $("bnSub").textContent = sub;
+        var line = "<b>" + esc(p.name) + "</b><span class=\"sep\">|</span>জাতীয় পরিচয়পত্র/মোবাইল: " + esc(p.key);
+        if (S.rows.length) line += "<span class=\"sep\">|</span>পরবর্তী কার্যকাল শুরু: " + dmy(nextDay(S.rows[S.rows.length - 1].leaveTo));
+        $("personLine").innerHTML = line; $("personLine").hidden = false;
         $("printPerson").textContent = "নাম: " + p.name + "   |   জাতীয় পরিচয়পত্র/মোবাইল: " + p.key;
         $("ledgerTable").querySelector("tbody").innerHTML = S.rows.map(rowHTML).join("");
         $("undoBtn").hidden = S.rows.length === 0;
@@ -856,7 +888,7 @@
             parts.push("অবশিষ্ট পূর্ণ গড় বেতনে ছুটি: " + ymdText(row.remFull));
             parts.push("অবশিষ্ট অর্ধ গড় বেতনে ছুটি: " + ymdText(row.remHalf));
         }
-        showModal(warn ? "warn" : "success", "যুক্ত হয়েছে", parts.join("\n"), function () { $("resetBtn").focus(); });
+        showModal(warn ? "warn" : "success", "সফলভাবে যুক্ত হয়েছে", parts.join("\n"), function () { $("resetBtn").focus(); });
     }
 
     // ---------- পেছনে সংরক্ষণের সারি (একটার পর একটা) ----------
