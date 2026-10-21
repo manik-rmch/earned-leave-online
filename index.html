@@ -282,6 +282,13 @@
 .modal h3{margin:0 0 8px;color:#1b2f3d;font-size:20px}
 .modal p{margin:0 0 18px;color:#55687a;line-height:1.6;white-space:pre-line}
 .busy{position:fixed;inset:0;background:rgba(255,255,255,.65);display:flex;align-items:center;justify-content:center;z-index:4000;font-size:18px;color:#0f4c5c;font-weight:600}
+.st{display:block;font-size:11px;margin-top:2px;font-weight:600}
+.st.saving{color:#55687a}.st.failed{color:#c0392b}
+.st button{grid-column:auto;padding:1px 8px;font-size:11px;border-radius:6px;background:#c0392b;color:#fff;border:0;cursor:pointer}
+@media print{.st{display:none !important}}
+.chk{display:flex;align-items:center;gap:8px;margin:6px 0 12px;font-size:14px;color:#334155}
+.chk input{width:auto}
+.modal .box .fld{text-align:left}
 .msg-err{color:#c0392b;font-size:14px;min-height:20px;margin-bottom:8px}
 .adm-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
 .adm-tabs button{grid-column:auto;background:#e2e8f0;color:#334155;border-radius:999px;padding:8px 16px;font-size:15px}
@@ -317,6 +324,7 @@
     <form id="loginForm" autocomplete="on">
         <div class="fld"><label for="lgUser">ইউজারনেম</label><input id="lgUser" name="username" autocomplete="username" autocapitalize="none" required></div>
         <div class="fld"><label for="lgPass">পাসওয়ার্ড</label><input id="lgPass" name="password" type="password" autocomplete="current-password" required></div>
+        <label class="chk"><input type="checkbox" id="lgRemember" checked> এই ডিভাইসে লগইন মনে রাখুন</label>
         <div class="msg-err" id="lgErr"></div>
         <button type="submit" class="pbtn full">প্রবেশ করুন</button>
     </form>
@@ -361,6 +369,7 @@
         <button type="button" class="btn-home" id="printBtn">প্রিন্ট</button>
         <button type="button" class="btn-home" id="undoBtn" hidden>সর্বশেষ সারি মুছে সংশোধন করুন</button>
         <span class="who" id="whoName"></span>
+        <button type="button" class="btn-home" id="pwBtn">পাসওয়ার্ড বদলান</button>
         <button type="button" class="btn-home" id="logoutBtn">লগআউট</button>
     </div>
     <div class="print-author"><strong>প্রস্তুতকারক: মোঃ মানিক</strong><br>গাড়ি চালক, রাজশাহী মেডিকেল কলেজ হাসপাতাল, রাজশাহী। &nbsp;|&nbsp; <strong>মোবাইল: ০১৭২৯-৮১৫২৯১</strong></div>
@@ -483,6 +492,18 @@
         <button type="button" class="pbtn" id="okBtn">ঠিক আছে</button>
     </div>
 </div>
+<div class="modal" id="pwModal" hidden>
+    <div class="box" role="dialog" aria-modal="true">
+        <h3>পাসওয়ার্ড বদলান</h3>
+        <form id="pwForm" autocomplete="off">
+            <div class="fld"><label for="pwOld">বর্তমান পাসওয়ার্ড</label><input id="pwOld" type="password" autocomplete="current-password" required></div>
+            <div class="fld"><label for="pwNew">নতুন পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)</label><input id="pwNew" type="password" autocomplete="new-password" required></div>
+            <div class="fld"><label for="pwNew2">নতুন পাসওয়ার্ড আবার</label><input id="pwNew2" type="password" autocomplete="new-password" required></div>
+            <div class="msg-err" id="pwErr"></div>
+            <button type="submit" class="pbtn">বদলান</button> <button type="button" class="pbtn sec" id="pwCancel">বাতিল</button>
+        </form>
+    </div>
+</div>
 <div class="busy" id="busy" hidden>অপেক্ষা করুন…</div>
 
 <script>
@@ -495,11 +516,11 @@
     function bn(s) { return String(s).replace(/\d/g, function (d) { return BNd[d]; }); }
     function en(s) { return String(s).replace(/[০-৯]/g, function (c) { return BNd.indexOf(c); }); }
     function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
-    var S = { person: null, rows: [], cfg: { dpm: 30, mpy: 12 } };
+    var S = { person: null, rows: [], people: [], queue: [], sending: false, cfg: { dpm: 30, mpy: 12, fd: 11, hd: 12 } };
     var busyN = 0;
     function busy(n) { busyN += n; $("busy").hidden = busyN <= 0; }
-    function tok(w) { try { return sessionStorage.getItem(w === "admin" ? "el_adm" : "el_tok"); } catch (e) { return null; } }
-    function setTok(w, v) { try { var k = w === "admin" ? "el_adm" : "el_tok"; if (v) sessionStorage.setItem(k, v); else sessionStorage.removeItem(k); } catch (e) {} }
+    function tok(w) { try { return w === "admin" ? sessionStorage.getItem("el_adm") : localStorage.getItem("el_tok"); } catch (e) { return null; } }
+    function setTok(w, v) { try { var st = w === "admin" ? sessionStorage : localStorage, k = w === "admin" ? "el_adm" : "el_tok"; if (v) st.setItem(k, v); else st.removeItem(k); } catch (e) {} }
 
     // ---------- পপআপ ----------
     var modalClose = null;
@@ -519,22 +540,22 @@
     }
     $("okBtn").addEventListener("click", function () { if (modalClose) modalClose(); });
     $("okBtn").addEventListener("keydown", function (e) { if (e.key === "Tab") e.preventDefault(); });
-    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && modalClose) modalClose(); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") { if (modalClose) modalClose(); else if (!$("pwModal").hidden) closePw(); } });
 
     // ---------- সার্ভার যোগাযোগ ----------
-    function api(action, data, who) {
+    function api(action, data, who, quiet) {
         data = data || {}; data.action = action;
         var t = tok(who === "admin" ? "admin" : "user"); if (t) data.token = t;
         if (API_URL.indexOf("PASTE") === 0) return Promise.reject(new Error("ব্যাকএন্ডের লিংক এখনো বসানো হয়নি। (index.html-এ API_URL বসান)"));
-        busy(1);
+        if (!quiet) busy(1);
         return fetch(API_URL, { method: "POST", body: JSON.stringify(data) })
             .then(function (r) { return r.json(); })
             .then(function (j) {
-                busy(-1);
+                if (!quiet) busy(-1);
                 if (!j.ok) { var e = new Error(j.msg); e.code = j.code; throw e; }
                 return j.data;
             }, function () {
-                busy(-1);
+                if (!quiet) busy(-1);
                 throw new Error("সার্ভারের সাথে যোগাযোগ করা যায়নি। ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।");
             });
     }
@@ -566,36 +587,52 @@
     $("loginForm").addEventListener("submit", function (e) {
         e.preventDefault();
         $("lgErr").textContent = "";
-        api("userLogin", { username: $("lgUser").value, password: $("lgPass").value }).then(function (d) {
+        api("userLogin", { username: $("lgUser").value, password: $("lgPass").value, remember: $("lgRemember").checked }).then(function (d) {
             setTok("user", d.token); $("lgPass").value = "";
             enterApp(d);
         }).catch(function (er) { $("lgErr").textContent = er.message; });
     });
     function enterApp(d) {
         if (d.cfg) S.cfg = d.cfg;
+        if (d.people) S.people = d.people;
         $("whoName").textContent = d.name || "";
         view("appView");
         if (!S.person) { $("psQuery").focus(); }
     }
     $("logoutBtn").addEventListener("click", function () {
+        if (S.queue.length && !confirm("কিছু সারি এখনো সংরক্ষণ হয়নি। এখন লগআউট করলে সেগুলো হারিয়ে যেতে পারে। তবুও লগআউট করবেন?")) return;
         api("logout", {}, "user").catch(function () {});
-        setTok("user", null); S.person = null; S.rows = [];
+        setTok("user", null); S.person = null; S.rows = []; S.queue = []; S.people = [];
         clearPerson(); view("userGate"); $("lgUser").focus();
     });
+    window.addEventListener("beforeunload", function (e) { if (S.queue.length) { e.preventDefault(); e.returnValue = ""; } });
 
     // ---------- সার্ভিস বুক নির্বাচন ----------
+    function normKey(s) { return en(s).replace(/[\s-]/g, ""); }
+    function localSearch(q) {
+        var ql = q.toLowerCase(), qk = normKey(q), num = /^\d+$/.test(qk);
+        return S.people.filter(function (p) { return String(p.name).toLowerCase().indexOf(ql) >= 0 || (num && String(p.key).indexOf(qk) >= 0); }).slice(0, 30);
+    }
+    function showPeople(list, emptyMsg) {
+        var box = $("psResults");
+        if (!list.length) { box.innerHTML = emptyMsg ? '<div class="hint">' + emptyMsg + "</div>" : ""; return; }
+        box.innerHTML = list.map(function (p) {
+            return '<div class="ps-item"><div><b>' + esc(p.name) + "</b> <span>— " + esc(p.key) + '</span></div><button type="button" class="pbtn sm" data-id="' + esc(p.id) + '">সার্ভিস বুক খুলুন</button></div>';
+        }).join("");
+    }
     function doSearch() {
         var q = $("psQuery").value.trim();
         if (!q) { showModal("error", "অনুসন্ধান", "নাম, জাতীয় পরিচয়পত্র নম্বর বা মোবাইল নম্বর লিখুন।"); return; }
+        var list = localSearch(q);
+        if (list.length) { showPeople(list); return; }
+        // তালিকায় না পেলে সার্ভার থেকে দেখা (অন্য কেউ হয়তো নতুন বানিয়েছে)
         api("personSearch", { q: q }).then(function (d) {
-            var box = $("psResults");
-            if (!d.people.length) { box.innerHTML = '<div class="hint">কোনো সার্ভিস বুক পাওয়া যায়নি। নতুন সার্ভিস বুক তৈরি করতে "+ নতুন সার্ভিস বুক" চাপুন।</div>'; return; }
-            box.innerHTML = d.people.map(function (p) {
-                return '<div class="ps-item"><div><b>' + esc(p.name) + '</b> <span>— ' + esc(p.key) + '</span></div><button type="button" class="pbtn sm" data-id="' + esc(p.id) + '">সার্ভিস বুক খুলুন</button></div>';
-            }).join("");
+            d.people.forEach(function (p) { if (!S.people.some(function (x) { return x.id === p.id; })) S.people.push(p); });
+            showPeople(d.people, 'কোনো সার্ভিস বুক পাওয়া যায়নি। নতুন সার্ভিস বুক তৈরি করতে "+ নতুন সার্ভিস বুক" চাপুন।');
         }).catch(handleErr);
     }
     $("psSearch").addEventListener("click", doSearch);
+    $("psQuery").addEventListener("input", function () { var q = this.value.trim(); showPeople(q ? localSearch(q) : []); });
     $("psQuery").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); doSearch(); } });
     $("psResults").addEventListener("click", function (e) {
         var b = e.target.closest("button[data-id]"); if (!b) return;
@@ -606,6 +643,7 @@
     function createPerson() {
         api("personCreate", { name: $("pnName").value, key: $("pnKey").value }).then(function (d) {
             $("psNewBox").hidden = true; $("pnName").value = ""; $("pnKey").value = "";
+            S.people.push(d.person);
             setPerson(d);
         }).catch(handleErr);
     }
@@ -623,7 +661,12 @@
         $("psResults").innerHTML = ""; $("psQuery").value = ""; $("psNewBox").hidden = true;
         $("undoBtn").hidden = true; resetForm();
     }
-    $("psChange").addEventListener("click", function () { clearPerson(); $("psQuery").focus(); });
+    function blockIfPending() {
+        if (!S.queue.length) return false;
+        showModal("warn", "একটু অপেক্ষা করুন", "সর্বশেষ হিসাবটি সংরক্ষণ হচ্ছে বা সংরক্ষণ হয়নি। সংরক্ষণ শেষ হলে আবার চেষ্টা করুন।");
+        return true;
+    }
+    $("psChange").addEventListener("click", function () { if (blockIfPending()) return; clearPerson(); $("psQuery").focus(); });
 
     function nextDay(iso) { var d = new Date(iso + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10); }
     function dmy(s) { return s.slice(8) + "/" + s.slice(5, 7) + "/" + s.slice(0, 4); }
@@ -654,6 +697,11 @@
         var y = Math.floor(a / yr), rem = a % yr, m = Math.floor(rem / dpm), d = rem % dpm;
         return "<td>" + (neg ? "-" : "") + y + "</td><td>" + m + "</td><td>" + d + "</td>";
     }
+    function stHTML(r) {
+        if (r._st === "saving") return '<span class="st saving">সংরক্ষণ হচ্ছে…</span>';
+        if (r._st === "failed") return '<span class="st failed">সংরক্ষণ হয়নি <button type="button" data-retry="1">আবার পাঠান</button></span>';
+        return "";
+    }
     function rowHTML(r) {
         return '<tr class="result-row">' +
             '<td class="dtc">' + fmtDate(r.dutyFrom) + '</td><td class="dtc">' + fmtDate(r.dutyTo) + '</td>' +
@@ -664,7 +712,7 @@
             "<td>" + esc(r.typeShort) + "</td>" +
             ymdCell(r.takenFull) + ymdCell(r.takenHalf) + ymdCell(r.takenUnpaid) + ymdCell(r.takenOthers) + ymdCell(r.takenTotal) +
             ymdCell(r.remFull) + ymdCell(r.remHalf) +
-            "<td>" + (esc(r.remark) || "-") + "</td></tr>";
+            "<td>" + (esc(r.remark) || "-") + stHTML(r) + "</td></tr>";
     }
     function ymdText(days) {
         var dpm = S.cfg.dpm || 30, yr = dpm * (S.cfg.mpy || 12), a = Math.abs(days);
@@ -689,6 +737,38 @@
         window.print();
     });
 
+    var TYPES = { EL_FAP: "EL FAP", EL_HAP: "EL HAP", XL_LWP: "XL LWP", Others: "Others" };
+    function ms(s) { return Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10)); }
+    function ymdSpan(f, t) {   // সার্ভারের হিসাবের হুবহু অনুরূপ (শেষ দিন সহ)
+        var a = new Date(ms(f)), end = new Date(ms(t) + 864e5);
+        var y = end.getUTCFullYear() - a.getUTCFullYear(), m = end.getUTCMonth() - a.getUTCMonth(), d = end.getUTCDate() - a.getUTCDate();
+        if (d < 0) { m--; d += new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), 0)).getUTCDate(); }
+        if (m < 0) { y--; m += 12; }
+        return [y, m, d];
+    }
+    function localCheck(v, last) {
+        if (v.dutyTo < v.dutyFrom) return "অনুগ্রহ করে ডিউটির সঠিক তারিখ প্রদান করুন।";
+        if (last && v.dutyFrom !== nextDay(last.leaveTo)) return "আগের সারিতে ছুটি " + dmy(last.leaveTo) + " তারিখে শেষ হয়েছে। তাই পরবর্তী কার্যকাল অবশ্যই " + dmy(nextDay(last.leaveTo)) + " তারিখ থেকে শুরু হতে হবে।";
+        if (v.leaveFrom !== nextDay(v.dutyTo)) return "ছুটি কার্যকাল শেষের পরের দিন, অর্থাৎ " + dmy(nextDay(v.dutyTo)) + " তারিখ থেকে শুরু হতে হবে।";
+        if (v.leaveTo < v.leaveFrom) return "ছুটির শেষ তারিখ শুরুর তারিখের আগে হতে পারে না।";
+        return "";
+    }
+    function localRow(v, last) {
+        var dF = ms(v.dutyFrom), dT = ms(v.dutyTo), lF = ms(v.leaveFrom), lT = ms(v.leaveTo), D = 864e5;
+        var gross = Math.round((dT - dF) / D) + 1, ym = ymdSpan(v.dutyFrom, v.dutyTo), ld = Math.round((lT - lF) / D) + 1;
+        var oS = Math.max(lF, dF), oE = Math.min(lT, dT), ov = oE >= oS ? Math.round((oE - oS) / D) + 1 : 0;
+        var net = Math.max(gross - ov, 0);
+        var eF = Math.floor(net / (S.cfg.fd || 11)), eH = Math.floor(net / (S.cfg.hd || 12));
+        var tF = (last ? last.remFull : 0) + eF, tH = (last ? last.remHalf : 0) + eH;
+        var kF = v.leaveType === "EL_FAP" ? ld : 0, kH = v.leaveType === "EL_HAP" ? ld : 0, kU = v.leaveType === "XL_LWP" ? ld : 0, kO = v.leaveType === "Others" ? ld : 0;
+        return {
+            personId: S.person.id, seq: last ? last.seq + 1 : 1,
+            dutyFrom: v.dutyFrom, dutyTo: v.dutyTo, leaveFrom: v.leaveFrom, leaveTo: v.leaveTo, leaveType: v.leaveType, remark: String(v.remark || "").slice(0, 60),
+            dy: ym[0], dm: ym[1], dd: ym[2], earnedFull: eF, earnedHalf: eH, totalFull: tF, totalHalf: tH,
+            takenFull: kF, takenHalf: kH, takenUnpaid: kU, takenOthers: kO, takenTotal: kF + kH + kU + kO,
+            remFull: tF - kF, remHalf: tH - kH, typeShort: TYPES[v.leaveType]
+        };
+    }
     function calc() {
         var v = {
             dutyFrom: $("dutyFrom").value, dutyTo: $("dutyTo").value,
@@ -705,29 +785,93 @@
             $(k === "leaveType" ? k : k + "_t").closest(".f").classList.toggle("bad", !v[k]);
         });
         if (miss.length) { showModal("error", "তথ্য অসম্পূর্ণ", "সবগুলো বাধ্যতামূলক ঘর পূরণ করুন।\nঅপূর্ণ: " + miss.join(", ")); return; }
+        if (S.queue.some(function (i) { return i.state === "failed"; })) { showModal("error", "আগের সারি সংরক্ষণ হয়নি", "আগের সারিটি সংরক্ষণ হয়নি। টেবিলে লাল লেখার পাশে \"আবার পাঠান\" চাপুন।"); return; }
+        var last = S.rows.length ? S.rows[S.rows.length - 1] : null;
+        var err = localCheck(v, last);
+        if (err) { showModal("error", "তারিখে সমস্যা", err); return; }
+        var row = localRow(v, last);
+        row._st = "saving";
+        S.rows.push(row); renderBook();
         v.personId = S.person.id;
-        api("rowAdd", v).then(function (d) {
-            S.rows.push(d.row); renderBook();
-            var r = d.row;
-            var msg = "অবশিষ্ট পূর্ণ গড় বেতনে ছুটি: " + ymdText(r.remFull) + "\nঅবশিষ্ট অর্ধ গড় বেতনে ছুটি: " + ymdText(r.remHalf);
-            if (d.warning) msg = d.warning + "\n" + msg;
-            showModal(d.warning ? "warn" : "success", "সফলভাবে যুক্ত হয়েছে", "সার্ভিস বুকে হিসাব জমা হয়েছে।\n" + msg, function () { $("resetBtn").focus(); });
-        }).catch(handleErr);
+        S.queue.push({ row: row, payload: v, state: "saving" });
+        pump();
+        var msg = "অবশিষ্ট পূর্ণ গড় বেতনে ছুটি: " + ymdText(row.remFull) + "\nঅবশিষ্ট অর্ধ গড় বেতনে ছুটি: " + ymdText(row.remHalf);
+        var warn = (row.remFull < 0 || row.remHalf < 0);
+        if (warn) msg = "সতর্কতা: পাওনা ছুটির চেয়ে বেশি ছুটি নেওয়া হয়েছে।\n" + msg;
+        showModal(warn ? "warn" : "success", "যুক্ত হয়েছে", "সার্ভিস বুকে হিসাব যুক্ত হয়েছে (পেছনে সংরক্ষণ হচ্ছে)।\n" + msg, function () { $("resetBtn").focus(); });
     }
+
+    // ---------- পেছনে সংরক্ষণের সারি (একটার পর একটা) ----------
+    function pump() {
+        if (S.sending) return;
+        if (S.queue.some(function (i) { return i.state === "failed"; })) return;
+        var it = S.queue[0];
+        if (!it) return;
+        S.sending = true;
+        api("rowAdd", it.payload, "user", true).then(function (d) {
+            Object.assign(it.row, d.row); delete it.row._st;
+            S.queue.shift(); S.sending = false; renderBook(); pump();
+        }).catch(function (e) {
+            S.sending = false; it.state = "failed"; it.row._st = "failed"; renderBook();
+            if (e && e.code === "AUTH") handleErr(e);
+        });
+    }
+    $("ledgerTable").addEventListener("click", function (e) {
+        if (!e.target.closest("[data-retry]")) return;
+        var it = S.queue.filter(function (i) { return i.state === "failed"; })[0];
+        if (!it) return;
+        it.state = "saving"; it.row._st = "saving"; renderBook();
+        // আগের চেষ্টায় সার্ভারে সংরক্ষণ হয়ে গিয়ে থাকলে দ্বিতীয়বার যুক্ত না করে মিলিয়ে নেওয়া
+        api("personLoad", { personId: S.person.id }, "user", true).then(function (d) {
+            var hit = d.rows.filter(function (r) { return r.seq === it.row.seq && r.dutyFrom === it.row.dutyFrom && r.leaveTo === it.row.leaveTo; })[0];
+            if (hit) { Object.assign(it.row, hit); delete it.row._st; S.queue.shift(); renderBook(); pump(); }
+            else pump();
+        }).catch(function (er) {
+            it.state = "failed"; it.row._st = "failed"; renderBook();
+            if (er && er.code === "AUTH") handleErr(er);
+        });
+    });
+
     $("addBtn").addEventListener("click", calc);
 
+    function restoreInputs(inp) {
+        DATE_IDS.forEach(function (i) {
+            var v = inp[i], t = $(i + "_t");
+            $(i).value = v; t._p = v.slice(8) + "/" + v.slice(5, 7) + "/" + v.slice(0, 4); t.value = bn(t._p);
+            t.closest(".f").classList.remove("bad");
+        });
+        $("leaveType").value = inp.leaveType; $("remark").value = inp.remark || "";
+    }
     $("undoBtn").addEventListener("click", function () {
         if (!S.person || !S.rows.length) return;
+        if (S.queue.length) {   // শুধু সংরক্ষণ-না-হওয়া একমাত্র সারিটি ব্রাউজার থেকেই ফেরানো যায়
+            var it = S.queue[0];
+            if (S.queue.length === 1 && it.state === "failed") {
+                S.queue = []; S.rows.pop(); renderBook(); restoreInputs(it.payload); return;
+            }
+            blockIfPending(); return;
+        }
         if (!confirm("সর্বশেষ সারিটি সার্ভিস বুক থেকে মুছে ফেলে তথ্যগুলো ফর্মে ফিরিয়ে আনা হবে। ঠিক আছে?")) return;
         api("rowUndo", { personId: S.person.id }).then(function (d) {
-            S.rows = d.rows; renderBook();
-            DATE_IDS.forEach(function (i) {
-                var v = d.inputs[i], t = $(i + "_t");
-                $(i).value = v; t._p = v.slice(8) + "/" + v.slice(5, 7) + "/" + v.slice(0, 4); t.value = bn(t._p);
-                t.closest(".f").classList.remove("bad");
-            });
-            $("leaveType").value = d.inputs.leaveType; $("remark").value = d.inputs.remark || "";
+            S.rows = d.rows; renderBook(); restoreInputs(d.inputs);
         }).catch(handleErr);
+    });
+
+    // ---------- ইউজারের নিজের পাসওয়ার্ড বদল ----------
+    function closePw() { $("pwModal").hidden = true; $("pwForm").reset(); $("pwErr").textContent = ""; }
+    $("pwBtn").addEventListener("click", function () { $("pwModal").hidden = false; $("pwOld").focus(); });
+    $("pwCancel").addEventListener("click", closePw);
+    $("pwForm").addEventListener("submit", function (e) {
+        e.preventDefault(); $("pwErr").textContent = "";
+        var n1 = $("pwNew").value;
+        if (n1.length < 6) { $("pwErr").textContent = "নতুন পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।"; return; }
+        if (n1 !== $("pwNew2").value) { $("pwErr").textContent = "নতুন পাসওয়ার্ড দুইবার একই হয়নি।"; return; }
+        api("userChangePassword", { oldPassword: $("pwOld").value, newPassword: n1 }).then(function (d) {
+            setTok("user", d.token); closePw();
+            showModal("success", "সফল", "আপনার পাসওয়ার্ড বদলানো হয়েছে।");
+        }).catch(function (er) {
+            if (er && er.code === "AUTH") handleErr(er); else $("pwErr").textContent = er.message;
+        });
     });
 
     // ---------- Enter বাটনে পরের ধাপে যাওয়া ----------
@@ -792,13 +936,13 @@
         var h = '<div class="adm-card"><h3>' + (ed ? "ব্যবহারকারী সম্পাদনা: " + esc(ed.username) : "নতুন ব্যবহারকারী যুক্ত করুন") + '</h3><div class="adm-grid">' +
             '<div class="fld"><label>ইউজারনেম (ইংরেজি অক্ষর/সংখ্যা)</label><input id="uName" autocomplete="off" autocapitalize="none" ' + (ed ? 'value="' + esc(ed.username) + '" readonly' : "") + "></div>" +
             '<div class="fld"><label>নাম (ঐচ্ছিক)</label><input id="uDisp" autocomplete="off" value="' + esc(ed ? ed.displayName : "") + '"></div>' +
-            '<div class="fld"><label>পাসওয়ার্ড ' + (ed ? "(না বদলাতে ফাঁকা রাখুন)" : "(কমপক্ষে ৬ অক্ষর)") + '</label><input id="uPass" autocomplete="new-password"></div></div>' +
+            '<div class="fld"><label>পাসওয়ার্ড ' + (ed ? "(ইউজার ভুলে গেলে এখানে নতুন দিন; না বদলাতে ফাঁকা রাখুন)" : "(কমপক্ষে ৬ অক্ষর)") + '</label><input id="uPass" autocomplete="new-password"></div></div>' +
             '<button type="button" class="pbtn" data-act="uSave">সংরক্ষণ করুন</button> ' + (ed ? '<button type="button" class="pbtn sec" data-act="uCancel">বাতিল</button>' : "") + "</div>";
-        h += '<div class="adm-scroll"><table class="adm-table"><thead><tr><th>ইউজারনেম</th><th>নাম</th><th>অবস্থা</th><th>তৈরি</th><th>সর্বশেষ লগইন</th><th>কাজ</th></tr></thead><tbody>';
-        if (!AD.users.length) h += '<tr><td colspan="6">কোনো ব্যবহারকারী নেই। উপরে থেকে যুক্ত করুন।</td></tr>';
+        h += '<div class="adm-scroll"><table class="adm-table"><thead><tr><th>ইউজারনেম</th><th>নাম</th><th>অবস্থা</th><th>তৈরি</th><th>সর্বশেষ লগইন</th><th>পাসওয়ার্ড সর্বশেষ বদল</th><th>কাজ</th></tr></thead><tbody>';
+        if (!AD.users.length) h += '<tr><td colspan="7">কোনো ব্যবহারকারী নেই। উপরে থেকে যুক্ত করুন।</td></tr>';
         AD.users.forEach(function (u) {
             var on = u.active === "Y";
-            h += "<tr><td>" + esc(u.username) + "</td><td>" + esc(u.displayName) + '</td><td><span class="tag ' + (on ? "on" : "off") + '">' + (on ? "সক্রিয়" : "নিষ্ক্রিয়") + "</span></td><td>" + esc(u.createdAt) + "</td><td>" + esc(u.lastLogin || "-") + "</td><td>" +
+            h += "<tr><td>" + esc(u.username) + "</td><td>" + esc(u.displayName) + '</td><td><span class="tag ' + (on ? "on" : "off") + '">' + (on ? "সক্রিয়" : "নিষ্ক্রিয়") + "</span></td><td>" + esc(u.createdAt) + "</td><td>" + esc(u.lastLogin || "-") + "</td><td>" + (u.pwChangedAt ? esc(u.pwChangedAt) + "<br><small>(" + esc(u.pwChangedBy) + ")</small>" : "-") + "</td><td>" +
                 '<button type="button" class="pbtn sm" data-act="uEdit" data-id="' + esc(u.username) + '">সম্পাদনা</button> ' +
                 '<button type="button" class="pbtn sm sec" data-act="uToggle" data-id="' + esc(u.username) + '">' + (on ? "নিষ্ক্রিয় করুন" : "সক্রিয় করুন") + "</button> " +
                 '<button type="button" class="pbtn sm danger" data-act="uDel" data-id="' + esc(u.username) + '">মুছুন</button></td></tr>';
