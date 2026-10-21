@@ -149,20 +149,21 @@
         /* ===== প্রিন্ট (Landscape, সার্ভিস বুক পুরো প্রস্থে) ===== */
         .print-author { display: none; }
         .print-person { display: none; }
-        @page { size: A4 landscape; margin: 7mm; }
+        /* Legal কাগজ: ৮.৫ × ১৪ ইঞ্চি, আড়াআড়ি (Landscape) = প্রস্থ ১৪ ইঞ্চি, উচ্চতা ৮.৫ ইঞ্চি */
+        @page { size: 14in 8.5in; margin: 8mm; }
         @media print {
             body { margin: 0; background: #fff; }
-            .container { max-width: none; padding: 0; box-shadow: none; border-radius: 0; }
-            .print-author { display: block; text-align: center; font-size: 11px; line-height: 1.5; color: #000; margin-bottom: 4px; }
-            .print-person { display: block; text-align: center; font-size: 12px; font-weight: bold; color: #000; margin-bottom: 4px; }
+            .container, #appView { max-width: none !important; padding: 0; box-shadow: none; border-radius: 0; }
+            .print-author { display: block; text-align: center; font-size: 12px; line-height: 1.5; color: #000; margin-bottom: 4px; }
+            .print-person { display: block; text-align: center; font-size: 14px; font-weight: bold; color: #000; margin-bottom: 4px; }
             .top-bar, .form-group, #undoBtn, .note, .author-box, .cal-pop, .person-panel, .modal, .busy, .gate, #adminPanel { display: none !important; }
-            h2 { font-size: 15px; margin: 0 0 6px; padding-bottom: 4px; color: #000; border-bottom: 1px solid #000; }
+            h2 { font-size: 17px; margin: 0 0 6px; padding-bottom: 4px; color: #000; border-bottom: 1px solid #000; }
             .table-wrap { overflow: visible; margin: 0; }
-            table { min-width: 0; width: 100%; font-size: 8.5px; }
+            table { min-width: 0; width: 100%; font-size: 10px; }
             td { white-space: nowrap; }
-            th, td { padding: 2px 1px; border: 1px solid #000; color: #000; }
-            th, .sub-header th, .bmd-row td { background: #e6e6e6 !important; color: #000 !important; font-size: 7.5px; letter-spacing: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .result-row td { background: #fff !important; font-weight: bold; font-size: 8.5px; }
+            th, td { padding: 3px 1px; border: 1px solid #000; color: #000; }
+            th, .sub-header th, .bmd-row td { background: #e6e6e6 !important; color: #000 !important; font-size: 8.5px; letter-spacing: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .result-row td { background: #fff !important; font-weight: bold; font-size: 10px; }
             .dtc { min-width: 0; }
             thead { display: table-header-group; }
             tr { page-break-inside: avoid; }
@@ -306,6 +307,42 @@
 .tag.on{background:#d5f5e3;color:#1e8449}
 .tag.off{background:#fadbd8;color:#a93226}
 </style>
+<style id="custom-v3">
+/* ===== টুলবার: দুই গ্রুপ (বাঁয়ে কাজের বাটন, ডানে ইউজার/লগআউট) ===== */
+.top-bar.tb{justify-content:space-between;align-items:center;gap:10px 16px;padding-bottom:14px;margin-bottom:18px;border-bottom:1px solid #e3ebef}
+.tb-group{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.tb-right{margin-left:auto}
+.tb .btn-home{padding:7px 14px !important;font-size:14px !important;gap:6px}
+.tb .btn-home.warn{background:#fdf3e1 !important;color:#8a5a00 !important;border-color:#f1dcae !important}
+.tb .btn-home.warn:hover{background:#f9e6c2 !important;color:#8a5a00 !important}
+.tb .btn-home.out{background:#fdecea !important;color:#a93226 !important;border-color:#f3c9c4 !important}
+.tb .btn-home.out:hover{background:#f8d7d3 !important;color:#a93226 !important}
+.tb .who{margin:0 6px 0 0;padding-right:12px;border-right:1px solid #d5dee4;font-size:14px;color:#0f4c5c;font-weight:600}
+@media (max-width:700px){
+  .top-bar.tb{flex-direction:column;align-items:stretch}
+  .tb-right{margin-left:0}
+  .tb .btn-home{flex:1 1 auto;justify-content:center}
+  .tb .who{width:100%;border-right:0;margin:0;padding:0;text-align:center}
+}
+/* ===== সার্ভিস বুকের গ্রুপ-বিভাজক দাগ: আগের তুলনায় দ্বিগুণ মোটা (১px → ২px) ===== */
+#ledgerTable thead tr:first-child th:nth-child(-n+5){border-right-width:2px}
+#ledgerTable .sub-header th{border-right-width:2px}
+#ledgerTable .bmd-row td:nth-child(3n){border-right-width:2px}
+#ledgerTable tbody td:nth-child(1),#ledgerTable tbody td:nth-child(2),#ledgerTable tbody td:nth-child(5),#ledgerTable tbody td:nth-child(8),
+#ledgerTable tbody td:nth-child(11),#ledgerTable tbody td:nth-child(14),#ledgerTable tbody td:nth-child(17),#ledgerTable tbody td:nth-child(18),
+#ledgerTable tbody td:nth-child(19),#ledgerTable tbody td:nth-child(20),#ledgerTable tbody td:nth-child(23),#ledgerTable tbody td:nth-child(26),
+#ledgerTable tbody td:nth-child(29),#ledgerTable tbody td:nth-child(32),#ledgerTable tbody td:nth-child(35),#ledgerTable tbody td:nth-child(38),
+#ledgerTable tbody td:nth-child(41){border-right-width:2px}
+/* ===== পেজের কাঠামো: ফুটার সবসময় সবার শেষে, কনটেন্ট কম হলে স্ক্রিনের নিচে ===== */
+@media screen{
+  body{display:flex !important;flex-direction:column;min-height:100vh;min-height:100dvh}
+  body > *{flex-shrink:0}
+  .hp-footer{margin-top:auto}
+}
+/* অ্যাডমিন: মন্তব্য তালিকা */
+.rm-edit{display:flex;gap:8px;flex-wrap:wrap}
+.rm-edit input{flex:1 1 220px;width:auto}
+</style>
 </head>
 <body>
 <header class="hp-header">
@@ -356,6 +393,7 @@
         <button type="button" data-t="users">ব্যবহারকারী</button>
         <button type="button" data-t="persons">সার্ভিস বুক</button>
         <button type="button" data-t="settings">হিসাবের নিয়ম</button>
+        <button type="button" data-t="remarks">ছুটির মন্তব্য</button>
         <button type="button" data-t="pass">অ্যাডমিন পাসওয়ার্ড</button>
         <button type="button" data-t="log">কার্যকলাপ লগ</button>
     </div>
@@ -364,13 +402,19 @@
 
 <!-- ======================= মূল ক্যালকুলেটর ======================= -->
 <div class="container" id="appView" hidden>
-    <div class="top-bar"><a href="https://manik-rmch.github.io/dashboard" class="btn-home"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3z"/></svg> হোম</a>
-        <button type="button" class="btn-home" id="resetBtn">রিসেট</button>
-        <button type="button" class="btn-home" id="printBtn">প্রিন্ট</button>
-        <button type="button" class="btn-home" id="undoBtn" hidden>সর্বশেষ সারি মুছে সংশোধন করুন</button>
-        <span class="who" id="whoName"></span>
-        <button type="button" class="btn-home" id="pwBtn">পাসওয়ার্ড বদলান</button>
-        <button type="button" class="btn-home" id="logoutBtn">লগআউট</button>
+    <div class="top-bar tb">
+        <div class="tb-group">
+            <a href="https://manik-rmch.github.io/dashboard" class="btn-home"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3z"/></svg> হোম</a>
+            <button type="button" class="btn-home" id="resetBtn">রিসেট</button>
+            <button type="button" class="btn-home" id="printBtn">প্রিন্ট</button>
+            <button type="button" class="btn-home" id="psChange" hidden>অন্য ব্যক্তির সার্ভিস বুক</button>
+            <button type="button" class="btn-home warn" id="undoBtn" hidden>সর্বশেষ সারি মুছে সংশোধন করুন</button>
+        </div>
+        <div class="tb-group tb-right">
+            <span class="who" id="whoName"></span>
+            <button type="button" class="btn-home" id="pwBtn">পাসওয়ার্ড বদলান</button>
+            <button type="button" class="btn-home out" id="logoutBtn">লগআউট</button>
+        </div>
     </div>
     <div class="print-author"><strong>প্রস্তুতকারক: মোঃ মানিক</strong><br>গাড়ি চালক, রাজশাহী মেডিকেল কলেজ হাসপাতাল, রাজশাহী। &nbsp;|&nbsp; <strong>মোবাইল: ০১৭২৯-৮১৫২৯১</strong></div>
     <h2>অনলাইন অর্জিত ছুটি (Earned Leave) ক্যালকুলেটর</h2>
@@ -393,7 +437,6 @@
         </div>
         <div class="banner" id="personBanner" hidden>
             <div><div class="nm" id="bnName"></div><div class="sub" id="bnSub"></div></div>
-            <button type="button" class="pbtn sec" id="psChange">অন্য ব্যক্তির সার্ভিস বুক</button>
         </div>
     </section>
 
@@ -523,6 +566,8 @@
     function setTok(w, v) { try { var st = w === "admin" ? sessionStorage : localStorage, k = w === "admin" ? "el_adm" : "el_tok"; if (v) st.setItem(k, v); else st.removeItem(k); } catch (e) {} }
 
     // ---------- পপআপ ----------
+    // পপআপে "অবশিষ্ট ছুটি"-র বিবরণ আবার দেখাতে চাইলে নিচের false-কে true করে দিন।
+    var SHOW_POPUP_DETAILS = false;
     var modalClose = null;
     function showModal(kind, title, msg, onClose) {
         var prev = document.activeElement;
@@ -531,6 +576,7 @@
         $("mIcon").textContent = kind === "success" ? "✓" : "!";
         $("mTitle").textContent = title;
         $("mMsg").textContent = msg || "";
+        $("mMsg").hidden = !msg;
         m.hidden = false;
         modalClose = function () {
             m.hidden = true; modalClose = null;
@@ -592,7 +638,15 @@
             enterApp(d);
         }).catch(function (er) { $("lgErr").textContent = er.message; });
     });
+    function fillRemarks(list) {
+        var sel = $("remark"), cur = sel.value;
+        while (sel.options.length > 1) sel.remove(1);
+        list.forEach(function (x) { var o = document.createElement("option"); o.value = x; o.textContent = x; sel.appendChild(o); });
+        sel.value = cur;
+        if (sel.value !== cur) sel.selectedIndex = 0;
+    }
     function enterApp(d) {
+        if (d.remarks) fillRemarks(d.remarks);
         if (d.cfg) S.cfg = d.cfg;
         if (d.people) S.people = d.people;
         $("whoName").textContent = d.name || "";
@@ -657,7 +711,7 @@
 
     function clearPerson() {
         S.person = null; S.rows = [];
-        $("personPick").hidden = false; $("personBanner").hidden = true; $("bookArea").hidden = true;
+        $("personPick").hidden = false; $("personBanner").hidden = true; $("bookArea").hidden = true; $("psChange").hidden = true;
         $("psResults").innerHTML = ""; $("psQuery").value = ""; $("psNewBox").hidden = true;
         $("undoBtn").hidden = true; resetForm();
     }
@@ -675,7 +729,7 @@
         S.person = d.person; S.rows = d.rows || []; if (d.cfg) S.cfg = d.cfg;
         resetForm();
         renderBook();
-        $("personPick").hidden = true; $("personBanner").hidden = false; $("bookArea").hidden = false;
+        $("personPick").hidden = true; $("personBanner").hidden = false; $("bookArea").hidden = false; $("psChange").hidden = false;
         $("dutyFrom_t").focus();
     }
     function renderBook() {
@@ -690,8 +744,8 @@
     }
 
     // ---------- সংখ্যা ও তারিখ প্রদর্শন ----------
-    var MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    function fmtDate(s) { if (!s) return "-"; return s.slice(8) + "-" + MON[+s.slice(5, 7) - 1] + "-" + s.slice(2, 4); }
+    // তারিখ দেখানোর রূপ: দিন-মাস-বছর (দুই অঙ্ক করে), যেমন ০২-১০-৮৮। সংরক্ষিত মূল তারিখ (yyyy-mm-dd) বদলায় না।
+    function fmtDate(s) { if (!s) return "-"; return s.slice(8, 10) + "-" + s.slice(5, 7) + "-" + s.slice(2, 4); }
     function ymdCell(days) {
         var neg = days < 0, a = Math.abs(days), dpm = S.cfg.dpm || 30, yr = dpm * (S.cfg.mpy || 12);
         var y = Math.floor(a / yr), rem = a % yr, m = Math.floor(rem / dpm), d = rem % dpm;
@@ -795,10 +849,14 @@
         v.personId = S.person.id;
         S.queue.push({ row: row, payload: v, state: "saving" });
         pump();
-        var msg = "অবশিষ্ট পূর্ণ গড় বেতনে ছুটি: " + ymdText(row.remFull) + "\nঅবশিষ্ট অর্ধ গড় বেতনে ছুটি: " + ymdText(row.remHalf);
-        var warn = (row.remFull < 0 || row.remHalf < 0);
-        if (warn) msg = "সতর্কতা: পাওনা ছুটির চেয়ে বেশি ছুটি নেওয়া হয়েছে।\n" + msg;
-        showModal(warn ? "warn" : "success", "যুক্ত হয়েছে", "সার্ভিস বুকে হিসাব যুক্ত হয়েছে (পেছনে সংরক্ষণ হচ্ছে)।\n" + msg, function () { $("resetBtn").focus(); });
+        var warn = (row.remFull < 0 || row.remHalf < 0), parts = [];
+        if (warn) parts.push("সতর্কতা: পাওনা ছুটির চেয়ে বেশি ছুটি নেওয়া হয়েছে।");
+        if (SHOW_POPUP_DETAILS) {
+            parts.push("সার্ভিস বুকে হিসাব জমা হয়েছে।");
+            parts.push("অবশিষ্ট পূর্ণ গড় বেতনে ছুটি: " + ymdText(row.remFull));
+            parts.push("অবশিষ্ট অর্ধ গড় বেতনে ছুটি: " + ymdText(row.remHalf));
+        }
+        showModal(warn ? "warn" : "success", "যুক্ত হয়েছে", parts.join("\n"), function () { $("resetBtn").focus(); });
     }
 
     // ---------- পেছনে সংরক্ষণের সারি (একটার পর একটা) ----------
@@ -909,7 +967,7 @@
         setTok("admin", null); view("adminGate"); $("adUser").focus();
     });
 
-    var AD = { tab: "users", editing: null, users: [], people: [] };
+    var AD = { tab: "users", editing: null, rmEdit: null, users: [], people: [], remarks: [] };
     function admApi(a, d) {
         return api(a, d || {}, "admin").catch(function (e) {
             if (e.code === "AUTH") { setTok("admin", null); view("adminGate"); $("adErr").textContent = e.message; }
@@ -919,7 +977,7 @@
     }
     $("admTabs").addEventListener("click", function (e) {
         var b = e.target.closest("button[data-t]"); if (!b) return;
-        AD.tab = b.dataset.t; AD.editing = null; loadTab();
+        AD.tab = b.dataset.t; AD.editing = null; AD.rmEdit = null; loadTab();
     });
     function loadTab() {
         var t = AD.tab;
@@ -927,6 +985,7 @@
         if (t === "users") admApi("userList").then(function (d) { if (d) { AD.users = d.users; renderUsers(); } });
         else if (t === "persons") admApi("personList").then(function (d) { if (d) { AD.people = d.people; renderPeople(); } });
         else if (t === "settings") admApi("settingsGet").then(function (d) { if (d) renderSettings(d.settings); });
+        else if (t === "remarks") admApi("remarkList").then(function (d) { if (d) { AD.remarks = d.remarks; renderRemarks(); } });
         else if (t === "pass") renderPass();
         else if (t === "log") admApi("logList").then(function (d) { if (d) renderLog(d.log); });
     }
@@ -968,6 +1027,29 @@
         $("admBody").innerHTML = h;
     }
 
+    function renderRemarks() {
+        var h = '<div class="adm-card"><h3>নতুন মন্তব্য যুক্ত করুন</h3><div class="rm-edit"><input id="rmNew" maxlength="60" autocomplete="off" placeholder="যেমন: Casual Leave"><button type="button" class="pbtn" data-act="rmAdd">যুক্ত করুন</button></div>' +
+            '<div class="hint">এই তালিকাই ইউজারদের "মন্তব্য (ছুটির বিবরণ)" ড্রপডাউনে দেখায়। মন্তব্য বদলালে বা মুছলে আগে যুক্ত হওয়া সার্ভিস বুকের সারির লেখা বদলায় না। ইউজাররা পেজ রিফ্রেশ করলে নতুন তালিকা পাবেন।</div></div>';
+        h += '<div class="adm-scroll"><table class="adm-table"><thead><tr><th style="width:60px">ক্রম</th><th>মন্তব্য</th><th>কাজ</th></tr></thead><tbody>';
+        if (!AD.remarks.length) h += '<tr><td colspan="3">কোনো মন্তব্য নেই। উপরে থেকে যুক্ত করুন।</td></tr>';
+        AD.remarks.forEach(function (x, i) {
+            if (AD.rmEdit === x.id) {
+                h += "<tr><td>" + (i + 1) + '</td><td class="l"><div class="rm-edit"><input id="rmEditText" maxlength="60" value="' + esc(x.text) + '"></div></td><td>' +
+                    '<button type="button" class="pbtn sm" data-act="rmSave" data-id="' + esc(x.id) + '">সংরক্ষণ</button> <button type="button" class="pbtn sm sec" data-act="rmCancel">বাতিল</button></td></tr>';
+            } else {
+                h += "<tr><td>" + (i + 1) + '</td><td class="l">' + esc(x.text) + "</td><td>" +
+                    '<button type="button" class="pbtn sm" data-act="rmEdit" data-id="' + esc(x.id) + '">সম্পাদনা</button> <button type="button" class="pbtn sm danger" data-act="rmDel" data-id="' + esc(x.id) + '">মুছুন</button></td></tr>';
+            }
+        });
+        $("admBody").innerHTML = h + "</tbody></table></div>";
+        if (AD.rmEdit) { var ei = $("rmEditText"); if (ei) { ei.focus(); ei.setSelectionRange(ei.value.length, ei.value.length); } }
+    }
+    function rmDone(d) { if (d) { AD.remarks = d.remarks; AD.rmEdit = null; renderRemarks(); } }
+    $("admBody").addEventListener("keydown", function (e) {
+        if (e.key !== "Enter") return;
+        if (e.target.id === "rmNew") { e.preventDefault(); admApi("remarkAdd", { text: e.target.value }).then(rmDone); }
+        else if (e.target.id === "rmEditText") { e.preventDefault(); admApi("remarkUpdate", { id: AD.rmEdit, text: e.target.value }).then(rmDone); }
+    });
     function renderPass() {
         $("admBody").innerHTML = '<div class="adm-card"><h3>অ্যাডমিন পাসওয়ার্ড পরিবর্তন</h3><div class="adm-grid">' +
             '<div class="fld"><label>বর্তমান পাসওয়ার্ড</label><input id="cpOld" type="password" autocomplete="current-password"></div>' +
@@ -987,7 +1069,15 @@
     $("admBody").addEventListener("click", function (e) {
         var b = e.target.closest("[data-act]"); if (!b) return;
         var act = b.dataset.act, id = b.dataset.id;
-        if (act === "uSave") {
+        if (act === "rmAdd") { admApi("remarkAdd", { text: $("rmNew").value }).then(rmDone); }
+        else if (act === "rmEdit") { AD.rmEdit = id; renderRemarks(); }
+        else if (act === "rmCancel") { AD.rmEdit = null; renderRemarks(); }
+        else if (act === "rmSave") { admApi("remarkUpdate", { id: id, text: $("rmEditText").value }).then(rmDone); }
+        else if (act === "rmDel") {
+            var rm = AD.remarks.filter(function (x) { return x.id === id; })[0];
+            if (confirm('মন্তব্য "' + rm.text + '" মুছে ফেলবেন? আগে যুক্ত হওয়া সারির লেখায় প্রভাব পড়বে না।')) admApi("remarkDelete", { id: id }).then(rmDone);
+        }
+        else if (act === "uSave") {
             var ed = AD.editing, body = { username: $("uName").value, displayName: $("uDisp").value, password: $("uPass").value };
             admApi(ed ? "userUpdate" : "userAdd", body).then(function (d) { if (d) { AD.editing = null; loadTab(); showModal("success", "সংরক্ষিত", ed ? "ব্যবহারকারীর তথ্য হালনাগাদ হয়েছে।" : "নতুন ব্যবহারকারী যুক্ত হয়েছে।"); } });
         } else if (act === "uCancel") { AD.editing = null; renderUsers(); }
