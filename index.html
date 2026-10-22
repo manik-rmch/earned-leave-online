@@ -253,6 +253,8 @@
 .pw-eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);grid-column:auto !important;width:36px;height:36px;padding:0 !important;margin:0;background:transparent !important;color:#64748b !important;border:0 !important;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .pw-eye:hover{color:#0f766e !important;background:#f1f5f9 !important}
 .pw-eye svg{width:20px;height:20px;pointer-events:none}
+.f.auto{pointer-events:none}
+.f.auto input{background:#eef2f6 !important;color:#475569}
 .pbtn{display:inline-block;grid-column:auto;padding:10px 18px;background:#0f766e;color:#fff;border:0;border-radius:8px;font:inherit;font-size:16px;cursor:pointer}
 .pbtn:hover{background:#0b5f58}
 .pbtn.sec{background:#e2e8f0;color:#334155}
@@ -472,6 +474,7 @@
             <div class="ps-new" id="psNewBox" hidden>
                 <div class="fld"><label for="pnName">ব্যক্তির নাম</label><input id="pnName" autocomplete="off"></div>
                 <div class="fld"><label for="pnKey">জাতীয় পরিচয়পত্র নম্বর / মোবাইল নম্বর</label><input id="pnKey" inputmode="numeric" autocomplete="off"></div>
+                <div class="fld"><div class="f"><label class="req" for="pnJoin_t">চাকরিতে যোগদানের তারিখ</label><input type="text" class="dt" id="pnJoin_t" inputmode="numeric" autocomplete="off" placeholder="দিন/মাস/বছর"><input type="date" id="pnJoin" hidden></div><div class="hint">এই তারিখই প্রথম সারির "ডিউটি শুরু (হইতে)" হবে। পরে বদলানো যাবে না।</div></div>
                 <div class="acts"><button type="button" class="pbtn" id="pnSave">সার্ভিস বুক তৈরি করুন</button><button type="button" class="pbtn sec" id="pnCancel">বাতিল</button></div>
             </div>
         </div>
@@ -491,7 +494,7 @@
             <input type="text" class="dt" id="dutyTo_t" inputmode="numeric" autocomplete="off" placeholder="দিন/মাস/বছর"><input type="date" id="dutyTo" hidden>
         </div>
         <div class="f">
-            <label class="req" for="leaveFrom_t">ছুটি শুরু (হইতে)</label>
+            <label for="leaveFrom_t">ছুটি শুরু (হইতে)</label>
             <input type="text" class="dt" id="leaveFrom_t" inputmode="numeric" autocomplete="off" placeholder="দিন/মাস/বছর"><input type="date" id="leaveFrom" hidden>
         </div>
         <div class="f">
@@ -758,17 +761,17 @@
     $("psNew").addEventListener("click", function () { $("psNewBox").hidden = false; $("pnName").value = $("psQuery").value.replace(/[\d\s+-]/g, "") ? $("psQuery").value : ""; $("pnName").focus(); });
     $("pnCancel").addEventListener("click", function () { $("psNewBox").hidden = true; });
     function createPerson() {
-        api("personCreate", { name: $("pnName").value, key: $("pnKey").value }).then(function (d) {
-            $("psNewBox").hidden = true; $("pnName").value = ""; $("pnKey").value = "";
+        api("personCreate", { name: $("pnName").value, key: $("pnKey").value, joinDate: $("pnJoin").value }).then(function (d) {
+            $("psNewBox").hidden = true; $("pnName").value = ""; $("pnKey").value = ""; $("pnJoin_t").value = ""; $("pnJoin_t")._p = ""; $("pnJoin").value = "";
             S.people.push(d.person);
             setPerson(d);
         }).catch(handleErr);
     }
     $("pnSave").addEventListener("click", createPerson);
-    ["pnName", "pnKey"].forEach(function (id) {
+    ["pnName", "pnKey", "pnJoin_t"].forEach(function (id) {
         $(id).addEventListener("keydown", function (e) {
             if (e.key !== "Enter") return; e.preventDefault();
-            if (id === "pnName") $("pnKey").focus(); else createPerson();
+            if (id === "pnName") $("pnKey").focus(); else if (id === "pnKey") $("pnJoin_t").focus(); else createPerson();
         });
     });
 
@@ -793,7 +796,7 @@
         resetForm();
         renderBook();
         $("personPanel").hidden = true; $("bookArea").hidden = false; $("psChange").hidden = false;
-        $("dutyFrom_t").focus();
+        firstField().focus();
     }
     function renderBook() {
         var p = S.person;
@@ -838,10 +841,28 @@
             t.closest(".f").classList.remove("bad");
         });
         $("leaveType").selectedIndex = 0; $("remark").selectedIndex = 0;
+        refreshAuto();
     }
+    // "ডিউটি শুরু" ও "ছুটি শুরু" ঘর স্বয়ংক্রিয়। আসল নির্ধারণ ব্যাকএন্ড করে; এখানে শুধু দেখানো হয়।
+    function setDate(id, iso) {
+        var t = $(id + "_t"), p = iso ? iso.slice(8) + "/" + iso.slice(5, 7) + "/" + iso.slice(0, 4) : "";
+        $(id).value = iso || ""; t._p = p; t.value = bn(p); t.closest(".f").classList.remove("bad");
+    }
+    function dutyFromFree() { return !!S.person && !S.rows.length && !S.person.joinDate; }   // যোগদানের তারিখ নেই এমন পুরোনো খালি বই
+    function refreshAuto() {
+        if (!S.person) return;
+        var last = S.rows.length ? S.rows[S.rows.length - 1] : null, free = dutyFromFree();
+        if (!free) setDate("dutyFrom", last ? nextDay(last.leaveTo) : S.person.joinDate);
+        setDate("leaveFrom", $("dutyTo").value ? nextDay($("dutyTo").value) : "");
+        [["dutyFrom_t", !free], ["leaveFrom_t", true]].forEach(function (x) {
+            var el = $(x[0]); el.readOnly = x[1]; el.tabIndex = x[1] ? -1 : 0; el.closest(".f").classList.toggle("auto", x[1]);
+        });
+    }
+    function firstField() { return dutyFromFree() ? $("dutyFrom_t") : $("dutyTo_t"); }
+    $("dutyTo_t").addEventListener("input", function () { setTimeout(refreshAuto, 0); });
     $("resetBtn").addEventListener("click", function () {
         resetForm();
-        if (S.person) $("dutyFrom_t").focus();
+        if (S.person) firstField().focus();
     });
     $("printBtn").addEventListener("click", function () {
         if (!S.person || !S.rows.length) { showModal("error", "প্রিন্ট", "সার্ভিস বুকে প্রিন্ট করার মতো কোনো হিসাব যুক্ত করা হয়নি।"); return; }
@@ -849,11 +870,9 @@
     });
 
     function ms(s) { return Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10)); }
-    function localCheck(v, last) {
-        if (v.dutyTo < v.dutyFrom) return "অনুগ্রহ করে ডিউটির সঠিক তারিখ প্রদান করুন।";
-        if (last && v.dutyFrom !== nextDay(last.leaveTo)) return "আগের সারিতে ছুটি " + dmy(last.leaveTo) + " তারিখে শেষ হয়েছে। তাই পরবর্তী কার্যকাল অবশ্যই " + dmy(nextDay(last.leaveTo)) + " তারিখ থেকে শুরু হতে হবে।";
-        if (v.leaveFrom !== nextDay(v.dutyTo)) return "ছুটি কার্যকাল শেষের পরের দিন, অর্থাৎ " + dmy(nextDay(v.dutyTo)) + " তারিখ থেকে শুরু হতে হবে।";
-        if (v.leaveTo < v.leaveFrom) return "ছুটির শেষ তারিখ শুরুর তারিখের আগে হতে পারে না।";
+    function localCheck(v) {   // শুধু দ্রুত সতর্কতার জন্য; আসল যাচাই ব্যাকএন্ড করে
+        if (v.dutyTo < v.dutyFrom) return "ডিউটির শেষ তারিখ " + dmy(v.dutyFrom) + " বা তার পরের হতে হবে।";
+        if (v.leaveTo < v.leaveFrom) return "ছুটির শেষ তারিখ " + dmy(v.leaveFrom) + " বা তার পরের হতে হবে।";
         return "";
     }
     // আসল হিসাব ব্যাকএন্ড করে। এখানে শুধু সংরক্ষণের সময় "…" সহ একটি অস্থায়ী সারি দেখানো হয়।
@@ -869,22 +888,23 @@
         var miss = [];
         if (!v.dutyFrom) miss.push("ডিউটি শুরু (হইতে)");
         if (!v.dutyTo) miss.push("ডিউটি শেষ (পর্যন্ত)");
-        if (!v.leaveFrom) miss.push("ছুটি শুরু (হইতে)");
         if (!v.leaveTo) miss.push("ছুটি শেষ (পর্যন্ত)");
         if (!v.leaveType) miss.push("ছুটির প্রকার");
-        ["dutyFrom", "dutyTo", "leaveFrom", "leaveTo", "leaveType"].forEach(function (k) {
+        ["dutyFrom", "dutyTo", "leaveTo", "leaveType"].forEach(function (k) {
             $(k === "leaveType" ? k : k + "_t").closest(".f").classList.toggle("bad", !v[k]);
         });
         if (miss.length) { showModal("error", "তথ্য অসম্পূর্ণ", "সবগুলো বাধ্যতামূলক ঘর পূরণ করুন।\nঅপূর্ণ: " + miss.join(", ")); return; }
         if (S.queue.some(function (i) { return i.state === "failed"; })) { showModal("error", "আগের সারি সংরক্ষণ হয়নি", "আগের সারিটি সংরক্ষণ হয়নি। টেবিলে লাল লেখার পাশে \"আবার পাঠান\" চাপুন।"); return; }
+        if (S.queue.some(function (i) { return i.kind === "undo"; })) { blockIfPending(); return; }
         var last = S.rows.length ? S.rows[S.rows.length - 1] : null;
-        var err = localCheck(v, last);
+        var err = localCheck(v);
         if (err) { showModal("error", "তারিখে সমস্যা", err); return; }
         var row = pendingRow(v, last);
         row._st = "saving";
         S.rows.push(row); renderBook();
-        v.personId = S.person.id;
-        S.queue.push({ row: row, payload: v, state: "saving" });
+        var payload = { personId: S.person.id, dutyTo: v.dutyTo, leaveTo: v.leaveTo, leaveType: v.leaveType, remark: v.remark };
+        if (dutyFromFree()) payload.dutyFrom = v.dutyFrom;   // বাকি তারিখ ব্যাকএন্ড নিজে ঠিক করে
+        S.queue.push({ row: row, payload: payload, state: "saving" });
         pump();
         showModal("success", "সফলভাবে যুক্ত হয়েছে", "", function () { $("resetBtn").focus(); });
     }
@@ -896,8 +916,19 @@
         var it = S.queue[0];
         if (!it) return;
         S.sending = true;
+        if (it.kind === "undo") {   // সর্বশেষ সারি মুছে সংশোধন: ব্রাউজারে সঙ্গে সঙ্গে হয়ে গেছে, এখন ব্যাকএন্ডে হালনাগাদ
+            api("rowUndo", { personId: S.person.id }, "user", true).then(function () {
+                S.queue.shift(); S.sending = false; pump();
+            }).catch(function (e) {
+                S.queue.shift(); S.sending = false; S.rows.push(it.row); renderBook();
+                if (e && e.code === "AUTH") handleErr(e);
+                else showModal("error", "মোছা যায়নি", (e && e.message ? e.message + "\n" : "") + "সারিটি আবার টেবিলে ফিরিয়ে আনা হয়েছে।");
+            });
+            return;
+        }
         api("rowAdd", it.payload, "user", true).then(function (d) {
             Object.assign(it.row, d.row); delete it.row._st;
+            if (d.joinDate && S.person) S.person.joinDate = d.joinDate;
             S.queue.shift(); S.sending = false; renderBook(); pump();
             if (d.warning) showModal("warn", "সফলভাবে যুক্ত হয়েছে", d.warning);
         }).catch(function (e) {
@@ -941,9 +972,10 @@
             blockIfPending(); return;
         }
         if (!confirm("সর্বশেষ সারিটি সার্ভিস বুক থেকে মুছে ফেলে তথ্যগুলো ফর্মে ফিরিয়ে আনা হবে। ঠিক আছে?")) return;
-        api("rowUndo", { personId: S.person.id }).then(function (d) {
-            S.rows = d.rows; renderBook(); restoreInputs(d.inputs);
-        }).catch(handleErr);
+        var removed = S.rows.pop();
+        renderBook(); restoreInputs(removed);
+        S.queue.push({ kind: "undo", row: removed, state: "saving" });
+        pump();
     });
 
     // ---------- ইউজারের নিজের পাসওয়ার্ড বদল ----------
@@ -964,10 +996,11 @@
     });
 
     // ---------- Enter বাটনে পরের ধাপে যাওয়া ----------
-    var ORDER = ["dutyFrom_t", "dutyTo_t", "leaveFrom_t", "leaveTo_t", "leaveType", "addBtn"];
+    var ORDER_ALL = ["dutyFrom_t", "dutyTo_t", "leaveFrom_t", "leaveTo_t", "leaveType", "addBtn"];
     var FIELD = { dutyFrom_t: "dutyFrom", dutyTo_t: "dutyTo", leaveFrom_t: "leaveFrom", leaveTo_t: "leaveTo", leaveType: "leaveType" };
     document.addEventListener("keydown", function (e) {
         if (e.key !== "Enter" || e.isComposing) return;
+        var ORDER = ORDER_ALL.filter(function (id) { return !$(id).readOnly; });
         var i = ORDER.indexOf(e.target.id);
         if (i < 0 || i >= ORDER.length - 1) return;   // addBtn ও রিসেট বাটন নিজেই Enter-এ কাজ করে
         e.preventDefault();
@@ -1069,10 +1102,10 @@
     }
 
     function renderPeople() {
-        var h = '<div class="hint" style="margin-bottom:10px">মোট সার্ভিস বুক: ' + AD.people.length + '</div><div class="adm-scroll"><table class="adm-table"><thead><tr><th>নাম</th><th>জাতীয় পরিচয়পত্র/মোবাইল</th><th>সারি সংখ্যা</th><th>তৈরি করেছেন</th><th>তৈরির সময়</th><th>কাজ</th></tr></thead><tbody>';
-        if (!AD.people.length) h += '<tr><td colspan="6">কোনো সার্ভিস বুক নেই।</td></tr>';
+        var h = '<div class="hint" style="margin-bottom:10px">মোট সার্ভিস বুক: ' + AD.people.length + '</div><div class="adm-scroll"><table class="adm-table"><thead><tr><th>নাম</th><th>জাতীয় পরিচয়পত্র/মোবাইল</th><th>যোগদান</th><th>সারি সংখ্যা</th><th>তৈরি করেছেন</th><th>তৈরির সময়</th><th>কাজ</th></tr></thead><tbody>';
+        if (!AD.people.length) h += '<tr><td colspan="7">কোনো সার্ভিস বুক নেই।</td></tr>';
         AD.people.forEach(function (p) {
-            h += '<tr><td class="l">' + esc(p.name) + "</td><td>" + esc(p.key) + "</td><td>" + p.rows + "</td><td>" + esc(p.createdBy) + "</td><td>" + esc(p.createdAt) + "</td><td>" +
+            h += '<tr><td class="l">' + esc(p.name) + "</td><td>" + esc(p.key) + "</td><td>" + esc(p.joinDate ? fmtDate(p.joinDate) : "-") + "</td><td>" + p.rows + "</td><td>" + esc(p.createdBy) + "</td><td>" + esc(p.createdAt) + "</td><td>" +
                 '<button type="button" class="pbtn sm" data-act="pEdit" data-id="' + esc(p.id) + '">নাম/নম্বর সংশোধন</button> ' +
                 '<button type="button" class="pbtn sm danger" data-act="pDel" data-id="' + esc(p.id) + '">মুছুন</button></td></tr>';
         });
@@ -1151,7 +1184,9 @@
             var p = AD.people.filter(function (x) { return x.id === id; })[0];
             var nm = prompt("ব্যক্তির নাম:", p.name); if (nm === null) return;
             var ky = prompt("জাতীয় পরিচয়পত্র/মোবাইল নম্বর:", p.key); if (ky === null) return;
-            admApi("personUpdate", { id: id, name: nm, key: ky }).then(function (d) { if (d) loadTab(); });
+            var upd = { id: id, name: nm, key: ky };
+            if (p.rows === 0) { var jd = prompt("চাকরিতে যোগদানের তারিখ (বছর-মাস-দিন, যেমন 2015-03-01):", p.joinDate || ""); if (jd === null) return; upd.joinDate = en(jd); }
+            admApi("personUpdate", upd).then(function (d) { if (d) loadTab(); });
         } else if (act === "pDel") {
             var q = AD.people.filter(function (x) { return x.id === id; })[0];
             if (confirm('"' + q.name + '" এর সার্ভিস বুক ও তার সব সারি (' + bn(q.rows) + 'টি) স্থায়ীভাবে মুছে যাবে। নিশ্চিত?')) admApi("personDelete", { id: id }).then(function (d) { if (d) loadTab(); });
@@ -1265,7 +1300,7 @@ el.addEventListener("input",function(){if(cur===el){if(D(el.value)){close();retu
 })();
 
 var iso=function(o){return o.y+"-"+two(o.m+1)+"-"+two(o.d)};
-["dutyFrom","dutyTo","leaveFrom","leaveTo"].forEach(function(id){
+["dutyFrom","dutyTo","leaveFrom","leaveTo","pnJoin"].forEach(function(id){
 var h=document.getElementById(id),t=document.getElementById(id+"_t"),b=t.closest(".f");
 function sync(){var o=D(t.value);h.value=o?iso(o):"";b.classList.toggle("bad",o===false)}
 t.addEventListener("input",function(){maskEl(t,[2,2,4],["/","/"]);sync()});
