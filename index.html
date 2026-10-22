@@ -248,6 +248,11 @@
 .fld{margin-bottom:14px}
 .fld label{margin-bottom:4px}
 .fld input{padding:10px;font-size:16px;border-radius:8px}
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:44px !important;width:100%;box-sizing:border-box}
+.pw-eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);grid-column:auto !important;width:36px;height:36px;padding:0 !important;margin:0;background:transparent !important;color:#64748b !important;border:0 !important;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pw-eye:hover{color:#0f766e !important;background:#f1f5f9 !important}
+.pw-eye svg{width:20px;height:20px;pointer-events:none}
 .pbtn{display:inline-block;grid-column:auto;padding:10px 18px;background:#0f766e;color:#fff;border:0;border-radius:8px;font:inherit;font-size:16px;cursor:pointer}
 .pbtn:hover{background:#0b5f58}
 .pbtn.sec{background:#e2e8f0;color:#334155}
@@ -431,6 +436,7 @@
         <button type="button" data-t="pass">অ্যাডমিন পাসওয়ার্ড</button>
         <button type="button" data-t="log">কার্যকলাপ লগ</button>
     </div>
+    <div style="text-align:right;margin:6px 0"><button type="button" class="pbtn sec sm" id="admRefresh">↻ নতুন করে আনুন</button></div>
     <div id="admBody"></div>
 </div>
 
@@ -599,8 +605,6 @@
     function setTok(w, v) { try { var st = w === "admin" ? sessionStorage : localStorage, k = w === "admin" ? "el_adm" : "el_tok"; if (v) st.setItem(k, v); else st.removeItem(k); } catch (e) {} }
 
     // ---------- পপআপ ----------
-    // পপআপে "অবশিষ্ট ছুটি"-র বিবরণ আবার দেখাতে চাইলে নিচের false-কে true করে দিন।
-    var SHOW_POPUP_DETAILS = false;
     var modalClose = null;
     function showModal(kind, title, msg, onClose) {
         var prev = document.activeElement;
@@ -620,6 +624,32 @@
     $("okBtn").addEventListener("click", function () { if (modalClose) modalClose(); });
     $("okBtn").addEventListener("keydown", function (e) { if (e.key === "Tab") e.preventDefault(); });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") { if (modalClose) modalClose(); else if (!$("pwModal").hidden) closePw(); } });
+
+    // ---------- পাসওয়ার্ডের চোখ আইকন ----------
+    var EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 20C5 20 1 12 1 12a18.6 18.6 0 0 1 5.06-5.94"/><path d="M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12A3 3 0 1 1 9.88 9.88"/><path d="M1 1l22 22"/></svg>';
+    var EYE_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    function eyeSet(btn, inp, show) {
+        inp.type = show ? "text" : "password";
+        btn.innerHTML = show ? EYE_ON : EYE_OFF;
+        btn.setAttribute("aria-label", show ? "পাসওয়ার্ড লুকান" : "পাসওয়ার্ড দেখান");
+        btn.title = show ? "পাসওয়ার্ড লুকান" : "পাসওয়ার্ড দেখান";
+    }
+    function attachEyes(root) {
+        [].forEach.call((root || document).querySelectorAll('input[type="password"]'), function (inp) {
+            if (inp.parentNode.classList.contains("pw-wrap")) return;
+            var w = document.createElement("div"); w.className = "pw-wrap";
+            inp.parentNode.insertBefore(w, inp); w.appendChild(inp);
+            var b = document.createElement("button"); b.type = "button"; b.className = "pw-eye"; b.tabIndex = -1;
+            eyeSet(b, inp, false);
+            b.addEventListener("mousedown", function (e) { e.preventDefault(); });
+            b.addEventListener("click", function () { eyeSet(b, inp, inp.type === "password"); inp.focus(); });
+            w.appendChild(b);
+        });
+    }
+    function eyesHide(root) {
+        [].forEach.call((root || document).querySelectorAll(".pw-wrap"), function (w) { eyeSet(w.querySelector(".pw-eye"), w.querySelector("input"), false); });
+    }
+    attachEyes(document);
 
     // ---------- সার্ভার যোগাযোগ ----------
     function api(action, data, who, quiet) {
@@ -650,7 +680,7 @@
         if (location.hash === "#admin") {
             if (tok("admin")) {
                 api("adminPing", {}, "admin").then(function () { view("adminPanel"); loadTab(); })
-                    .catch(function () { setTok("admin", null); view("adminGate"); $("adUser").focus(); });
+                    .catch(function () { adClear(); setTok("admin", null); view("adminGate"); $("adUser").focus(); });
             } else { view("adminGate"); $("adUser").focus(); }
         } else {
             if (tok("user")) {
@@ -778,10 +808,10 @@
     // ---------- সংখ্যা ও তারিখ প্রদর্শন ----------
     // তারিখ দেখানোর রূপ: দিন-মাস-বছর (দুই অঙ্ক করে), যেমন ০২-১০-৮৮। সংরক্ষিত মূল তারিখ (yyyy-mm-dd) বদলায় না।
     function fmtDate(s) { if (!s) return "-"; return s.slice(8, 10) + "-" + s.slice(5, 7) + "-" + s.slice(2, 4); }
-    function ymdCell(days) {
-        var neg = days < 0, a = Math.abs(days), dpm = S.cfg.dpm || 30, yr = dpm * (S.cfg.mpy || 12);
-        var y = Math.floor(a / yr), rem = a % yr, m = Math.floor(rem / dpm), d = rem % dpm;
-        return "<td>" + (neg ? "-" : "") + y + "</td><td>" + m + "</td><td>" + d + "</td>";
+    // ব-মা-দি-র হিসাব ব্যাকএন্ড করে পাঠায় (r.y.<ঘর> = [চিহ্ন, বছর, মাস, দিন]); এখানে শুধু দেখানো হয়
+    function ymdCell(a) {
+        if (!a) return "<td>…</td><td>…</td><td>…</td>";
+        return "<td>" + a[0] + a[1] + "</td><td>" + a[2] + "</td><td>" + a[3] + "</td>";
     }
     function stHTML(r) {
         if (r._st === "saving") return '<span class="st saving">সংরক্ষণ হচ্ছে…</span>';
@@ -791,20 +821,15 @@
     function rowHTML(r) {
         return '<tr class="result-row">' +
             '<td class="dtc">' + fmtDate(r.dutyFrom) + '</td><td class="dtc">' + fmtDate(r.dutyTo) + '</td>' +
-            "<td>" + r.dy + "</td><td>" + r.dm + "</td><td>" + r.dd + "</td>" +
-            ymdCell(r.earnedFull) + ymdCell(r.earnedHalf) + ymdCell(r.totalFull) + ymdCell(r.totalHalf) +
+            (r.dy === undefined ? "<td>…</td><td>…</td><td>…</td>" : "<td>" + r.dy + "</td><td>" + r.dm + "</td><td>" + r.dd + "</td>") +
+            ymdCell(r.y && r.y.earnedFull) + ymdCell(r.y && r.y.earnedHalf) + ymdCell(r.y && r.y.totalFull) + ymdCell(r.y && r.y.totalHalf) +
             // (৪ মাসের অতিরিক্ত জমা ছুটির কলাম আপাতত বাদ)
             '<td class="dtc">' + fmtDate(r.leaveFrom) + '</td><td class="dtc">' + fmtDate(r.leaveTo) + "</td>" +
-            "<td>" + esc(r.typeShort) + "</td>" +
-            ymdCell(r.takenFull) + ymdCell(r.takenHalf) + ymdCell(r.takenUnpaid) + ymdCell(r.takenOthers) + ymdCell(r.takenTotal) +
-            ymdCell(r.remFull) + ymdCell(r.remHalf) +
+            "<td>" + esc(r.typeShort || "…") + "</td>" +
+            ymdCell(r.y && r.y.takenFull) + ymdCell(r.y && r.y.takenHalf) + ymdCell(r.y && r.y.takenUnpaid) + ymdCell(r.y && r.y.takenOthers) + ymdCell(r.y && r.y.takenTotal) +
+            ymdCell(r.y && r.y.remFull) + ymdCell(r.y && r.y.remHalf) +
             "<td>" + (esc(r.remark) || "-") + stHTML(r) + "</td></tr>";
     }
-    function ymdText(days) {
-        var dpm = S.cfg.dpm || 30, yr = dpm * (S.cfg.mpy || 12), a = Math.abs(days);
-        return (days < 0 ? "-" : "") + Math.floor(a / yr) + " বছর " + Math.floor((a % yr) / dpm) + " মাস " + (a % dpm) + " দিন";
-    }
-
     // ---------- ফর্ম ----------
     var DATE_IDS = ["dutyFrom", "dutyTo", "leaveFrom", "leaveTo"];
     function resetForm() {
@@ -823,15 +848,7 @@
         window.print();
     });
 
-    var TYPES = { EL_FAP: "EL FAP", EL_HAP: "EL HAP", XL_LWP: "XL LWP", Others: "Others" };
     function ms(s) { return Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10)); }
-    function ymdSpan(f, t) {   // সার্ভারের হিসাবের হুবহু অনুরূপ (শেষ দিন সহ)
-        var a = new Date(ms(f)), end = new Date(ms(t) + 864e5);
-        var y = end.getUTCFullYear() - a.getUTCFullYear(), m = end.getUTCMonth() - a.getUTCMonth(), d = end.getUTCDate() - a.getUTCDate();
-        if (d < 0) { m--; d += new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), 0)).getUTCDate(); }
-        if (m < 0) { y--; m += 12; }
-        return [y, m, d];
-    }
     function localCheck(v, last) {
         if (v.dutyTo < v.dutyFrom) return "অনুগ্রহ করে ডিউটির সঠিক তারিখ প্রদান করুন।";
         if (last && v.dutyFrom !== nextDay(last.leaveTo)) return "আগের সারিতে ছুটি " + dmy(last.leaveTo) + " তারিখে শেষ হয়েছে। তাই পরবর্তী কার্যকাল অবশ্যই " + dmy(nextDay(last.leaveTo)) + " তারিখ থেকে শুরু হতে হবে।";
@@ -839,21 +856,9 @@
         if (v.leaveTo < v.leaveFrom) return "ছুটির শেষ তারিখ শুরুর তারিখের আগে হতে পারে না।";
         return "";
     }
-    function localRow(v, last) {
-        var dF = ms(v.dutyFrom), dT = ms(v.dutyTo), lF = ms(v.leaveFrom), lT = ms(v.leaveTo), D = 864e5;
-        var gross = Math.round((dT - dF) / D) + 1, ym = ymdSpan(v.dutyFrom, v.dutyTo), ld = Math.round((lT - lF) / D) + 1;
-        var oS = Math.max(lF, dF), oE = Math.min(lT, dT), ov = oE >= oS ? Math.round((oE - oS) / D) + 1 : 0;
-        var net = Math.max(gross - ov, 0);
-        var eF = Math.floor(net / (S.cfg.fd || 11)), eH = Math.floor(net / (S.cfg.hd || 12));
-        var tF = (last ? last.remFull : 0) + eF, tH = (last ? last.remHalf : 0) + eH;
-        var kF = v.leaveType === "EL_FAP" ? ld : 0, kH = v.leaveType === "EL_HAP" ? ld : 0, kU = v.leaveType === "XL_LWP" ? ld : 0, kO = v.leaveType === "Others" ? ld : 0;
-        return {
-            personId: S.person.id, seq: last ? last.seq + 1 : 1,
-            dutyFrom: v.dutyFrom, dutyTo: v.dutyTo, leaveFrom: v.leaveFrom, leaveTo: v.leaveTo, leaveType: v.leaveType, remark: String(v.remark || "").slice(0, 60),
-            dy: ym[0], dm: ym[1], dd: ym[2], earnedFull: eF, earnedHalf: eH, totalFull: tF, totalHalf: tH,
-            takenFull: kF, takenHalf: kH, takenUnpaid: kU, takenOthers: kO, takenTotal: kF + kH + kU + kO,
-            remFull: tF - kF, remHalf: tH - kH, typeShort: TYPES[v.leaveType]
-        };
+    // আসল হিসাব ব্যাকএন্ড করে। এখানে শুধু সংরক্ষণের সময় "…" সহ একটি অস্থায়ী সারি দেখানো হয়।
+    function pendingRow(v, last) {
+        return { personId: S.person.id, seq: last ? last.seq + 1 : 1, dutyFrom: v.dutyFrom, dutyTo: v.dutyTo, leaveFrom: v.leaveFrom, leaveTo: v.leaveTo, leaveType: v.leaveType, remark: String(v.remark || "").slice(0, 60) };
     }
     function calc() {
         var v = {
@@ -875,20 +880,13 @@
         var last = S.rows.length ? S.rows[S.rows.length - 1] : null;
         var err = localCheck(v, last);
         if (err) { showModal("error", "তারিখে সমস্যা", err); return; }
-        var row = localRow(v, last);
+        var row = pendingRow(v, last);
         row._st = "saving";
         S.rows.push(row); renderBook();
         v.personId = S.person.id;
         S.queue.push({ row: row, payload: v, state: "saving" });
         pump();
-        var warn = (row.remFull < 0 || row.remHalf < 0), parts = [];
-        if (warn) parts.push("সতর্কতা: পাওনা ছুটির চেয়ে বেশি ছুটি নেওয়া হয়েছে।");
-        if (SHOW_POPUP_DETAILS) {
-            parts.push("সার্ভিস বুকে হিসাব জমা হয়েছে।");
-            parts.push("অবশিষ্ট পূর্ণ গড় বেতনে ছুটি: " + ymdText(row.remFull));
-            parts.push("অবশিষ্ট অর্ধ গড় বেতনে ছুটি: " + ymdText(row.remHalf));
-        }
-        showModal(warn ? "warn" : "success", "সফলভাবে যুক্ত হয়েছে", parts.join("\n"), function () { $("resetBtn").focus(); });
+        showModal("success", "সফলভাবে যুক্ত হয়েছে", "", function () { $("resetBtn").focus(); });
     }
 
     // ---------- পেছনে সংরক্ষণের সারি (একটার পর একটা) ----------
@@ -901,6 +899,7 @@
         api("rowAdd", it.payload, "user", true).then(function (d) {
             Object.assign(it.row, d.row); delete it.row._st;
             S.queue.shift(); S.sending = false; renderBook(); pump();
+            if (d.warning) showModal("warn", "সফলভাবে যুক্ত হয়েছে", d.warning);
         }).catch(function (e) {
             S.sending = false; it.state = "failed"; it.row._st = "failed"; renderBook();
             if (e && e.code === "AUTH") handleErr(e);
@@ -948,7 +947,7 @@
     });
 
     // ---------- ইউজারের নিজের পাসওয়ার্ড বদল ----------
-    function closePw() { $("pwModal").hidden = true; $("pwForm").reset(); $("pwErr").textContent = ""; }
+    function closePw() { $("pwModal").hidden = true; $("pwForm").reset(); eyesHide($("pwForm")); $("pwErr").textContent = ""; }
     $("pwBtn").addEventListener("click", function () { $("pwModal").hidden = false; $("pwOld").focus(); });
     $("pwCancel").addEventListener("click", closePw);
     $("pwForm").addEventListener("submit", function (e) {
@@ -991,35 +990,63 @@
         var p = $("adPass").value;
         if (!strongPw(p)) { $("adErr").textContent = "শক্তিশালী পাসওয়ার্ড ছাড়া অ্যাডমিন প্যানেলে প্রবেশ করা যাবে না (১০+ অক্ষর, বড় ও ছোট হাতের অক্ষর, সংখ্যা ও চিহ্ন)।"; return; }
         api("adminLogin", { username: $("adUser").value, password: p }, "admin").then(function (d) {
-            setTok("admin", d.token); $("adPass").value = ""; view("adminPanel"); AD.tab = "users"; loadTab();
+            adClear(); setTok("admin", d.token); $("adPass").value = ""; view("adminPanel"); AD.tab = "users"; loadTab();
         }).catch(function (er) { $("adErr").textContent = er.message; });
     });
     $("admLogout").addEventListener("click", function () {
         api("logout", {}, "admin").catch(function () {});
-        setTok("admin", null); view("adminGate"); $("adUser").focus();
+        adClear(); setTok("admin", null); eyesHide($("adminGate")); view("adminGate"); $("adUser").focus();
     });
 
-    var AD = { tab: "users", editing: null, rmEdit: null, users: [], people: [], remarks: [] };
+    var AD = { tab: "users", editing: null, rmEdit: null, users: [], people: [], remarks: [], cache: {}, ttl: 10 * 60 * 1000 };
+    var READS = { userList: 1, personList: 1, settingsGet: 1, remarkList: 1, logList: 1 };
+    function admFail(e) {
+        if (e.code === "AUTH") { adClear(); setTok("admin", null); view("adminGate"); $("adErr").textContent = e.message; }
+        else showModal("error", "সমস্যা হয়েছে", e.message);
+        return null;
+    }
+    function adClear() { AD.cache = {}; AD.prefetching = false; }
     function admApi(a, d) {
-        return api(a, d || {}, "admin").catch(function (e) {
-            if (e.code === "AUTH") { setTok("admin", null); view("adminGate"); $("adErr").textContent = e.message; }
-            else showModal("error", "সমস্যা হয়েছে", e.message);
-            return null;
-        });
+        if (!READS[a]) adClear(); // কোনো তথ্য বদলালে জমানো কপি বাতিল
+        return api(a, d || {}, "admin").catch(admFail);
+    }
+    // জমানো কপি থাকলে সঙ্গে সঙ্গে দেয়; না থাকলে সার্ভার থেকে এনে জমায়
+    function adGet(a, force, quiet) {
+        var c = AD.cache[a];
+        if (!force && c && Date.now() - c.t < AD.ttl) return Promise.resolve(c.d);
+        return api(a, {}, "admin", true).then(function (d) { AD.cache[a] = { t: Date.now(), d: d }; return d; });
+    }
+    function adPrefetch() {
+        if (AD.prefetching) return; AD.prefetching = true;
+        var list = ["userList", "personList", "settingsGet", "remarkList", "logList"], i = 0;
+        (function next() {
+            if (!AD.prefetching || i >= list.length) { AD.prefetching = false; return; }
+            var a = list[i++];
+            if (AD.cache[a]) return next();
+            adGet(a).then(next, function () { AD.prefetching = false; });
+        })();
     }
     $("admTabs").addEventListener("click", function (e) {
         var b = e.target.closest("button[data-t]"); if (!b) return;
         AD.tab = b.dataset.t; AD.editing = null; AD.rmEdit = null; loadTab();
     });
+    $("admRefresh").addEventListener("click", function () { adClear(); loadTab(); });
+    var TABACT = { users: "userList", persons: "personList", settings: "settingsGet", remarks: "remarkList", log: "logList" };
     function loadTab() {
-        var t = AD.tab;
+        var t = AD.tab, a = TABACT[t];
         [].forEach.call(document.querySelectorAll("#admTabs button"), function (b) { b.classList.toggle("on", b.dataset.t === t); });
-        if (t === "users") admApi("userList").then(function (d) { if (d) { AD.users = d.users; renderUsers(); } });
-        else if (t === "persons") admApi("personList").then(function (d) { if (d) { AD.people = d.people; renderPeople(); } });
-        else if (t === "settings") admApi("settingsGet").then(function (d) { if (d) renderSettings(d.settings); });
-        else if (t === "remarks") admApi("remarkList").then(function (d) { if (d) { AD.remarks = d.remarks; renderRemarks(); } });
-        else if (t === "pass") renderPass();
-        else if (t === "log") admApi("logList").then(function (d) { if (d) renderLog(d.log); });
+        if (t === "pass") { renderPass(); return; }
+        var hit = AD.cache[a] && Date.now() - AD.cache[a].t < AD.ttl;
+        if (!hit) $("admBody").innerHTML = '<div class="hint" style="padding:18px">লোড হচ্ছে…</div>';
+        adGet(a).then(function (d) {
+            if (AD.tab !== t) return; // ইতিমধ্যে অন্য ট্যাবে চলে গেছেন
+            if (t === "users") { AD.users = d.users; renderUsers(); }
+            else if (t === "persons") { AD.people = d.people; renderPeople(); }
+            else if (t === "settings") renderSettings(d.settings);
+            else if (t === "remarks") { AD.remarks = d.remarks; renderRemarks(); }
+            else if (t === "log") renderLog(d.log);
+            adPrefetch();
+        }).catch(admFail);
     }
 
     function renderUsers() {
@@ -1089,6 +1116,7 @@
             '<div class="fld"><label>নতুন পাসওয়ার্ড আবার</label><input id="cpNew2" type="password" autocomplete="new-password"></div></div>' +
             '<div class="hint">কমপক্ষে ১০ অক্ষর; বড় হাতের ও ছোট হাতের ইংরেজি অক্ষর, সংখ্যা এবং একটি চিহ্ন (@ # ! ইত্যাদি) থাকতে হবে।</div><br>' +
             '<button type="button" class="pbtn" data-act="cpSave">পাসওয়ার্ড বদলান</button></div>';
+        attachEyes($("admBody"));
     }
 
     function renderLog(list) {
