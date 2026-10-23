@@ -274,6 +274,7 @@
 .ps-item{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;background:#fff;border:1px solid #dde6ec;border-radius:10px;padding:10px 14px}
 .ps-item b{color:#1b2f3d}
 .ps-item span{color:#55687a;font-size:14px}
+.ps-item.locked{background:#f6f8fa;border-style:dashed}
 .ps-new{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;align-items:start;background:#fff;border:1px dashed #0f766e;border-radius:10px;padding:14px}
 .ps-new .ps-hint{grid-column:1/-1;margin:0}
 .ps-new .acts{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap}
@@ -739,17 +740,16 @@
         var box = $("psResults");
         if (!list.length) { box.innerHTML = emptyMsg ? '<div class="hint">' + emptyMsg + "</div>" : ""; return; }
         box.innerHTML = list.map(function (p) {
+            if (p.locked) return '<div class="ps-item locked"><div><b>' + esc(p.name) + "</b> <span>— " + esc(p.key) + ' 🔒</span></div><button type="button" class="pbtn sm sec" data-locked="1">সার্ভিস বুক খুলুন</button></div>';
             return '<div class="ps-item"><div><b>' + esc(p.name) + "</b> <span>— " + esc(p.key) + '</span></div><button type="button" class="pbtn sm" data-id="' + esc(p.id) + '">সার্ভিস বুক খুলুন</button></div>';
         }).join("");
     }
     function doSearch() {
         var q = $("psQuery").value.trim();
         if (!q) { showModal("error", "অনুসন্ধান", "নাম, জাতীয় পরিচয়পত্র নম্বর বা মোবাইল নম্বর লিখুন।"); return; }
-        var list = localSearch(q);
-        if (list.length) { showPeople(list); return; }
-        // তালিকায় না পেলে সার্ভার থেকে দেখা (অন্য কেউ হয়তো নতুন বানিয়েছে)
+        // অনুসন্ধান বাটন/Enter: সার্ভার থেকে দেখা (অন্য কেউ হয়তো নতুন বানিয়েছে; অনুমতিহীন বইও এভাবে জানা যায়)
         api("personSearch", { q: q }).then(function (d) {
-            d.people.forEach(function (p) { if (!S.people.some(function (x) { return x.id === p.id; })) S.people.push(p); });
+            d.people.forEach(function (p) { if (!p.locked && !S.people.some(function (x) { return x.id === p.id; })) S.people.push(p); });
             showPeople(d.people, 'কোনো সার্ভিস বুক পাওয়া যায়নি। নতুন সার্ভিস বুক তৈরি করতে "+ নতুন সার্ভিস বুক" চাপুন।');
         }).catch(handleErr);
     }
@@ -757,6 +757,8 @@
     $("psQuery").addEventListener("input", function () { var q = this.value.trim(); showPeople(q ? localSearch(q) : []); });
     $("psQuery").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); doSearch(); } });
     $("psResults").addEventListener("click", function (e) {
+        var lk = e.target.closest("button[data-locked]");
+        if (lk) { showModal("warn", "অনুমতি নেই", "এই সার্ভিস বুক দেখার অনুমতি আপনার নেই। অনুমতির জন্য অ্যাডমিনের সাথে যোগাযোগ করুন।"); return; }
         var b = e.target.closest("button[data-id]"); if (!b) return;
         api("personLoad", { personId: b.dataset.id }).then(setPerson).catch(handleErr);
     });
