@@ -274,9 +274,10 @@
 .ps-item{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;background:#fff;border:1px solid #dde6ec;border-radius:10px;padding:10px 14px}
 .ps-item b{color:#1b2f3d}
 .ps-item span{color:#55687a;font-size:14px}
-.ps-new{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px;background:#fff;border:1px dashed #0f766e;border-radius:10px;padding:14px}
+.ps-new{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;align-items:start;background:#fff;border:1px dashed #0f766e;border-radius:10px;padding:14px}
+.ps-new .ps-hint{grid-column:1/-1;margin:0}
 .ps-new .acts{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap}
-@media (max-width:560px){.ps-new{grid-template-columns:1fr}}
+@media (max-width:760px){.ps-new{grid-template-columns:1fr}}
 .banner{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px}
 .banner .nm{font-size:19px;font-weight:700;color:#0b5345}
 .banner .sub{font-size:14px;color:#55687a}
@@ -472,9 +473,10 @@
             </div>
             <div class="ps-list" id="psResults"></div>
             <div class="ps-new" id="psNewBox" hidden>
-                <div class="fld"><label for="pnName">ব্যক্তির নাম</label><input id="pnName" autocomplete="off"></div>
-                <div class="fld"><label for="pnKey">জাতীয় পরিচয়পত্র নম্বর / মোবাইল নম্বর</label><input id="pnKey" inputmode="numeric" autocomplete="off"></div>
-                <div class="fld"><div class="f"><label class="req" for="pnJoin_t">চাকরিতে যোগদানের তারিখ</label><input type="text" class="dt" id="pnJoin_t" inputmode="numeric" autocomplete="off" placeholder="দিন/মাস/বছর"><input type="date" id="pnJoin" hidden></div><div class="hint">এই তারিখই প্রথম সারির "ডিউটি শুরু (হইতে)" হবে। পরে বদলানো যাবে না।</div></div>
+                <div class="f"><label class="req" for="pnName">ব্যক্তির নাম</label><input type="text" class="dt" id="pnName" autocomplete="off"></div>
+                <div class="f"><label class="req" for="pnKey">জাতীয় পরিচয়পত্র নম্বর / মোবাইল নম্বর</label><input type="text" class="dt" id="pnKey" inputmode="numeric" autocomplete="off"></div>
+                <div class="f"><label class="req" for="pnJoin_t">চাকরিতে যোগদানের তারিখ</label><input type="text" class="dt" id="pnJoin_t" inputmode="numeric" autocomplete="off" placeholder="দিন/মাস/বছর"><input type="date" id="pnJoin" hidden></div>
+                <div class="hint ps-hint">তিনটি ঘরই আবশ্যক। নম্বর কমপক্ষে ১০ ডিজিটের হতে হবে। যোগদানের তারিখই প্রথম সারির "ডিউটি শুরু (হইতে)" হবে এবং পরে বদলানো যাবে না।</div>
                 <div class="acts"><button type="button" class="pbtn" id="pnSave">সার্ভিস বুক তৈরি করুন</button><button type="button" class="pbtn sec" id="pnCancel">বাতিল</button></div>
             </div>
         </div>
@@ -1061,7 +1063,7 @@
     }
     $("admTabs").addEventListener("click", function (e) {
         var b = e.target.closest("button[data-t]"); if (!b) return;
-        AD.tab = b.dataset.t; AD.editing = null; AD.rmEdit = null; loadTab();
+        AD.tab = b.dataset.t; AD.editing = null; AD.rmEdit = null; AD.pAcc = null; loadTab();
     });
     $("admRefresh").addEventListener("click", function () { adClear(); loadTab(); });
     var TABACT = { users: "userList", persons: "personList", settings: "settingsGet", remarks: "remarkList", log: "logList" };
@@ -1102,11 +1104,24 @@
     }
 
     function renderPeople() {
-        var h = '<div class="hint" style="margin-bottom:10px">মোট সার্ভিস বুক: ' + AD.people.length + '</div><div class="adm-scroll"><table class="adm-table"><thead><tr><th>নাম</th><th>জাতীয় পরিচয়পত্র/মোবাইল</th><th>যোগদান</th><th>সারি সংখ্যা</th><th>তৈরি করেছেন</th><th>তৈরির সময়</th><th>কাজ</th></tr></thead><tbody>';
-        if (!AD.people.length) h += '<tr><td colspan="7">কোনো সার্ভিস বুক নেই।</td></tr>';
+        var h = "";
+        var ap = null; AD.people.forEach(function (x) { if (x.id === AD.pAcc) ap = x; });
+        if (ap) {
+            var allOn = ap.shared !== "N";
+            h += '<div class="adm-card"><h3>কে দেখতে পারবে: ' + esc(ap.name) + '</h3><label class="chk"><input type="checkbox" id="pAccShared"' + (allOn ? " checked" : "") + '> সবাই দেখতে পারবে</label>' +
+                '<div class="hint">উপরের ঘর টিক থাকলে সব ইউজার বইটি দেখতে ও সারি যোগ করতে পারবে। টিক তুলে দিলে শুধু নিচে টিক দেওয়া ইউজাররা (এবং অ্যাডমিন) পারবে।</div><div class="adm-grid">';
+            AD.users.forEach(function (u) {
+                var on = ap.owners.indexOf(String(u.username).toLowerCase()) >= 0;
+                h += '<label class="chk"><input type="checkbox" class="pAccU" data-u="' + esc(u.username) + '"' + (on ? " checked" : "") + '> ' + esc(u.username) + (u.displayName ? " (" + esc(u.displayName) + ")" : "") + "</label>";
+            });
+            h += '</div><button type="button" class="pbtn" data-act="pAccSave" data-id="' + esc(ap.id) + '">সংরক্ষণ করুন</button> <button type="button" class="pbtn sec" data-act="pAccCancel">বাতিল</button></div>';
+        }
+        h += '<div class="hint" style="margin-bottom:10px">মোট সার্ভিস বুক: ' + AD.people.length + '</div><div class="adm-scroll"><table class="adm-table"><thead><tr><th>নাম</th><th>জাতীয় পরিচয়পত্র/মোবাইল</th><th>যোগদান</th><th>কে দেখতে পারবে</th><th>সারি সংখ্যা</th><th>তৈরি করেছেন</th><th>তৈরির সময়</th><th>কাজ</th></tr></thead><tbody>';
+        if (!AD.people.length) h += '<tr><td colspan="8">কোনো সার্ভিস বুক নেই।</td></tr>';
         AD.people.forEach(function (p) {
-            h += '<tr><td class="l">' + esc(p.name) + "</td><td>" + esc(p.key) + "</td><td>" + esc(p.joinDate ? fmtDate(p.joinDate) : "-") + "</td><td>" + p.rows + "</td><td>" + esc(p.createdBy) + "</td><td>" + esc(p.createdAt) + "</td><td>" +
+            h += '<tr><td class="l">' + esc(p.name) + "</td><td>" + esc(p.key) + "</td><td>" + esc(p.joinDate ? fmtDate(p.joinDate) : "-") + "</td><td>" + (p.shared === "N" ? (p.owners.length ? esc(p.owners.join(", ")) : "শুধু অ্যাডমিন") : "সবাই") + "</td><td>" + p.rows + "</td><td>" + esc(p.createdBy) + "</td><td>" + esc(p.createdAt) + "</td><td>" +
                 '<button type="button" class="pbtn sm" data-act="pEdit" data-id="' + esc(p.id) + '">নাম/নম্বর সংশোধন</button> ' +
+                '<button type="button" class="pbtn sm sec" data-act="pAcc" data-id="' + esc(p.id) + '">কে দেখতে পারবে</button> ' +
                 '<button type="button" class="pbtn sm danger" data-act="pDel" data-id="' + esc(p.id) + '">মুছুন</button></td></tr>';
         });
         $("admBody").innerHTML = h + "</tbody></table></div>";
@@ -1187,6 +1202,12 @@
             var upd = { id: id, name: nm, key: ky };
             if (p.rows === 0) { var jd = prompt("চাকরিতে যোগদানের তারিখ (বছর-মাস-দিন, যেমন 2015-03-01):", p.joinDate || ""); if (jd === null) return; upd.joinDate = en(jd); }
             admApi("personUpdate", upd).then(function (d) { if (d) loadTab(); });
+        } else if (act === "pAcc") {
+            adGet("userList").then(function (d) { AD.users = d.users; AD.pAcc = id; renderPeople(); }).catch(admFail);
+        } else if (act === "pAccCancel") { AD.pAcc = null; renderPeople();
+        } else if (act === "pAccSave") {
+            var own = []; [].forEach.call(document.querySelectorAll("#admBody .pAccU"), function (c) { if (c.checked) own.push(c.dataset.u); });
+            admApi("personAccess", { id: id, owners: own, shared: $("pAccShared").checked }).then(function (d) { if (d) { AD.pAcc = null; loadTab(); showModal("success", "সংরক্ষিত", "দেখার অনুমতি হালনাগাদ হয়েছে।"); } });
         } else if (act === "pDel") {
             var q = AD.people.filter(function (x) { return x.id === id; })[0];
             if (confirm('"' + q.name + '" এর সার্ভিস বুক ও তার সব সারি (' + bn(q.rows) + 'টি) স্থায়ীভাবে মুছে যাবে। নিশ্চিত?')) admApi("personDelete", { id: id }).then(function (d) { if (d) loadTab(); });
