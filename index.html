@@ -255,6 +255,11 @@
 .pw-eye svg{width:20px;height:20px;pointer-events:none}
 .f.auto{pointer-events:none}
 .f.auto input{background:#eef2f6 !important;color:#475569}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.stat{background:#fff;border:1px solid #dde6ec;border-radius:12px;padding:14px;text-align:center}
+.stat-v{font-size:28px;font-weight:700;color:#0f766e}.stat-t{font-size:14px;color:#334155}.stat-s{font-size:12px;color:#64748b;margin-top:2px}
+.hist{max-height:220px;overflow:auto;margin-bottom:10px;font-size:14px}.hist div{padding:3px 0;border-bottom:1px solid #eef2f6}
+.hok{color:#0f766e}.hbad{color:#c0392b}
 .pbtn{display:inline-block;grid-column:auto;padding:10px 18px;background:#0f766e;color:#fff;border:0;border-radius:8px;font:inherit;font-size:16px;cursor:pointer}
 .pbtn:hover{background:#0b5f58}
 .pbtn.sec{background:#e2e8f0;color:#334155}
@@ -433,12 +438,14 @@
     </div>
     <h2>অ্যাডমিন প্যানেল</h2>
     <div class="adm-tabs" id="admTabs">
+        <button type="button" data-t="dash">ড্যাশবোর্ড</button>
         <button type="button" data-t="users">ব্যবহারকারী</button>
         <button type="button" data-t="persons">সার্ভিস বুক</button>
         <button type="button" data-t="settings">হিসাবের নিয়ম</button>
         <button type="button" data-t="remarks">ছুটির মন্তব্য</button>
         <button type="button" data-t="pass">অ্যাডমিন পাসওয়ার্ড</button>
         <button type="button" data-t="log">কার্যকলাপ লগ</button>
+        <button type="button" data-t="trash">রিসাইকেল বিন</button>
     </div>
     <div style="text-align:right;margin:6px 0"><button type="button" class="pbtn sec sm" id="admRefresh">↻ নতুন করে আনুন</button></div>
     <div id="admBody"></div>
@@ -1027,7 +1034,7 @@
         var p = $("adPass").value;
         if (!strongPw(p)) { $("adErr").textContent = "শক্তিশালী পাসওয়ার্ড ছাড়া অ্যাডমিন প্যানেলে প্রবেশ করা যাবে না (১০+ অক্ষর, বড় ও ছোট হাতের অক্ষর, সংখ্যা ও চিহ্ন)।"; return; }
         api("adminLogin", { username: $("adUser").value, password: p }, "admin").then(function (d) {
-            adClear(); setTok("admin", d.token); $("adPass").value = ""; view("adminPanel"); AD.tab = "users"; loadTab();
+            adClear(); setTok("admin", d.token); $("adPass").value = ""; view("adminPanel"); AD.tab = "dash"; loadTab();
         }).catch(function (er) { $("adErr").textContent = er.message; });
     });
     $("admLogout").addEventListener("click", function () {
@@ -1035,14 +1042,14 @@
         adClear(); setTok("admin", null); eyesHide($("adminGate")); view("adminGate"); $("adUser").focus();
     });
 
-    var AD = { tab: "users", editing: null, rmEdit: null, users: [], people: [], remarks: [], cache: {}, ttl: 10 * 60 * 1000 };
-    var READS = { userList: 1, personList: 1, settingsGet: 1, remarkList: 1, logList: 1 };
+    var AD = { tab: "dash", logF: null, hist: null, editing: null, rmEdit: null, users: [], people: [], remarks: [], cache: {}, ttl: 10 * 60 * 1000 };
+    var READS = { userList: 1, personList: 1, settingsGet: 1, remarkList: 1, logList: 1, adminStats: 1, adminTrashList: 1, userLoginHistory: 1, exportCsv: 1 };
     function admFail(e) {
         if (e.code === "AUTH") { adClear(); setTok("admin", null); view("adminGate"); $("adErr").textContent = e.message; }
         else showModal("error", "সমস্যা হয়েছে", e.message);
         return null;
     }
-    function adClear() { AD.cache = {}; AD.prefetching = false; }
+    function adClear() { AD.cache = {}; AD.pending = {}; AD.prefetching = false; AD.epoch = (AD.epoch || 0) + 1; }
     function admApi(a, d) {
         if (!READS[a]) adClear(); // কোনো তথ্য বদলালে জমানো কপি বাতিল
         return api(a, d || {}, "admin").catch(admFail);
@@ -1051,11 +1058,16 @@
     function adGet(a, force, quiet) {
         var c = AD.cache[a];
         if (!force && c && Date.now() - c.t < AD.ttl) return Promise.resolve(c.d);
-        return api(a, {}, "admin", true).then(function (d) { AD.cache[a] = { t: Date.now(), d: d }; return d; });
+        AD.pending = AD.pending || {};
+        if (!force && AD.pending[a]) return AD.pending[a];   // একই তথ্য আগে থেকেই আনা হচ্ছে হলে দ্বিতীয়বার চাওয়া হয় না
+        var ep = AD.epoch || 0;
+        var pr = api(a, {}, "admin", true).then(function (d) { if ((AD.epoch || 0) === ep) { delete AD.pending[a]; AD.cache[a] = { t: Date.now(), d: d }; } return d; }, function (e) { delete AD.pending[a]; throw e; });
+        AD.pending[a] = pr;
+        return pr;
     }
     function adPrefetch() {
         if (AD.prefetching) return; AD.prefetching = true;
-        var list = ["userList", "personList", "settingsGet", "remarkList", "logList"], i = 0;
+        var list = ["adminStats", "userList", "personList", "settingsGet", "remarkList", "logList", "adminTrashList"], i = 0;
         (function next() {
             if (!AD.prefetching || i >= list.length) { AD.prefetching = false; return; }
             var a = list[i++];
@@ -1065,30 +1077,39 @@
     }
     $("admTabs").addEventListener("click", function (e) {
         var b = e.target.closest("button[data-t]"); if (!b) return;
-        AD.tab = b.dataset.t; AD.editing = null; AD.rmEdit = null; AD.pAcc = null; loadTab();
+        AD.tab = b.dataset.t; AD.editing = null; AD.rmEdit = null; AD.pAcc = null; AD.hist = null; loadTab();
     });
     $("admRefresh").addEventListener("click", function () { adClear(); loadTab(); });
-    var TABACT = { users: "userList", persons: "personList", settings: "settingsGet", remarks: "remarkList", log: "logList" };
+    var TABACT = { dash: "adminStats", users: "userList", persons: "personList", settings: "settingsGet", remarks: "remarkList", log: "logList", trash: "adminTrashList" };
     function loadTab() {
         var t = AD.tab, a = TABACT[t];
         [].forEach.call(document.querySelectorAll("#admTabs button"), function (b) { b.classList.toggle("on", b.dataset.t === t); });
         if (t === "pass") { renderPass(); return; }
-        var hit = AD.cache[a] && Date.now() - AD.cache[a].t < AD.ttl;
+        var hit = AD.cache[a] && Date.now() - AD.cache[a].t < AD.ttl && !(t === "log" && AD.logF);
         if (!hit) $("admBody").innerHTML = '<div class="hint" style="padding:18px">লোড হচ্ছে…</div>';
-        adGet(a).then(function (d) {
+        var fetcher = (t === "log" && AD.logF) ? api("logList", AD.logF, "admin", true) : adGet(a);
+        fetcher.then(function (d) {
             if (AD.tab !== t) return; // ইতিমধ্যে অন্য ট্যাবে চলে গেছেন
-            if (t === "users") { AD.users = d.users; renderUsers(); }
+            if (t === "dash") renderDash(d);
+            else if (t === "trash") renderTrash(d);
+            else if (t === "users") { AD.users = d.users; renderUsers(); }
             else if (t === "persons") { AD.people = d.people; renderPeople(); }
             else if (t === "settings") renderSettings(d.settings);
             else if (t === "remarks") { AD.remarks = d.remarks; renderRemarks(); }
-            else if (t === "log") renderLog(d.log);
+            else if (t === "log") renderLog(d);
             adPrefetch();
         }).catch(admFail);
     }
 
     function renderUsers() {
+        var hh = "";
+        if (AD.hist) {
+            hh = '<div class="adm-card"><h3>লগইন ইতিহাস: ' + esc(AD.hist.username) + '</h3>';
+            hh += AD.hist.history.length ? '<div class="hist">' + AD.hist.history.map(function (x) { return '<div class="' + (x.ok ? "hok" : "hbad") + '">' + (x.ok ? "✔ সফল" : "✘ ভুল পাসওয়ার্ড") + " — " + esc(x.time) + "</div>"; }).join("") + "</div>" : '<div class="hint">কোনো লগইনের তথ্য নেই।</div>';
+            hh += '<button type="button" class="pbtn sec sm" data-act="uHistClose">বন্ধ করুন</button></div>';
+        }
         var ed = null; AD.users.forEach(function (u) { if (u.username === AD.editing) ed = u; });
-        var h = '<div class="adm-card"><h3>' + (ed ? "ব্যবহারকারী সম্পাদনা: " + esc(ed.username) : "নতুন ব্যবহারকারী যুক্ত করুন") + '</h3><div class="adm-grid">' +
+        var h = hh + '<div class="adm-card"><h3>' + (ed ? "ব্যবহারকারী সম্পাদনা: " + esc(ed.username) : "নতুন ব্যবহারকারী যুক্ত করুন") + '</h3><div class="adm-grid">' +
             '<div class="fld"><label>ইউজারনেম (ইংরেজি অক্ষর/সংখ্যা)</label><input id="uName" autocomplete="off" autocapitalize="none" ' + (ed ? 'value="' + esc(ed.username) + '" readonly' : "") + "></div>" +
             '<div class="fld"><label>নাম (ঐচ্ছিক)</label><input id="uDisp" autocomplete="off" value="' + esc(ed ? ed.displayName : "") + '"></div>' +
             '<div class="fld"><label>পাসওয়ার্ড ' + (ed ? "(ইউজার ভুলে গেলে এখানে নতুন দিন; না বদলাতে ফাঁকা রাখুন)" : "(কমপক্ষে ৬ অক্ষর)") + '</label><input id="uPass" autocomplete="new-password"></div></div>' +
@@ -1100,6 +1121,8 @@
             h += "<tr><td>" + esc(u.username) + "</td><td>" + esc(u.displayName) + '</td><td><span class="tag ' + (on ? "on" : "off") + '">' + (on ? "সক্রিয়" : "নিষ্ক্রিয়") + "</span></td><td>" + esc(u.createdAt) + "</td><td>" + esc(u.lastLogin || "-") + "</td><td>" + (u.pwChangedAt ? esc(u.pwChangedAt) + "<br><small>(" + esc(u.pwChangedBy) + ")</small>" : "-") + "</td><td>" +
                 '<button type="button" class="pbtn sm" data-act="uEdit" data-id="' + esc(u.username) + '">সম্পাদনা</button> ' +
                 '<button type="button" class="pbtn sm sec" data-act="uToggle" data-id="' + esc(u.username) + '">' + (on ? "নিষ্ক্রিয় করুন" : "সক্রিয় করুন") + "</button> " +
+                '<button type="button" class="pbtn sm sec" data-act="uHist" data-id="' + esc(u.username) + '">লগইন ইতিহাস</button> ' +
+                '<button type="button" class="pbtn sm sec" data-act="uForce" data-id="' + esc(u.username) + '">জোর করে লগআউট</button> ' +
                 '<button type="button" class="pbtn sm danger" data-act="uDel" data-id="' + esc(u.username) + '">মুছুন</button></td></tr>';
         });
         $("admBody").innerHTML = h + "</tbody></table></div>";
@@ -1118,12 +1141,14 @@
             });
             h += '</div><button type="button" class="pbtn" data-act="pAccSave" data-id="' + esc(ap.id) + '">সংরক্ষণ করুন</button> <button type="button" class="pbtn sec" data-act="pAccCancel">বাতিল</button></div>';
         }
-        h += '<div class="hint" style="margin-bottom:10px">মোট সার্ভিস বুক: ' + AD.people.length + '</div><div class="adm-scroll"><table class="adm-table"><thead><tr><th>নাম</th><th>জাতীয় পরিচয়পত্র/মোবাইল</th><th>যোগদান</th><th>কে দেখতে পারবে</th><th>সারি সংখ্যা</th><th>তৈরি করেছেন</th><th>তৈরির সময়</th><th>কাজ</th></tr></thead><tbody>';
+        h += '<div class="hint" style="margin-bottom:10px">মোট সার্ভিস বুক: ' + AD.people.length + ' &nbsp; <button type="button" class="pbtn sm" data-act="pCsvAll">⬇ সব বইয়ের ব্যাকআপ (CSV) ডাউনলোড</button></div><div class="adm-scroll"><table class="adm-table"><thead><tr><th>নাম</th><th>জাতীয় পরিচয়পত্র/মোবাইল</th><th>যোগদান</th><th>কে দেখতে পারবে</th><th>সারি সংখ্যা</th><th>তৈরি করেছেন</th><th>তৈরির সময়</th><th>কাজ</th></tr></thead><tbody>';
         if (!AD.people.length) h += '<tr><td colspan="8">কোনো সার্ভিস বুক নেই।</td></tr>';
         AD.people.forEach(function (p) {
             h += '<tr><td class="l">' + esc(p.name) + "</td><td>" + esc(p.key) + "</td><td>" + esc(p.joinDate ? fmtDate(p.joinDate) : "-") + "</td><td>" + (p.shared === "N" ? (p.owners.length ? esc(p.owners.join(", ")) : "শুধু অ্যাডমিন") : "সবাই") + "</td><td>" + p.rows + "</td><td>" + esc(p.createdBy) + "</td><td>" + esc(p.createdAt) + "</td><td>" +
                 '<button type="button" class="pbtn sm" data-act="pEdit" data-id="' + esc(p.id) + '">নাম/নম্বর সংশোধন</button> ' +
                 '<button type="button" class="pbtn sm sec" data-act="pAcc" data-id="' + esc(p.id) + '">কে দেখতে পারবে</button> ' +
+                '<button type="button" class="pbtn sm sec" data-act="pCsv" data-id="' + esc(p.id) + '">⬇ CSV</button> ' +
+                (p.rows ? '<button type="button" class="pbtn sm sec" data-act="pRecalc" data-id="' + esc(p.id) + '">নতুন নিয়মে পুনর্গণনা</button> <button type="button" class="pbtn sm sec" data-act="pRowDel" data-id="' + esc(p.id) + '">সর্বশেষ সারি মুছুন</button> ' : "") +
                 '<button type="button" class="pbtn sm danger" data-act="pDel" data-id="' + esc(p.id) + '">মুছুন</button></td></tr>';
         });
         $("admBody").innerHTML = h + "</tbody></table></div>";
@@ -1156,6 +1181,7 @@
     function rmDone(d) { if (d) { AD.remarks = d.remarks; AD.rmEdit = null; renderRemarks(); } }
     $("admBody").addEventListener("keydown", function (e) {
         if (e.key !== "Enter") return;
+        if (/^lf(User|Q)$/.test(e.target.id)) { e.preventDefault(); e.target.closest(".adm-card").querySelector("[data-act=lfGo]").click(); return; }
         if (e.target.id === "rmNew") { e.preventDefault(); admApi("remarkAdd", { text: e.target.value }).then(rmDone); }
         else if (e.target.id === "rmEditText") { e.preventDefault(); admApi("remarkUpdate", { id: AD.rmEdit, text: e.target.value }).then(rmDone); }
     });
@@ -1169,11 +1195,52 @@
         attachEyes($("admBody"));
     }
 
-    function renderLog(list) {
-        var h = '<div class="adm-scroll"><table class="adm-table"><thead><tr><th>সময়</th><th>ইউজার</th><th>কাজ</th><th>বিবরণ</th></tr></thead><tbody>';
+    function renderLog(d) {
+        var list = d.log, F = AD.logF || {};
+        var h = '<div class="adm-card"><h3>খুঁজুন ও ছাঁকুন</h3><div class="adm-grid">' +
+            '<div class="fld"><label>ইউজার</label><input id="lfUser" value="' + esc(F.user || "") + '" autocomplete="off"></div>' +
+            '<div class="fld"><label>কাজের ধরন</label><select id="lfAct"><option value="">সব</option>' + (d.actions || []).map(function (x) { return '<option value="' + esc(x) + '"' + (F.logAction === x ? " selected" : "") + ">" + esc(x) + "</option>"; }).join("") + '</select></div>' +
+            '<div class="fld"><label>বিবরণে লেখা</label><input id="lfQ" value="' + esc(F.q || "") + '" autocomplete="off"></div>' +
+            '<div class="fld"><label>তারিখ থেকে</label><input id="lfFrom" type="date" value="' + esc(F.from || "") + '"></div>' +
+            '<div class="fld"><label>তারিখ পর্যন্ত</label><input id="lfTo" type="date" value="' + esc(F.to || "") + '"></div></div>' +
+            '<button type="button" class="pbtn" data-act="lfGo">ছাঁকুন</button> <button type="button" class="pbtn sec" data-act="lfClear">পরিষ্কার</button>' +
+            '<div class="hint" style="margin-top:8px">মোট ' + bn(d.total || list.length) + 'টি মিলেছে' + ((d.total || 0) > list.length ? " (নতুন " + bn(list.length) + "টি দেখানো হচ্ছে)" : "") + "।</div></div>";
+        h += '<div class="adm-scroll"><table class="adm-table"><thead><tr><th>সময়</th><th>ইউজার</th><th>কাজ</th><th>বিবরণ</th></tr></thead><tbody>';
         if (!list.length) h += '<tr><td colspan="4">কোনো লগ নেই।</td></tr>';
         list.forEach(function (x) { h += "<tr><td>" + esc(x.time) + "</td><td>" + esc(x.user) + "</td><td>" + esc(x.action) + '</td><td class="l">' + esc(x.detail) + "</td></tr>"; });
         $("admBody").innerHTML = h + "</tbody></table></div>";
+    }
+
+    function renderDash(d) {
+        function card(t, v, sub) { return '<div class="stat"><div class="stat-v">' + bn(v) + '</div><div class="stat-t">' + t + "</div>" + (sub ? '<div class="stat-s">' + sub + "</div>" : "") + "</div>"; }
+        var h = '<div class="stats">' +
+            card("ব্যবহারকারী", d.users, "সক্রিয় " + bn(d.usersActive)) + card("সার্ভিস বুক", d.persons) + card("মোট সারি", d.rows) +
+            card("আজ যুক্ত সারি", d.rowsToday, "গত ৭ দিনে " + bn(d.rowsWeek)) + card("আজ লগইন", d.loginsToday, "আলাদা ইউজার " + bn(d.activeUsersToday)) +
+            card("আজ ভুল লগইন", d.failsToday) + card("রিসাইকেল বিনে", d.trash) + "</div>";
+        h += '<div class="adm-card"><h3>সাম্প্রতিক কার্যকলাপ</h3><div class="adm-scroll"><table class="adm-table"><thead><tr><th>সময়</th><th>ইউজার</th><th>কাজ</th><th>বিবরণ</th></tr></thead><tbody>';
+        if (!d.recent.length) h += '<tr><td colspan="4">কোনো কার্যকলাপ নেই।</td></tr>';
+        d.recent.forEach(function (x) { h += "<tr><td>" + esc(x.time) + "</td><td>" + esc(x.user) + "</td><td>" + esc(x.action) + '</td><td class="l">' + esc(x.detail) + "</td></tr>"; });
+        $("admBody").innerHTML = h + "</tbody></table></div></div>";
+    }
+
+    function renderTrash(d) {
+        var h = '<div class="hint" style="margin-bottom:10px">মুছে ফেলা তথ্য এখানে ' + bn(d.days) + ' দিন থাকে, তারপর নিজে থেকে মুছে যায়। "ফিরিয়ে আনুন" চাপলে আগের অবস্থায় ফিরে আসে (বইয়ে এর মধ্যে বদল হলে ফেরানো যাবে না)।</div>' +
+            '<div class="adm-scroll"><table class="adm-table"><thead><tr><th>কী</th><th>বিবরণ</th><th>কে মুছেছে</th><th>কখন</th><th>কাজ</th></tr></thead><tbody>';
+        if (!d.items.length) h += '<tr><td colspan="5">রিসাইকেল বিন ফাঁকা।</td></tr>';
+        d.items.forEach(function (x) {
+            h += "<tr><td>" + esc(x.kindText) + '</td><td class="l">' + esc(x.label) + "</td><td>" + esc(x.deletedBy) + "</td><td>" + esc(x.deletedAt) + "</td><td>" +
+                '<button type="button" class="pbtn sm" data-act="tRestore" data-id="' + esc(x.id) + '">ফিরিয়ে আনুন</button> ' +
+                '<button type="button" class="pbtn sm danger" data-act="tDel" data-id="' + esc(x.id) + '">চিরতরে মুছুন</button></td></tr>';
+        });
+        $("admBody").innerHTML = h + "</tbody></table></div>";
+    }
+    function downloadCsv(personId) {
+        admApi("exportCsv", personId ? { personId: personId } : {}).then(function (d) {
+            if (!d) return;
+            var blob = new Blob(["\uFEFF" + d.csv], { type: "text/csv;charset=utf-8" }), a = document.createElement("a");
+            a.href = URL.createObjectURL(blob); a.download = d.filename; document.body.appendChild(a); a.click();
+            setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+        });
     }
 
     $("admBody").addEventListener("click", function (e) {
@@ -1204,6 +1271,30 @@
             var upd = { id: id, name: nm, key: ky };
             if (p.rows === 0) { var jd = prompt("চাকরিতে যোগদানের তারিখ (বছর-মাস-দিন, যেমন 2015-03-01):", p.joinDate || ""); if (jd === null) return; upd.joinDate = en(jd); }
             admApi("personUpdate", upd).then(function (d) { if (d) loadTab(); });
+        } else if (act === "pCsvAll") { downloadCsv("");
+        } else if (act === "pCsv") { downloadCsv(id);
+        } else if (act === "pRowDel") {
+            var rp = AD.people.filter(function (x) { return x.id === id; })[0], lr = rp.last;
+            if (confirm('"' + rp.name + '" বইয়ের সর্বশেষ সারি (#' + bn(lr.seq) + ": কার্যকাল " + fmtDate(lr.dutyFrom) + " থেকে " + fmtDate(lr.dutyTo) + ", ছুটি " + fmtDate(lr.leaveFrom) + " থেকে " + fmtDate(lr.leaveTo) + ", " + lr.type + ") মুছে ফেলবেন? রিসাইকেল বিনে ৩০ দিন থাকবে।"))
+                admApi("adminRowDelete", { personId: id }).then(function (d) { if (d) { loadTab(); showModal("success", "মুছে গেছে", "সর্বশেষ সারিটি মুছে রিসাইকেল বিনে রাখা হয়েছে।"); } });
+        } else if (act === "pRecalc") {
+            var rq = AD.people.filter(function (x) { return x.id === id; })[0];
+            if (confirm('"' + rq.name + '" বইয়ের সব ' + bn(rq.rows) + "টি সারির অর্জিত, মোট ও অবশিষ্ট ছুটি এখনকার নিয়মে প্রথম থেকে নতুন করে হিসাব হবে। পুরোনো সংখ্যা বদলে যাবে (আগের সংখ্যা রিসাইকেল বিনে থাকবে)। নিশ্চিত?"))
+                admApi("personRecalc", { id: id }).then(function (d) { if (d) { loadTab(); showModal("success", "পুনর্গণনা সম্পন্ন", d.changed ? bn(d.changed) + "টি সারির সংখ্যা বদলেছে (মোট " + bn(d.total) + "টি সারি)।" : "সব সংখ্যা আগেই ঠিক ছিল, কিছু বদলায়নি।"); } });
+        } else if (act === "lfGo") {
+            var f = { user: $("lfUser").value.trim(), logAction: $("lfAct").value, q: $("lfQ").value.trim(), from: $("lfFrom").value, to: $("lfTo").value };
+            AD.logF = (f.user || f.logAction || f.q || f.from || f.to) ? f : null; loadTab();
+        } else if (act === "lfClear") { AD.logF = null; loadTab();
+        } else if (act === "tRestore") {
+            admApi("adminTrashRestore", { id: id }).then(function (d) { if (d) { loadTab(); showModal("success", "ফিরে এসেছে", d.msg); } });
+        } else if (act === "tDel") {
+            if (confirm("এটি চিরতরে মুছে যাবে, আর ফেরানো যাবে না। নিশ্চিত?")) admApi("adminTrashDelete", { id: id }).then(function (d) { if (d) loadTab(); });
+        } else if (act === "uHist") {
+            admApi("userLoginHistory", { username: id }).then(function (d) { if (d) { AD.hist = d; renderUsers(); } });
+        } else if (act === "uHistClose") { AD.hist = null; renderUsers();
+        } else if (act === "uForce") {
+            if (confirm('ইউজার "' + id + '"-কে সব ডিভাইস থেকে লগআউট করা হবে। সে আবার পাসওয়ার্ড দিয়ে ঢুকতে পারবে। নিশ্চিত?'))
+                admApi("userForceLogout", { username: id }).then(function (d) { if (d) showModal("success", "লগআউট হয়েছে", "ইউজারের সব লগইন বাতিল হয়েছে।"); });
         } else if (act === "pAcc") {
             adGet("userList").then(function (d) { AD.users = d.users; AD.pAcc = id; renderPeople(); }).catch(admFail);
         } else if (act === "pAccCancel") { AD.pAcc = null; renderPeople();
@@ -1212,7 +1303,7 @@
             admApi("personAccess", { id: id, owners: own, shared: $("pAccShared").checked }).then(function (d) { if (d) { AD.pAcc = null; loadTab(); showModal("success", "সংরক্ষিত", "দেখার অনুমতি হালনাগাদ হয়েছে।"); } });
         } else if (act === "pDel") {
             var q = AD.people.filter(function (x) { return x.id === id; })[0];
-            if (confirm('"' + q.name + '" এর সার্ভিস বুক ও তার সব সারি (' + bn(q.rows) + 'টি) স্থায়ীভাবে মুছে যাবে। নিশ্চিত?')) admApi("personDelete", { id: id }).then(function (d) { if (d) loadTab(); });
+            if (confirm('"' + q.name + '" এর সার্ভিস বুক ও তার সব সারি (' + bn(q.rows) + 'টি) মুছে যাবে (রিসাইকেল বিনে ৩০ দিন থাকবে, সেখান থেকে ফিরিয়ে আনা যাবে)। নিশ্চিত?')) admApi("personDelete", { id: id }).then(function (d) { if (d) loadTab(); });
         } else if (act === "sSave") {
             var vals = {}; [].forEach.call(document.querySelectorAll("#admBody input[data-k]"), function (i) { vals[i.dataset.k] = en(i.value); });
             admApi("settingsSet", { values: vals }).then(function (d) { if (d) showModal("success", "সংরক্ষিত", "হিসাবের নিয়ম হালনাগাদ হয়েছে।"); });
