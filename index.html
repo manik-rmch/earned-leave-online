@@ -312,6 +312,14 @@
 .adm-card h3{margin:0 0 12px;color:#0f4c5c;font-size:18px}
 .adm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
 .adm-card input{padding:9px;border-radius:8px}
+.lf-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+@media(max-width:900px){.lf-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.lf-grid{grid-template-columns:1fr}}
+.lf-grid .f select.dt{border:0;padding:3px 0;font-size:16px;outline:0;background:transparent;width:100%}
+.lg-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.lg-head h3{margin:0;color:#0f4c5c;font-size:18px}
+.lg-s{grid-column:auto;background:#e2e8f0;color:#334155;border-radius:999px;width:34px;height:34px;padding:0;font-size:16px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+.lg-s.on{background:#0f766e;color:#fff}
 .adm-table{min-width:0;width:100%;font-size:14px}
 .adm-table th{background:#0b5f58;padding:8px}
 .adm-table td{padding:7px 6px;background:#fff}
@@ -1196,19 +1204,20 @@
     }
 
     function renderLog(d) {
-        var list = d.log, F = AD.logF || {};
-        var h = '<div class="adm-card"><h3>খুঁজুন ও ছাঁকুন</h3><div class="adm-grid">' +
-            '<div class="fld"><label>ইউজার</label><input id="lfUser" value="' + esc(F.user || "") + '" autocomplete="off"></div>' +
-            '<div class="fld"><label>কাজের ধরন</label><select id="lfAct"><option value="">সব</option>' + (d.actions || []).map(function (x) { return '<option value="' + esc(x) + '"' + (F.logAction === x ? " selected" : "") + ">" + esc(x) + "</option>"; }).join("") + '</select></div>' +
-            '<div class="fld"><label>বিবরণে লেখা</label><input id="lfQ" value="' + esc(F.q || "") + '" autocomplete="off"></div>' +
-            '<div class="fld"><label>তারিখ থেকে</label><input id="lfFrom" type="date" value="' + esc(F.from || "") + '"></div>' +
-            '<div class="fld"><label>তারিখ পর্যন্ত</label><input id="lfTo" type="date" value="' + esc(F.to || "") + '"></div></div>' +
-            '<button type="button" class="pbtn" data-act="lfGo">ছাঁকুন</button> <button type="button" class="pbtn sec" data-act="lfClear">পরিষ্কার</button>' +
-            '<div class="hint" style="margin-top:8px">মোট ' + bn(d.total || list.length) + 'টি মিলেছে' + ((d.total || 0) > list.length ? " (নতুন " + bn(list.length) + "টি দেখানো হচ্ছে)" : "") + "।</div></div>";
+        var list = d.log, F = AD.logF || {}, open = AD.logOpen || !!AD.logF;
+        function dateBox(id, label, v) { return '<div class="f"><label for="' + id + '_t">' + label + '</label><input type="text" class="dt" id="' + id + '_t" inputmode="numeric" autocomplete="off" placeholder="দিন/মাস/বছর"><input type="date" id="' + id + '" value="' + esc(v || "") + '" hidden></div>'; }
+        var h = '<div class="lg-head"><h3>কার্যকলাপ লগ</h3><button type="button" class="lg-s' + (open ? " on" : "") + '" data-act="lfToggle" title="খুঁজুন" aria-label="খুঁজুন">&#128269;</button></div>' +
+            '<div class="adm-card" id="lfCard"' + (open ? "" : ' style="display:none"') + '><h3>খুঁজুন</h3><div class="lf-grid">' +
+            '<div class="f"><label for="lfUser">ইউজার</label><input class="dt" id="lfUser" value="' + esc(F.user || "") + '" autocomplete="off"></div>' +
+            '<div class="f"><label for="lfAct">কাজের ধরন</label><select id="lfAct" class="dt"><option value="">সব</option>' + (d.actions || []).map(function (x) { return '<option value="' + esc(x) + '"' + (F.logAction === x ? " selected" : "") + ">" + esc(x) + "</option>"; }).join("") + '</select></div>' +
+            '<div class="f"><label for="lfQ">বিবরণে লেখা</label><input class="dt" id="lfQ" value="' + esc(F.q || "") + '" autocomplete="off"></div>' +
+            dateBox("lfFrom", "তারিখ থেকে", F.from) + dateBox("lfTo", "তারিখ পর্যন্ত", F.to) + '</div>' +
+            '<div style="margin-top:12px"><button type="button" class="pbtn" data-act="lfGo">খুঁজুন</button> <button type="button" class="pbtn sec" data-act="lfClear">বাতিল</button></div></div>';
         h += '<div class="adm-scroll"><table class="adm-table"><thead><tr><th>সময়</th><th>ইউজার</th><th>কাজ</th><th>বিবরণ</th></tr></thead><tbody>';
         if (!list.length) h += '<tr><td colspan="4">কোনো লগ নেই।</td></tr>';
         list.forEach(function (x) { h += "<tr><td>" + esc(x.time) + "</td><td>" + esc(x.user) + "</td><td>" + esc(x.action) + '</td><td class="l">' + esc(x.detail) + "</td></tr>"; });
         $("admBody").innerHTML = h + "</tbody></table></div>";
+        if (window.initDateField) { initDateField("lfFrom"); initDateField("lfTo"); }
     }
 
     function renderDash(d) {
@@ -1284,7 +1293,10 @@
         } else if (act === "lfGo") {
             var f = { user: $("lfUser").value.trim(), logAction: $("lfAct").value, q: $("lfQ").value.trim(), from: $("lfFrom").value, to: $("lfTo").value };
             AD.logF = (f.user || f.logAction || f.q || f.from || f.to) ? f : null; loadTab();
-        } else if (act === "lfClear") { AD.logF = null; loadTab();
+        } else if (act === "lfClear") { AD.logF = null; AD.logOpen = false; loadTab();
+        } else if (act === "lfToggle") {
+            AD.logOpen = !AD.logOpen; var lc = $("lfCard"); lc.style.display = AD.logOpen ? "" : "none";
+            b.classList.toggle("on", AD.logOpen); if (AD.logOpen) $("lfUser").focus();
         } else if (act === "tRestore") {
             admApi("adminTrashRestore", { id: id }).then(function (d) { if (d) { loadTab(); showModal("success", "ফিরে এসেছে", d.msg); } });
         } else if (act === "tDel") {
@@ -1414,12 +1426,14 @@ el.addEventListener("input",function(){if(cur===el){if(D(el.value)){close();retu
 })();
 
 var iso=function(o){return o.y+"-"+two(o.m+1)+"-"+two(o.d)};
-["dutyFrom","dutyTo","leaveFrom","leaveTo","pnJoin"].forEach(function(id){
+function initDate(id){
 var h=document.getElementById(id),t=document.getElementById(id+"_t"),b=t.closest(".f");
 function sync(){var o=D(t.value);h.value=o?iso(o):"";b.classList.toggle("bad",o===false)}
 t.addEventListener("input",function(){maskEl(t,[2,2,4],["/","/"]);sync()});
 var m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(h.value);if(m)setV(t,m[3]+"/"+m[2]+"/"+m[1]);
-attachCal(id+"_t")});
+attachCal(id+"_t")}
+["dutyFrom","dutyTo","leaveFrom","leaveTo","pnJoin"].forEach(initDate);
+window.initDateField=function(id){initDate(id);var b=document.getElementById(id+"_t").closest(".f");b.addEventListener("click",function(e){var i=b.querySelector("input");if(i&&e.target!==i&&e.target.tagName!=="BUTTON")i.focus()})};
 boxClick();
 })();
 </script>
