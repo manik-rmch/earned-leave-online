@@ -321,11 +321,14 @@
 .lg-s{grid-column:auto;background:#e2e8f0;color:#334155;border-radius:999px;width:34px;height:34px;padding:0;font-size:16px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
 .lg-s.on{background:#0f766e;color:#fff}
 .dm-note{background:#fff7e0;border:1px solid #f1dcae;color:#7a5200;border-radius:10px;padding:10px 14px;margin:0 0 12px;font-size:14px}
-.dm-open{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.dm-open{display:contents}
 .dm-open[hidden]{display:none}
-@media(max-width:700px){.dm-open{grid-template-columns:1fr}}
+@media(min-width:1100px){#bookArea .form-group.dm-first{grid-template-columns:1.35fr 1.35fr 1fr 1fr 1fr 1fr 1.5fr}}
+.person-line input.dm-title{font:inherit;font-weight:700;color:#0b5345;text-align:center;border:0;border-bottom:2px dashed #9db3bd;background:transparent;outline:0;width:20em;max-width:100%;padding:0 4px;border-radius:0}
+.person-line input.dm-title::placeholder{color:#0b5345;opacity:1}
+.person-line input.dm-title:focus{border-bottom-color:#0f766e}
 .bmd-in{display:flex;align-items:center;gap:6px}
-.bmd-in input{width:3.2em;border:1px solid #cbd5e1;border-radius:6px;padding:4px 6px;font-size:16px;text-align:center;background:#fff}
+.bmd-in input{width:2.7em;min-width:0;border:1px solid #cbd5e1;border-radius:6px;padding:4px 6px;font-size:16px;text-align:center;background:#fff}
 .bmd-in span{font-size:14px;color:#334155}
 @media print{.dm-note,.dm-open{display:none !important}}
 .adm-table{min-width:0;width:100%;font-size:14px}
@@ -512,7 +515,11 @@
     <div class="print-person" id="printPerson"></div>
 
     <div class="dm-note" id="dmNote" hidden><b>ডামি সার্ভিস বুক:</b> এটি অনলাইনে সংরক্ষিত হয় না। পাতা রিফ্রেশ করলে, বন্ধ করলে বা লগআউট করলে সব তথ্য মুছে যাবে। দরকার হলে আগেই প্রিন্ট করে নিন।</div>
-    <div class="form-group">
+    <div class="form-group" id="bookForm">
+        <div class="dm-open" id="dmOpen" hidden>
+            <div class="f"><label>অবশিষ্ট পূর্ণ গড় বেতনে অর্জিত ছুটি</label><div class="bmd-in"><input id="dmFy" inputmode="numeric" maxlength="2" placeholder="০"><span>ব</span><input id="dmFm" inputmode="numeric" maxlength="2" placeholder="০"><span>মা</span><input id="dmFd" inputmode="numeric" maxlength="2" placeholder="০"><span>দি</span></div></div>
+            <div class="f"><label>অবশিষ্ট অর্ধ গড় বেতনে অর্জিত ছুটি</label><div class="bmd-in"><input id="dmHy" inputmode="numeric" maxlength="2" placeholder="০"><span>ব</span><input id="dmHm" inputmode="numeric" maxlength="2" placeholder="০"><span>মা</span><input id="dmHd" inputmode="numeric" maxlength="2" placeholder="০"><span>দি</span></div></div>
+        </div>
         <div class="f">
             <label class="req" for="dutyFrom_t">ডিউটি শুরু (হইতে)</label>
             <input type="text" class="dt" id="dutyFrom_t" inputmode="numeric" autocomplete="off" placeholder="দিন/মাস/বছর"><input type="date" id="dutyFrom" hidden>
@@ -554,11 +561,6 @@
                 <option value="Study Leave">Study Leave</option>
                 <option value="Vacation Leave">Vacation Leave</option>
             </select>
-        </div>
-        <div class="dm-open" id="dmOpen" hidden>
-            <div class="f"><label for="dmName">নাম (ঐচ্ছিক, প্রিন্টে দেখাবে)</label><input type="text" class="dt" id="dmName" autocomplete="off"></div>
-            <div class="f"><label>অবশিষ্ট পূর্ণ গড় বেতনে অর্জিত ছুটি</label><div class="bmd-in"><input id="dmFy" inputmode="numeric" maxlength="2" placeholder="০"><span>ব</span><input id="dmFm" inputmode="numeric" maxlength="2" placeholder="০"><span>মা</span><input id="dmFd" inputmode="numeric" maxlength="2" placeholder="০"><span>দি</span></div></div>
-            <div class="f"><label>অবশিষ্ট অর্ধ গড় বেতনে অর্জিত ছুটি</label><div class="bmd-in"><input id="dmHy" inputmode="numeric" maxlength="2" placeholder="০"><span>ব</span><input id="dmHm" inputmode="numeric" maxlength="2" placeholder="০"><span>মা</span><input id="dmHd" inputmode="numeric" maxlength="2" placeholder="০"><span>দি</span></div></div>
         </div>
         <button type="button" id="addBtn">সার্ভিস বুকে হিসাব যুক্ত করুন</button>
     </div>
@@ -827,7 +829,7 @@
     // ---------- ডামি সার্ভিস বুক (অনলাইনে সংরক্ষণ হয় না; হিসাব ব্যাকএন্ড করে) ----------
     function dmUi() {   // ডামি মোডের দেখানো/লুকানো অংশ
         var first = S.dummy && !S.rows.length;
-        $("dmNote").hidden = !S.dummy; $("dmOpen").hidden = !first;
+        $("dmNote").hidden = !S.dummy; $("dmOpen").hidden = !first; $("bookForm").classList.toggle("dm-first", first);
         $("remarkBox").style.display = S.dummy ? "none" : "";
         $("psChange").textContent = S.dummy ? "ডামি বন্ধ করুন" : "অন্য ব্যক্তির সার্ভিস বুক";
     }
@@ -839,11 +841,12 @@
     $("psDummy").addEventListener("click", function () {
         S.dummy = true; S.dopen = null; S.dname = ""; S.rows = []; S.queue = []; S.dinputs = []; S.dopenIn = null; S.dfrom = "";
         S.person = { id: "dummy", name: "", key: "", joinDate: "" };
-        ["dmName", "dmFy", "dmFm", "dmFd", "dmHy", "dmHm", "dmHd"].forEach(function (i) { $(i).value = ""; });
+        ["dmFy", "dmFm", "dmFd", "dmHy", "dmHm", "dmHd"].forEach(function (i) { $(i).value = ""; });
         resetForm(); dmUi(); renderBook();
         $("personPanel").hidden = true; $("bookArea").hidden = false; $("psChange").hidden = false;
-        firstField().focus();
+        $("dmFy").focus();
     });
+    $("personLine").addEventListener("input", function (e) { if (e.target.id === "dmName") S.dname = e.target.value.trim(); });
     window.addEventListener("beforeunload", function (e) { if (S.dummy && S.rows.length) { e.preventDefault(); e.returnValue = ""; } });
 
     function nextDay(iso) { var d = new Date(iso + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10); }
@@ -859,11 +862,15 @@
     function renderBook() {
         var p = S.person;
         if (S.dummy) {
-            var dl = "<b>ডামি সার্ভিস বুক</b>" + (S.dname ? "<span class=\"sep\">|</span>" + esc(S.dname) : "");
-            if (S.dopen && S.rows.length) dl += "<span class=\"sep\">|</span>আগের জমা: পূর্ণ গড় " + S.dopen.full[1] + " ব " + S.dopen.full[2] + " মা " + S.dopen.full[3] + " দি, অর্ধ গড় " + S.dopen.half[1] + " ব " + S.dopen.half[2] + " মা " + S.dopen.half[3] + " দি";
-            if (S.rows.length) dl += "<span class=\"sep\">|</span>পরবর্তী কার্যকাল শুরু: " + dmy(nextDay(S.rows[S.rows.length - 1].leaveTo));
-            $("personLine").innerHTML = dl; $("personLine").hidden = false;
-            $("printPerson").textContent = "ডামি সার্ভিস বুক (অনলাইনে সংরক্ষিত নয়)" + (S.dname ? "   |   নাম: " + S.dname : "");
+            var ttl = S.dname || "ডামি সার্ভিস বুক", op = "";
+            if (S.dopen && S.rows.length) op = "আগের জমা: পূর্ণ গড় " + S.dopen.full[1] + " ব " + S.dopen.full[2] + " মা " + S.dopen.full[3] + " দি, অর্ধ গড় " + S.dopen.half[1] + " ব " + S.dopen.half[2] + " মা " + S.dopen.half[3] + " দি";
+            if (!S.rows.length) {   // প্রথম সারির আগে: শিরোনামের জায়গাতেই নাম লেখা যায় (না লিখলে "ডামি সার্ভিস বুক")
+                $("personLine").innerHTML = '<input type="text" class="dm-title" id="dmName" maxlength="60" autocomplete="off" placeholder="ডামি সার্ভিস বুক" title="নাম লিখতে পারেন (ঐচ্ছিক)" value="' + esc(S.dname) + '">';
+            } else {
+                $("personLine").innerHTML = "<b>" + esc(ttl) + "</b>" + (op ? '<span class="sep">|</span>' + op : "") + '<span class="sep">|</span>পরবর্তী কার্যকাল শুরু: ' + dmy(nextDay(S.rows[S.rows.length - 1].leaveTo));
+            }
+            $("personLine").hidden = false;
+            $("printPerson").textContent = ttl + (op ? "   |   " + op : "");
             $("ledgerTable").querySelector("tbody").innerHTML = S.rows.map(rowHTML).join("");
             $("undoBtn").hidden = S.rows.length === 0; dmUi();
             return;
@@ -985,7 +992,7 @@
         var inputs = (S.dinputs || []).concat([{ dutyTo: v.dutyTo, leaveTo: v.leaveTo, leaveType: v.leaveType }]);
         var firstFrom = first ? v.dutyFrom : S.dfrom;
         api("dummyCalc", { dutyFrom: firstFrom, openFull: open.full, openHalf: open.half, rows: inputs }, "user").then(function (d) {
-            if (first) { S.dfrom = firstFrom; S.dopenIn = open; S.dname = $("dmName").value.trim(); }
+            if (first) { S.dfrom = firstFrom; S.dopenIn = open; }
             S.dinputs = inputs; S.rows = d.rows; S.dopen = d.open;
             renderBook(); resetForm();
             showModal(d.warning ? "warn" : "success", "সফলভাবে যুক্ত হয়েছে", d.warning || "", function () { $("resetBtn").focus(); });
@@ -1085,8 +1092,15 @@
     // ---------- Enter বাটনে পরের ধাপে যাওয়া ----------
     var ORDER_ALL = ["dutyFrom_t", "dutyTo_t", "leaveFrom_t", "leaveTo_t", "leaveType", "addBtn"];
     var FIELD = { dutyFrom_t: "dutyFrom", dutyTo_t: "dutyTo", leaveFrom_t: "leaveFrom", leaveTo_t: "leaveTo", leaveType: "leaveType" };
+    var DM_ORDER = ["dmName", "dmFy", "dmFm", "dmFd", "dmHy", "dmHm", "dmHd"];
     document.addEventListener("keydown", function (e) {
         if (e.key !== "Enter" || e.isComposing) return;
+        var di = DM_ORDER.indexOf(e.target.id);
+        if (di >= 0 && S.dummy) {   // ডামির নাম ও অবশিষ্ট ছুটির ঘরগুলোতে Enter চাপলে পরের ঘরে যাবে
+            e.preventDefault();
+            var nx = $(di < DM_ORDER.length - 1 ? DM_ORDER[di + 1] : "dutyFrom_t"); nx.focus(); if (nx.select) nx.select();
+            return;
+        }
         var ORDER = ORDER_ALL.filter(function (id) { return !$(id).readOnly; });
         var i = ORDER.indexOf(e.target.id);
         if (i < 0 || i >= ORDER.length - 1) return;   // addBtn ও রিসেট বাটন নিজেই Enter-এ কাজ করে
