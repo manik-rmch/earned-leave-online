@@ -320,6 +320,14 @@
 .lg-head h3{margin:0;color:#0f4c5c;font-size:18px}
 .lg-s{grid-column:auto;background:#e2e8f0;color:#334155;border-radius:999px;width:34px;height:34px;padding:0;font-size:16px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
 .lg-s.on{background:#0f766e;color:#fff}
+.dm-note{background:#fff7e0;border:1px solid #f1dcae;color:#7a5200;border-radius:10px;padding:10px 14px;margin:0 0 12px;font-size:14px}
+.dm-open{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.dm-open[hidden]{display:none}
+@media(max-width:700px){.dm-open{grid-template-columns:1fr}}
+.bmd-in{display:flex;align-items:center;gap:6px}
+.bmd-in input{width:3.2em;border:1px solid #cbd5e1;border-radius:6px;padding:4px 6px;font-size:16px;text-align:center;background:#fff}
+.bmd-in span{font-size:14px;color:#334155}
+@media print{.dm-note,.dm-open{display:none !important}}
 .adm-table{min-width:0;width:100%;font-size:14px}
 .adm-table th{background:#0b5f58;padding:8px}
 .adm-table td{padding:7px 6px;background:#fff}
@@ -486,6 +494,7 @@
                 <input id="psQuery" placeholder="ব্যক্তির নাম / জাতীয় পরিচয়পত্র নম্বর / মোবাইল নম্বর" autocomplete="off">
                 <button type="button" class="pbtn" id="psSearch">অনুসন্ধান</button>
                 <button type="button" class="pbtn sec" id="psNew">+ নতুন সার্ভিস বুক</button>
+                <button type="button" class="pbtn sec" id="psDummy">ডামি সার্ভিস বুক</button>
             </div>
             <div class="ps-list" id="psResults"></div>
             <div class="ps-new" id="psNewBox" hidden>
@@ -502,6 +511,7 @@
     <div class="print-title">অনলাইন অর্জিত ছুটি (Earned Leave) ক্যালকুলেটর</div>
     <div class="print-person" id="printPerson"></div>
 
+    <div class="dm-note" id="dmNote" hidden><b>ডামি সার্ভিস বুক:</b> এটি অনলাইনে সংরক্ষিত হয় না। পাতা রিফ্রেশ করলে, বন্ধ করলে বা লগআউট করলে সব তথ্য মুছে যাবে। দরকার হলে আগেই প্রিন্ট করে নিন।</div>
     <div class="form-group">
         <div class="f">
             <label class="req" for="dutyFrom_t">ডিউটি শুরু (হইতে)</label>
@@ -529,7 +539,7 @@
                 <option value="Others">Others-অন্যান্য ছুটি (বেতন সহ)</option>
             </select>
         </div>
-        <div class="f wide">
+        <div class="f wide" id="remarkBox">
             <label for="remark">মন্তব্য (ছুটির বিবরণ) — ঐচ্ছিক</label>
             <select id="remark">
                 <option value="">মন্তব্য বাছুন (ঐচ্ছিক)</option>
@@ -544,6 +554,11 @@
                 <option value="Study Leave">Study Leave</option>
                 <option value="Vacation Leave">Vacation Leave</option>
             </select>
+        </div>
+        <div class="dm-open" id="dmOpen" hidden>
+            <div class="f"><label for="dmName">নাম (ঐচ্ছিক, প্রিন্টে দেখাবে)</label><input type="text" class="dt" id="dmName" autocomplete="off"></div>
+            <div class="f"><label>অবশিষ্ট পূর্ণ গড় বেতনে অর্জিত ছুটি</label><div class="bmd-in"><input id="dmFy" inputmode="numeric" maxlength="2" placeholder="০"><span>ব</span><input id="dmFm" inputmode="numeric" maxlength="2" placeholder="০"><span>মা</span><input id="dmFd" inputmode="numeric" maxlength="2" placeholder="০"><span>দি</span></div></div>
+            <div class="f"><label>অবশিষ্ট অর্ধ গড় বেতনে অর্জিত ছুটি</label><div class="bmd-in"><input id="dmHy" inputmode="numeric" maxlength="2" placeholder="০"><span>ব</span><input id="dmHm" inputmode="numeric" maxlength="2" placeholder="০"><span>মা</span><input id="dmHd" inputmode="numeric" maxlength="2" placeholder="০"><span>দি</span></div></div>
         </div>
         <button type="button" id="addBtn">সার্ভিস বুকে হিসাব যুক্ত করুন</button>
     </div>
@@ -619,7 +634,7 @@
     function bn(s) { return String(s).replace(/\d/g, function (d) { return BNd[d]; }); }
     function en(s) { return String(s).replace(/[০-৯]/g, function (c) { return BNd.indexOf(c); }); }
     function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
-    var S = { person: null, rows: [], people: [], queue: [], sending: false, cfg: { dpm: 30, mpy: 12, fd: 11, hd: 12 } };
+    var S = { dummy: false, dopen: null, dname: "", person: null, rows: [], people: [], queue: [], sending: false, cfg: { dpm: 30, mpy: 12, fd: 11, hd: 12 } };
     var busyN = 0;
     function busy(n) { busyN += n; $("busy").hidden = busyN <= 0; }
     function tok(w) { try { return w === "admin" ? sessionStorage.getItem("el_adm") : localStorage.getItem("el_tok"); } catch (e) { return null; } }
@@ -795,7 +810,7 @@
     });
 
     function clearPerson() {
-        S.person = null; S.rows = [];
+        S.person = null; S.rows = []; S.dummy = false; S.dopen = null; S.dname = ""; S.dinputs = []; dmUi();
         $("personPanel").hidden = false; $("personPick").hidden = false; $("personLine").hidden = true; $("bookArea").hidden = true; $("psChange").hidden = true;
         $("psResults").innerHTML = ""; $("psQuery").value = ""; $("psNewBox").hidden = true;
         $("undoBtn").hidden = true; resetForm();
@@ -805,7 +820,31 @@
         showModal("warn", "একটু অপেক্ষা করুন", "সর্বশেষ হিসাবটি সংরক্ষণ হচ্ছে বা সংরক্ষণ হয়নি। সংরক্ষণ শেষ হলে আবার চেষ্টা করুন।");
         return true;
     }
-    $("psChange").addEventListener("click", function () { if (blockIfPending()) return; clearPerson(); $("psQuery").focus(); });
+    $("psChange").addEventListener("click", function () {
+        if (S.dummy) { if (S.rows.length && !confirm("ডামি সার্ভিস বুকের সব তথ্য মুছে যাবে। বন্ধ করবেন?")) return; clearPerson(); $("psQuery").focus(); return; }
+        if (blockIfPending()) return; clearPerson(); $("psQuery").focus();
+    });
+    // ---------- ডামি সার্ভিস বুক (অনলাইনে সংরক্ষণ হয় না; হিসাব ব্যাকএন্ড করে) ----------
+    function dmUi() {   // ডামি মোডের দেখানো/লুকানো অংশ
+        var first = S.dummy && !S.rows.length;
+        $("dmNote").hidden = !S.dummy; $("dmOpen").hidden = !first;
+        $("remarkBox").style.display = S.dummy ? "none" : "";
+        $("psChange").textContent = S.dummy ? "ডামি বন্ধ করুন" : "অন্য ব্যক্তির সার্ভিস বুক";
+    }
+    function dmNum(id) { var v = en($(id).value).trim(); return v === "" ? 0 : (/^\d+$/.test(v) ? Number(v) : NaN); }
+    function dmReadOpen() {
+        var o = { full: { y: dmNum("dmFy"), m: dmNum("dmFm"), d: dmNum("dmFd") }, half: { y: dmNum("dmHy"), m: dmNum("dmHm"), d: dmNum("dmHd") } };
+        return o;
+    }
+    $("psDummy").addEventListener("click", function () {
+        S.dummy = true; S.dopen = null; S.dname = ""; S.rows = []; S.queue = []; S.dinputs = []; S.dopenIn = null; S.dfrom = "";
+        S.person = { id: "dummy", name: "", key: "", joinDate: "" };
+        ["dmName", "dmFy", "dmFm", "dmFd", "dmHy", "dmHm", "dmHd"].forEach(function (i) { $(i).value = ""; });
+        resetForm(); dmUi(); renderBook();
+        $("personPanel").hidden = true; $("bookArea").hidden = false; $("psChange").hidden = false;
+        firstField().focus();
+    });
+    window.addEventListener("beforeunload", function (e) { if (S.dummy && S.rows.length) { e.preventDefault(); e.returnValue = ""; } });
 
     function nextDay(iso) { var d = new Date(iso + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10); }
     function dmy(s) { return s.slice(8) + "/" + s.slice(5, 7) + "/" + s.slice(0, 4); }
@@ -819,6 +858,16 @@
     }
     function renderBook() {
         var p = S.person;
+        if (S.dummy) {
+            var dl = "<b>ডামি সার্ভিস বুক</b>" + (S.dname ? "<span class=\"sep\">|</span>" + esc(S.dname) : "");
+            if (S.dopen && S.rows.length) dl += "<span class=\"sep\">|</span>আগের জমা: পূর্ণ গড় " + S.dopen.full[1] + " ব " + S.dopen.full[2] + " মা " + S.dopen.full[3] + " দি, অর্ধ গড় " + S.dopen.half[1] + " ব " + S.dopen.half[2] + " মা " + S.dopen.half[3] + " দি";
+            if (S.rows.length) dl += "<span class=\"sep\">|</span>পরবর্তী কার্যকাল শুরু: " + dmy(nextDay(S.rows[S.rows.length - 1].leaveTo));
+            $("personLine").innerHTML = dl; $("personLine").hidden = false;
+            $("printPerson").textContent = "ডামি সার্ভিস বুক (অনলাইনে সংরক্ষিত নয়)" + (S.dname ? "   |   নাম: " + S.dname : "");
+            $("ledgerTable").querySelector("tbody").innerHTML = S.rows.map(rowHTML).join("");
+            $("undoBtn").hidden = S.rows.length === 0; dmUi();
+            return;
+        }
         var line = "<b>" + esc(p.name) + "</b><span class=\"sep\">|</span>জাতীয় পরিচয়পত্র/মোবাইল: " + esc(p.key);
         if (S.rows.length) line += "<span class=\"sep\">|</span>পরবর্তী কার্যকাল শুরু: " + dmy(nextDay(S.rows[S.rows.length - 1].leaveTo));
         $("personLine").innerHTML = line; $("personLine").hidden = false;
@@ -918,6 +967,7 @@
         var last = S.rows.length ? S.rows[S.rows.length - 1] : null;
         var err = localCheck(v);
         if (err) { showModal("error", "তারিখে সমস্যা", err); return; }
+        if (S.dummy) { dummyAdd(v); return; }
         var row = pendingRow(v, last);
         row._st = "saving";
         S.rows.push(row); renderBook();
@@ -926,6 +976,20 @@
         S.queue.push({ row: row, payload: payload, state: "saving" });
         pump();
         showModal("success", "সফলভাবে যুক্ত হয়েছে", "", function () { $("resetBtn").focus(); });
+    }
+
+    function dummyAdd(v) {
+        var first = !S.rows.length, open = first ? dmReadOpen() : S.dopenIn;
+        var bad = [open.full.y, open.full.m, open.full.d, open.half.y, open.half.m, open.half.d].some(function (x) { return isNaN(x); });
+        if (bad) { showModal("error", "অবশিষ্ট ছুটি", "ব-মা-দি ঘরে শুধু সংখ্যা দিন (ফাঁকা রাখলে ০ ধরা হবে)।"); return; }
+        var inputs = (S.dinputs || []).concat([{ dutyTo: v.dutyTo, leaveTo: v.leaveTo, leaveType: v.leaveType }]);
+        var firstFrom = first ? v.dutyFrom : S.dfrom;
+        api("dummyCalc", { dutyFrom: firstFrom, openFull: open.full, openHalf: open.half, rows: inputs }, "user").then(function (d) {
+            if (first) { S.dfrom = firstFrom; S.dopenIn = open; S.dname = $("dmName").value.trim(); }
+            S.dinputs = inputs; S.rows = d.rows; S.dopen = d.open;
+            renderBook(); resetForm();
+            showModal(d.warning ? "warn" : "success", "সফলভাবে যুক্ত হয়েছে", d.warning || "", function () { $("resetBtn").focus(); });
+        }).catch(handleErr);
     }
 
     // ---------- পেছনে সংরক্ষণের সারি (একটার পর একটা) ----------
@@ -983,6 +1047,10 @@
     }
     $("undoBtn").addEventListener("click", function () {
         if (!S.person || !S.rows.length) return;
+        if (S.dummy) {
+            if (!confirm("সর্বশেষ সারিটি মুছে ফেলে তথ্যগুলো ফর্মে ফিরিয়ে আনা হবে। ঠিক আছে?")) return;
+            var rm = S.rows.pop(); S.dinputs.pop(); renderBook(); restoreInputs(rm); return;
+        }
         if (S.queue.length) {   // শুধু সংরক্ষণ-না-হওয়া একমাত্র সারিটি ব্রাউজার থেকেই ফেরানো যায়
             var it = S.queue[0];
             if (S.queue.length === 1 && it.state === "failed") {
