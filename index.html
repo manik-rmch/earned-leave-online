@@ -324,11 +324,11 @@
 .dm-open{display:contents}
 .dm-open[hidden]{display:none}
 @media(min-width:1100px){#bookArea .form-group.dm-first{grid-template-columns:1.35fr 1.35fr 1fr 1fr 1fr 1fr 1.5fr}}
-.person-line input.dm-title{font:inherit;font-weight:700;color:#0b5345;text-align:center;border:0;border-bottom:2px dashed #9db3bd;background:transparent;outline:0;width:20em;max-width:100%;padding:0 4px;border-radius:0}
-.person-line input.dm-title::placeholder{color:#0b5345;opacity:1}
-.person-line input.dm-title:focus{border-bottom-color:#0f766e}
-.bmd-in{display:flex;align-items:center;gap:6px}
-.bmd-in input{width:2.7em;min-width:0;border:1px solid #cbd5e1;border-radius:6px;padding:4px 6px;font-size:16px;text-align:center;background:#fff}
+.person-line input.dm-title{font:inherit;font-size:17px;font-weight:700;color:#0b5345;text-align:center;border:1px solid #ccc;border-radius:8px;background:#fff;outline:0;width:min(680px,100%);box-sizing:border-box;padding:10px 14px}
+.person-line input.dm-title::placeholder{color:#8a96a3;font-weight:400;opacity:1}
+.person-line input.dm-title:focus{border-color:#0f766e;box-shadow:0 0 5px rgba(39,174,96,.3)}
+.bmd-in{display:flex;align-items:center;gap:4px}
+.bmd-in input{width:2.1em;min-width:0;border:1px solid #cbd5e1;border-radius:6px;padding:4px 6px;font-size:16px;text-align:center;background:#fff}
 .bmd-in span{font-size:14px;color:#334155}
 @media print{.dm-note,.dm-open{display:none !important}}
 .adm-table{min-width:0;width:100%;font-size:14px}
@@ -494,7 +494,7 @@
         <div id="personPick">
             <h3>সার্ভিস বুক নির্বাচন করুন</h3>
             <div class="ps-row">
-                <input id="psQuery" placeholder="ব্যক্তির নাম / জাতীয় পরিচয়পত্র নম্বর / মোবাইল নম্বর" autocomplete="off">
+                <input id="psQuery" data-bn placeholder="ব্যক্তির নাম / জাতীয় পরিচয়পত্র নম্বর / মোবাইল নম্বর" autocomplete="off">
                 <button type="button" class="pbtn" id="psSearch">অনুসন্ধান</button>
                 <button type="button" class="pbtn sec" id="psNew">+ নতুন সার্ভিস বুক</button>
                 <button type="button" class="pbtn sec" id="psDummy">ডামি সার্ভিস বুক</button>
@@ -502,7 +502,7 @@
             <div class="ps-list" id="psResults"></div>
             <div class="ps-new" id="psNewBox" hidden>
                 <div class="f"><label class="req" for="pnName">ব্যক্তির নাম</label><input type="text" class="dt" id="pnName" autocomplete="off"></div>
-                <div class="f"><label class="req" for="pnKey">জাতীয় পরিচয়পত্র নম্বর / মোবাইল নম্বর</label><input type="text" class="dt" id="pnKey" inputmode="numeric" autocomplete="off"></div>
+                <div class="f"><label class="req" for="pnKey">জাতীয় পরিচয়পত্র নম্বর / মোবাইল নম্বর</label><input type="text" class="dt" id="pnKey" data-bn inputmode="numeric" autocomplete="off"></div>
                 <div class="f"><label class="req" for="pnJoin_t">চাকরিতে যোগদানের তারিখ</label><input type="text" class="dt" id="pnJoin_t" inputmode="numeric" autocomplete="off" placeholder="দিন/মাস/বছর"><input type="date" id="pnJoin" hidden></div>
                 <div class="hint ps-hint">তিনটি ঘরই আবশ্যক। নম্বর কমপক্ষে ১০ ডিজিটের হতে হবে। যোগদানের তারিখই প্রথম সারির "ডিউটি শুরু (হইতে)" হবে এবং পরে বদলানো যাবে না।</div>
                 <div class="acts"><button type="button" class="pbtn" id="pnSave">সার্ভিস বুক তৈরি করুন</button><button type="button" class="pbtn sec" id="pnCancel">বাতিল</button></div>
@@ -517,8 +517,8 @@
     <div class="dm-note" id="dmNote" hidden><b>ডামি সার্ভিস বুক:</b> এটি অনলাইনে সংরক্ষিত হয় না। পাতা রিফ্রেশ করলে, বন্ধ করলে বা লগআউট করলে সব তথ্য মুছে যাবে। দরকার হলে আগেই প্রিন্ট করে নিন।</div>
     <div class="form-group" id="bookForm">
         <div class="dm-open" id="dmOpen" hidden>
-            <div class="f"><label>অবশিষ্ট পূর্ণ গড় বেতনে অর্জিত ছুটি</label><div class="bmd-in"><input id="dmFy" inputmode="numeric" maxlength="2" placeholder="০"><span>ব</span><input id="dmFm" inputmode="numeric" maxlength="2" placeholder="০"><span>মা</span><input id="dmFd" inputmode="numeric" maxlength="2" placeholder="০"><span>দি</span></div></div>
-            <div class="f"><label>অবশিষ্ট অর্ধ গড় বেতনে অর্জিত ছুটি</label><div class="bmd-in"><input id="dmHy" inputmode="numeric" maxlength="2" placeholder="০"><span>ব</span><input id="dmHm" inputmode="numeric" maxlength="2" placeholder="০"><span>মা</span><input id="dmHd" inputmode="numeric" maxlength="2" placeholder="০"><span>দি</span></div></div>
+            <div class="f"><label>অবশিষ্ট পূর্ণ গড় বেতনে অর্জিত ছুটি</label><div class="bmd-in"><input id="dmFy" data-bn inputmode="numeric" maxlength="2" placeholder="০"><span>ব</span><input id="dmFm" data-bn inputmode="numeric" maxlength="2" placeholder="০"><span>মা</span><input id="dmFd" data-bn inputmode="numeric" maxlength="2" placeholder="০"><span>দি</span></div></div>
+            <div class="f"><label>অবশিষ্ট অর্ধ গড় বেতনে অর্জিত ছুটি</label><div class="bmd-in"><input id="dmHy" data-bn inputmode="numeric" maxlength="2" placeholder="০"><span>ব</span><input id="dmHm" data-bn inputmode="numeric" maxlength="2" placeholder="০"><span>মা</span><input id="dmHd" data-bn inputmode="numeric" maxlength="2" placeholder="০"><span>দি</span></div></div>
         </div>
         <div class="f">
             <label class="req" for="dutyFrom_t">ডিউটি শুরু (হইতে)</label>
@@ -777,7 +777,7 @@
         }).join("");
     }
     function doSearch() {
-        var q = $("psQuery").value.trim();
+        var q = en($("psQuery").value).trim();
         if (!q) { showModal("error", "অনুসন্ধান", "নাম, জাতীয় পরিচয়পত্র নম্বর বা মোবাইল নম্বর লিখুন।"); return; }
         // অনুসন্ধান বাটন/Enter: সার্ভার থেকে দেখা (অন্য কেউ হয়তো নতুন বানিয়েছে; অনুমতিহীন বইও এভাবে জানা যায়)
         api("personSearch", { q: q }).then(function (d) {
@@ -794,10 +794,10 @@
         var b = e.target.closest("button[data-id]"); if (!b) return;
         api("personLoad", { personId: b.dataset.id }).then(setPerson).catch(handleErr);
     });
-    $("psNew").addEventListener("click", function () { $("psNewBox").hidden = false; $("pnName").value = $("psQuery").value.replace(/[\d\s+-]/g, "") ? $("psQuery").value : ""; $("pnName").focus(); });
+    $("psNew").addEventListener("click", function () { $("psNewBox").hidden = false; $("pnName").value = en($("psQuery").value).replace(/[\d\s+-]/g, "") ? $("psQuery").value : ""; $("pnName").focus(); });
     $("pnCancel").addEventListener("click", function () { $("psNewBox").hidden = true; });
     function createPerson() {
-        api("personCreate", { name: $("pnName").value, key: $("pnKey").value, joinDate: $("pnJoin").value }).then(function (d) {
+        api("personCreate", { name: $("pnName").value, key: en($("pnKey").value), joinDate: $("pnJoin").value }).then(function (d) {
             $("psNewBox").hidden = true; $("pnName").value = ""; $("pnKey").value = ""; $("pnJoin_t").value = ""; $("pnJoin_t")._p = ""; $("pnJoin").value = "";
             S.people.push(d.person);
             setPerson(d);
@@ -812,7 +812,7 @@
     });
 
     function clearPerson() {
-        S.person = null; S.rows = []; S.dummy = false; S.dopen = null; S.dname = ""; S.dinputs = []; dmUi();
+        S.person = null; S.rows = []; S.dummy = false; S.dopen = null; S.dname = ""; S.dinputs = []; S.dver++; dmUi();
         $("personPanel").hidden = false; $("personPick").hidden = false; $("personLine").hidden = true; $("bookArea").hidden = true; $("psChange").hidden = true;
         $("psResults").innerHTML = ""; $("psQuery").value = ""; $("psNewBox").hidden = true;
         $("undoBtn").hidden = true; resetForm();
@@ -839,7 +839,7 @@
         return o;
     }
     $("psDummy").addEventListener("click", function () {
-        S.dummy = true; S.dopen = null; S.dname = ""; S.rows = []; S.queue = []; S.dinputs = []; S.dopenIn = null; S.dfrom = "";
+        S.dummy = true; S.dopen = null; S.dname = ""; S.rows = []; S.queue = []; S.dinputs = []; S.dver++; S.dopenIn = null; S.dfrom = "";
         S.person = { id: "dummy", name: "", key: "", joinDate: "" };
         ["dmFy", "dmFm", "dmFd", "dmHy", "dmHm", "dmHd"].forEach(function (i) { $(i).value = ""; });
         resetForm(); dmUi(); renderBook();
@@ -865,12 +865,12 @@
             var ttl = S.dname || "ডামি সার্ভিস বুক", op = "";
             if (S.dopen && S.rows.length) op = "আগের জমা: পূর্ণ গড় " + S.dopen.full[1] + " ব " + S.dopen.full[2] + " মা " + S.dopen.full[3] + " দি, অর্ধ গড় " + S.dopen.half[1] + " ব " + S.dopen.half[2] + " মা " + S.dopen.half[3] + " দি";
             if (!S.rows.length) {   // প্রথম সারির আগে: শিরোনামের জায়গাতেই নাম লেখা যায় (না লিখলে "ডামি সার্ভিস বুক")
-                $("personLine").innerHTML = '<input type="text" class="dm-title" id="dmName" maxlength="60" autocomplete="off" placeholder="ডামি সার্ভিস বুক" title="নাম লিখতে পারেন (ঐচ্ছিক)" value="' + esc(S.dname) + '">';
+                $("personLine").innerHTML = '<input type="text" class="dm-title" id="dmName" maxlength="60" autocomplete="off" placeholder="ডামি সার্ভিস বুক (নাম দিন ঐচ্ছিক)" title="নাম লিখতে পারেন (ঐচ্ছিক)" value="' + esc(S.dname) + '">';
             } else {
                 $("personLine").innerHTML = "<b>" + esc(ttl) + "</b>" + (op ? '<span class="sep">|</span>' + op : "") + '<span class="sep">|</span>পরবর্তী কার্যকাল শুরু: ' + dmy(nextDay(S.rows[S.rows.length - 1].leaveTo));
             }
             $("personLine").hidden = false;
-            $("printPerson").textContent = ttl + (op ? "   |   " + op : "");
+            $("printPerson").textContent = ttl + " (অনলাইনে সংরক্ষিত নয়)" + (op ? "   |   " + op : "");
             $("ledgerTable").querySelector("tbody").innerHTML = S.rows.map(rowHTML).join("");
             $("undoBtn").hidden = S.rows.length === 0; dmUi();
             return;
@@ -892,7 +892,7 @@
         return "<td>" + a[0] + a[1] + "</td><td>" + a[2] + "</td><td>" + a[3] + "</td>";
     }
     function stHTML(r) {
-        if (r._st === "saving") return '<span class="st saving">সংরক্ষণ হচ্ছে…</span>';
+        if (r._st === "saving") return '<span class="st saving">' + (S.dummy ? "হিসাব হচ্ছে…" : "সংরক্ষণ হচ্ছে…") + '</span>';
         if (r._st === "failed") return '<span class="st failed">সংরক্ষণ হয়নি <button type="button" data-retry="1">আবার পাঠান</button></span>';
         return "";
     }
@@ -937,10 +937,16 @@
     $("dutyTo_t").addEventListener("input", function () { setTimeout(refreshAuto, 0); });
     $("resetBtn").addEventListener("click", function () {
         resetForm();
+        if (S.dummy && !S.rows.length) {   // ডামির প্রথম সারির আগে: অবশিষ্ট ছুটি ও নামসহ সব ঘর ফাঁকা, কার্সর প্রথম ঘরে
+            ["dmFy", "dmFm", "dmFd", "dmHy", "dmHm", "dmHd"].forEach(function (i) { $(i).value = ""; });
+            S.dname = ""; if ($("dmName")) $("dmName").value = "";
+            $("dmFy").focus(); return;
+        }
         if (S.person) firstField().focus();
     });
     $("printBtn").addEventListener("click", function () {
         if (!S.person || !S.rows.length) { showModal("error", "প্রিন্ট", "সার্ভিস বুকে প্রিন্ট করার মতো কোনো হিসাব যুক্ত করা হয়নি।"); return; }
+        if (S.dummy && S.rows.some(function (r) { return r._st; })) { showModal("warn", "একটু অপেক্ষা করুন", "হিসাব শেষ হচ্ছে। কয়েক সেকেন্ড পর আবার প্রিন্ট চাপুন।"); return; }
         window.print();
     });
 
@@ -985,18 +991,38 @@
         showModal("success", "সফলভাবে যুক্ত হয়েছে", "", function () { $("resetBtn").focus(); });
     }
 
+    // সারি যোগ করলে সঙ্গে সঙ্গে সারিটি টেবিলে আসে (সংখ্যার ঘরে "…"); হিসাব ব্যাকএন্ডে পেছনে চলে, শেষ হলে সংখ্যা বসে যায়।
+    S.dver = 0; S.dbusy = false;
     function dummyAdd(v) {
         var first = !S.rows.length, open = first ? dmReadOpen() : S.dopenIn;
         var bad = [open.full.y, open.full.m, open.full.d, open.half.y, open.half.m, open.half.d].some(function (x) { return isNaN(x); });
         if (bad) { showModal("error", "অবশিষ্ট ছুটি", "ব-মা-দি ঘরে শুধু সংখ্যা দিন (ফাঁকা রাখলে ০ ধরা হবে)।"); return; }
-        var inputs = (S.dinputs || []).concat([{ dutyTo: v.dutyTo, leaveTo: v.leaveTo, leaveType: v.leaveType }]);
-        var firstFrom = first ? v.dutyFrom : S.dfrom;
-        api("dummyCalc", { dutyFrom: firstFrom, openFull: open.full, openHalf: open.half, rows: inputs }, "user").then(function (d) {
-            if (first) { S.dfrom = firstFrom; S.dopenIn = open; }
-            S.dinputs = inputs; S.rows = d.rows; S.dopen = d.open;
-            renderBook(); resetForm();
-            showModal(d.warning ? "warn" : "success", "সফলভাবে যুক্ত হয়েছে", d.warning || "", function () { $("resetBtn").focus(); });
-        }).catch(handleErr);
+        if (first) { S.dfrom = v.dutyFrom; S.dopenIn = open; S.dopen = null; }
+        S.dinputs.push({ dutyTo: v.dutyTo, leaveTo: v.leaveTo, leaveType: v.leaveType });
+        S.rows.push({ seq: S.rows.length + 1, dutyFrom: v.dutyFrom, dutyTo: v.dutyTo, leaveFrom: v.leaveFrom, leaveTo: v.leaveTo, leaveType: v.leaveType, remark: "", _st: "saving" });
+        S.dver++;
+        renderBook(); resetForm();
+        showModal("success", "সফলভাবে যুক্ত হয়েছে", "", function () { $("resetBtn").focus(); });
+        dmFlush();
+    }
+    function dmFlush() {
+        if (S.dbusy || !S.dummy || !S.dinputs.length) return;
+        S.dbusy = true;
+        var ver = S.dver, snap = S.dinputs.slice(), open = S.dopenIn, from = S.dfrom;
+        api("dummyCalc", { dutyFrom: from, openFull: open.full, openHalf: open.half, rows: snap }, "user", true).then(function (d) {
+            S.dbusy = false;
+            if (!S.dummy) return;
+            if (ver === S.dver) { S.rows = d.rows; S.dopen = d.open; renderBook(); if (d.warning) showModal("warn", "সতর্কতা", d.warning); }
+            else dmFlush();   // এর মধ্যে আরও বদল হয়েছে: সর্বশেষ অবস্থা আবার পাঠানো
+        }).catch(function (e) {
+            S.dbusy = false;
+            if (!S.dummy) return;
+            if (e && e.code === "AUTH") { handleErr(e); return; }
+            var rm = S.rows.pop(); S.dinputs.pop(); S.dver++; renderBook();
+            if (rm) restoreInputs(rm);
+            showModal("error", "হিসাব হয়নি", (e && e.message ? e.message + "\n" : "") + "সারিটি ফর্মে ফিরিয়ে আনা হয়েছে।");
+            dmFlush();
+        });
     }
 
     // ---------- পেছনে সংরক্ষণের সারি (একটার পর একটা) ----------
@@ -1056,7 +1082,7 @@
         if (!S.person || !S.rows.length) return;
         if (S.dummy) {
             if (!confirm("সর্বশেষ সারিটি মুছে ফেলে তথ্যগুলো ফর্মে ফিরিয়ে আনা হবে। ঠিক আছে?")) return;
-            var rm = S.rows.pop(); S.dinputs.pop(); renderBook(); restoreInputs(rm); return;
+            var rm = S.rows.pop(); S.dinputs.pop(); S.dver++; renderBook(); restoreInputs(rm); if (S.rows.some(function (r) { return r._st; })) dmFlush(); return;
         }
         if (S.queue.length) {   // শুধু সংরক্ষণ-না-হওয়া একমাত্র সারিটি ব্রাউজার থেকেই ফেরানো যায়
             var it = S.queue[0];
@@ -1246,7 +1272,7 @@
 
     function renderSettings(list) {
         var h = '<div class="adm-card"><h3>হিসাবের নিয়ম (ফরমুলার মান)</h3><div class="adm-grid">';
-        list.forEach(function (s) { h += '<div class="fld"><label>' + esc(s.label) + '</label><input data-k="' + esc(s.key) + '" inputmode="numeric" value="' + esc(bn(s.value)) + '"></div>'; });
+        list.forEach(function (s) { h += '<div class="fld"><label>' + esc(s.label) + '</label><input data-bn data-k="' + esc(s.key) + '" inputmode="numeric" value="' + esc(bn(s.value)) + '"></div>'; });
         h += '</div><div class="hint">সতর্কতা: নিয়ম বদলালে শুধু ভবিষ্যতে যুক্ত হওয়া সারির হিসাব বদলাবে; আগের সারি অপরিবর্তিত থাকবে। টেবিলের হেডারের "১/১১", "১/১২" লেখা নিজে থেকে বদলায় না।</div><br><button type="button" class="pbtn" data-act="sSave">সংরক্ষণ করুন</button></div>';
         $("admBody").innerHTML = h;
     }
@@ -1428,6 +1454,15 @@
             else [].forEach.call(m.addedNodes, bnNode);
         });
     }).observe(document.body, { childList: true, subtree: true, characterData: true });
+
+    // ---------- সংখ্যার ঘরে ইংরেজি লিখলেও বাংলায় দেখানো (data-bn চিহ্নিত ঘর) ----------
+    document.addEventListener("input", function (e) {
+        var el = e.target;
+        if (!el || !el.hasAttribute || !el.hasAttribute("data-bn") || !/\d/.test(el.value)) return;
+        var a = el.selectionStart, b = el.selectionEnd;
+        el.value = bn(el.value);
+        try { el.setSelectionRange(a, b); } catch (x) {}
+    });
 
     // ---------- সার্ভার আগেই জাগিয়ে রাখা (লগইন/হিসাব দ্রুত করতে) ----------
     function warmUp() {
