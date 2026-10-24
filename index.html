@@ -937,9 +937,8 @@
     $("dutyTo_t").addEventListener("input", function () { setTimeout(refreshAuto, 0); });
     $("resetBtn").addEventListener("click", function () {
         resetForm();
-        if (S.dummy && !S.rows.length) {   // ডামির প্রথম সারির আগে: অবশিষ্ট ছুটি ও নামসহ সব ঘর ফাঁকা, কার্সর প্রথম ঘরে
+        if (S.dummy && !S.rows.length) {   // ডামির প্রথম সারির আগে: নাম বাদে বাকি সব ঘর ফাঁকা, কার্সর প্রথম ঘরে
             ["dmFy", "dmFm", "dmFd", "dmHy", "dmHm", "dmHd"].forEach(function (i) { $(i).value = ""; });
-            S.dname = ""; if ($("dmName")) $("dmName").value = "";
             $("dmFy").focus(); return;
         }
         if (S.person) firstField().focus();
