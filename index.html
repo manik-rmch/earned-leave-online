@@ -830,7 +830,7 @@
     function dmUi() {   // ডামি মোডের দেখানো/লুকানো অংশ
         var first = S.dummy && !S.rows.length;
         $("dmNote").hidden = !S.dummy; $("dmOpen").hidden = !first; $("bookForm").classList.toggle("dm-first", first);
-        $("remarkBox").style.display = S.dummy ? "none" : "";
+        $("remarkBox").style.display = first ? "none" : "";
         $("psChange").textContent = S.dummy ? "ডামি বন্ধ করুন" : "অন্য ব্যক্তির সার্ভিস বুক";
     }
     function dmNum(id) { var v = en($(id).value).trim(); return v === "" ? 0 : (/^\d+$/.test(v) ? Number(v) : NaN); }
@@ -997,8 +997,8 @@
         var bad = [open.full.y, open.full.m, open.full.d, open.half.y, open.half.m, open.half.d].some(function (x) { return isNaN(x); });
         if (bad) { showModal("error", "অবশিষ্ট ছুটি", "ব-মা-দি ঘরে শুধু সংখ্যা দিন (ফাঁকা রাখলে ০ ধরা হবে)।"); return; }
         if (first) { S.dfrom = v.dutyFrom; S.dopenIn = open; S.dopen = null; }
-        S.dinputs.push({ dutyTo: v.dutyTo, leaveTo: v.leaveTo, leaveType: v.leaveType });
-        S.rows.push({ seq: S.rows.length + 1, dutyFrom: v.dutyFrom, dutyTo: v.dutyTo, leaveFrom: v.leaveFrom, leaveTo: v.leaveTo, leaveType: v.leaveType, remark: "", _st: "saving" });
+        S.dinputs.push({ dutyTo: v.dutyTo, leaveTo: v.leaveTo, leaveType: v.leaveType, remark: first ? "" : v.remark });
+        S.rows.push({ seq: S.rows.length + 1, dutyFrom: v.dutyFrom, dutyTo: v.dutyTo, leaveFrom: v.leaveFrom, leaveTo: v.leaveTo, leaveType: v.leaveType, remark: first ? "" : String(v.remark || "").slice(0, 60), _st: "saving" });
         S.dver++;
         renderBook(); resetForm();
         showModal("success", "সফলভাবে যুক্ত হয়েছে", "", function () { $("resetBtn").focus(); });
@@ -1256,17 +1256,28 @@
             });
             h += '</div><button type="button" class="pbtn" data-act="pAccSave" data-id="' + esc(ap.id) + '">সংরক্ষণ করুন</button> <button type="button" class="pbtn sec" data-act="pAccCancel">বাতিল</button></div>';
         }
+        var ep0 = null; AD.people.forEach(function (x) { if (x.id === AD.pEditId) ep0 = x; });
+        if (ep0) {
+            h += '<div class="adm-card"><h3>সম্পাদনা: ' + esc(ep0.name) + '</h3><div class="adm-grid">' +
+                '<div class="fld"><label>ব্যক্তির নাম</label><input id="peName" value="' + esc(ep0.name) + '" autocomplete="off"></div>' +
+                '<div class="fld"><label>জাতীয় পরিচয়পত্র / মোবাইল নম্বর</label><input id="peKey" data-bn inputmode="numeric" value="' + esc(bn(ep0.key)) + '" autocomplete="off"></div>' +
+                (ep0.rows === 0
+                    ? '<div class="f"><label for="peJoin_t">চাকরিতে যোগদানের তারিখ</label><input type="text" class="dt" id="peJoin_t" inputmode="numeric" autocomplete="off" placeholder="দিন/মাস/বছর"><input type="date" id="peJoin" value="' + esc(ep0.joinDate || "") + '" hidden></div>'
+                    : '<div class="fld"><label>চাকরিতে যোগদানের তারিখ</label><div class="hint">' + esc(ep0.joinDate ? fmtDate(ep0.joinDate) : "-") + ' (সারি যুক্ত হয়ে গেছে, তাই বদলানো যাবে না)</div></div>') +
+                '</div><div style="margin-top:12px"><button type="button" class="pbtn" data-act="pEditSave" data-id="' + esc(ep0.id) + '">সংরক্ষণ করুন</button> <button type="button" class="pbtn sec" data-act="pEditCancel">বাতিল</button></div></div>';
+        }
         h += '<div class="hint" style="margin-bottom:10px">মোট সার্ভিস বুক: ' + AD.people.length + ' &nbsp; <button type="button" class="pbtn sm" data-act="pCsvAll">⬇ সব বইয়ের ব্যাকআপ (CSV) ডাউনলোড</button></div><div class="adm-scroll"><table class="adm-table"><thead><tr><th>নাম</th><th>জাতীয় পরিচয়পত্র/মোবাইল</th><th>যোগদান</th><th>কে দেখতে পারবে</th><th>সারি সংখ্যা</th><th>তৈরি করেছেন</th><th>তৈরির সময়</th><th>কাজ</th></tr></thead><tbody>';
         if (!AD.people.length) h += '<tr><td colspan="8">কোনো সার্ভিস বুক নেই।</td></tr>';
         AD.people.forEach(function (p) {
             h += '<tr><td class="l">' + esc(p.name) + "</td><td>" + esc(p.key) + "</td><td>" + esc(p.joinDate ? fmtDate(p.joinDate) : "-") + "</td><td>" + (p.shared === "N" ? (p.owners.length ? esc(p.owners.join(", ")) : "শুধু অ্যাডমিন") : "সবাই") + "</td><td>" + p.rows + "</td><td>" + esc(p.createdBy) + "</td><td>" + esc(p.createdAt) + "</td><td>" +
-                '<button type="button" class="pbtn sm" data-act="pEdit" data-id="' + esc(p.id) + '">নাম/নম্বর সংশোধন</button> ' +
+                '<button type="button" class="pbtn sm" data-act="pEdit" data-id="' + esc(p.id) + '">সম্পাদনা</button> ' +
                 '<button type="button" class="pbtn sm sec" data-act="pAcc" data-id="' + esc(p.id) + '">কে দেখতে পারবে</button> ' +
                 '<button type="button" class="pbtn sm sec" data-act="pCsv" data-id="' + esc(p.id) + '">⬇ CSV</button> ' +
                 (p.rows ? '<button type="button" class="pbtn sm sec" data-act="pRecalc" data-id="' + esc(p.id) + '">নতুন নিয়মে পুনর্গণনা</button> <button type="button" class="pbtn sm sec" data-act="pRowDel" data-id="' + esc(p.id) + '">সর্বশেষ সারি মুছুন</button> ' : "") +
                 '<button type="button" class="pbtn sm danger" data-act="pDel" data-id="' + esc(p.id) + '">মুছুন</button></td></tr>';
         });
         $("admBody").innerHTML = h + "</tbody></table></div>";
+        if (ep0 && ep0.rows === 0 && window.initDateField) initDateField("peJoin");
     }
 
     function renderSettings(list) {
@@ -1381,12 +1392,13 @@
         } else if (act === "uDel") {
             if (confirm('ইউজার "' + id + '" স্থায়ীভাবে মুছে ফেলবেন?')) admApi("userDelete", { username: id }).then(function (d) { if (d) loadTab(); });
         } else if (act === "pEdit") {
-            var p = AD.people.filter(function (x) { return x.id === id; })[0];
-            var nm = prompt("ব্যক্তির নাম:", p.name); if (nm === null) return;
-            var ky = prompt("জাতীয় পরিচয়পত্র/মোবাইল নম্বর:", p.key); if (ky === null) return;
-            var upd = { id: id, name: nm, key: ky };
-            if (p.rows === 0) { var jd = prompt("চাকরিতে যোগদানের তারিখ (বছর-মাস-দিন, যেমন 2015-03-01):", p.joinDate || ""); if (jd === null) return; upd.joinDate = en(jd); }
-            admApi("personUpdate", upd).then(function (d) { if (d) loadTab(); });
+            AD.pEditId = id; AD.pAcc = null; renderPeople(); var pe = $("peName"); if (pe) pe.focus();
+        } else if (act === "pEditCancel") { AD.pEditId = null; renderPeople();
+        } else if (act === "pEditSave") {
+            var ep = AD.people.filter(function (x) { return x.id === id; })[0];
+            var upd = { id: id, name: $("peName").value, key: en($("peKey").value) };
+            if (ep && ep.rows === 0) { if (!$("peJoin").value) { showModal("error", "যোগদানের তারিখ", "যোগদানের তারিখ সঠিকভাবে দিন।"); return; } upd.joinDate = $("peJoin").value; }
+            admApi("personUpdate", upd).then(function (d) { if (d) { AD.pEditId = null; loadTab(); showModal("success", "সংরক্ষণ হয়েছে", "সার্ভিস বুকের তথ্য বদলানো হয়েছে।"); } });
         } else if (act === "pCsvAll") { downloadCsv("");
         } else if (act === "pCsv") { downloadCsv(id);
         } else if (act === "pRowDel") {
@@ -1415,7 +1427,7 @@
             if (confirm('ইউজার "' + id + '"-কে সব ডিভাইস থেকে লগআউট করা হবে। সে আবার পাসওয়ার্ড দিয়ে ঢুকতে পারবে। নিশ্চিত?'))
                 admApi("userForceLogout", { username: id }).then(function (d) { if (d) showModal("success", "লগআউট হয়েছে", "ইউজারের সব লগইন বাতিল হয়েছে।"); });
         } else if (act === "pAcc") {
-            adGet("userList").then(function (d) { AD.users = d.users; AD.pAcc = id; renderPeople(); }).catch(admFail);
+            adGet("userList").then(function (d) { AD.users = d.users; AD.pAcc = id; AD.pEditId = null; renderPeople(); }).catch(admFail);
         } else if (act === "pAccCancel") { AD.pAcc = null; renderPeople();
         } else if (act === "pAccSave") {
             var own = []; [].forEach.call(document.querySelectorAll("#admBody .pAccU"), function (c) { if (c.checked) own.push(c.dataset.u); });
@@ -1507,7 +1519,7 @@ function today(){var t=new Date();return{y:t.getFullYear(),m:t.getMonth(),d:t.ge
 function days(a,b){return Math.round((Date.UTC(b.y,b.m,b.d)-Date.UTC(a.y,a.m,a.d))/864e5)}
 function ymd(a,b){var y=b.y-a.y,m=b.m-a.m,d=b.d-a.d;if(d<0){m--;d+=b.m?dim(b.y,b.m-1):31}if(m<0){y--;m+=12}return{y:y,m:m,d:d}}
 function onDate(id,fn){var el=$(id);el.addEventListener("input",function(){maskEl(el,[2,2,4],["/","/"]);if(fn)fn()})}
-function boxClick(){document.querySelectorAll(".f").forEach(function(b){b.addEventListener("click",function(e){var i=b.querySelector("input");if(i&&e.target!==i&&e.target.tagName!=="BUTTON")i.focus()})})}
+function boxClick(){document.querySelectorAll(".f").forEach(function(b){b.addEventListener("click",function(e){var i=b.querySelector("input");if(i&&!/^(INPUT|SELECT|TEXTAREA|BUTTON|OPTION)$/.test(e.target.tagName))i.focus()})})}
 window.attachCal=function(){};
 (function(){
 if(!window.matchMedia||!matchMedia("(hover:hover) and (pointer:fine)").matches)return;
