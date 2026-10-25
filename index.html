@@ -1344,6 +1344,7 @@
             card("ব্যবহারকারী", d.users, "সক্রিয় " + bn(d.usersActive)) + card("সার্ভিস বুক", d.persons) + card("মোট সারি", d.rows) +
             card("আজ যুক্ত সারি", d.rowsToday, "গত ৭ দিনে " + bn(d.rowsWeek)) + card("আজ লগইন", d.loginsToday, "আলাদা ইউজার " + bn(d.activeUsersToday)) +
             card("আজ ভুল লগইন", d.failsToday) + card("রিসাইকেল বিনে", d.trash) + "</div>";
+        h += '<div class="hint" style="margin:-6px 0 14px">শেষ স্বয়ংক্রিয় ব্যাকআপ (Google Drive): ' + (d.lastBackup ? esc(d.lastBackup) : "এখনো চালু হয়নি (গাইডের ধাপ \"ভ\" দেখুন)") + "</div>";
         h += '<div class="adm-card"><h3>সাম্প্রতিক কার্যকলাপ</h3><div class="adm-scroll"><table class="adm-table"><thead><tr><th>সময়</th><th>ইউজার</th><th>কাজ</th><th>বিবরণ</th></tr></thead><tbody>';
         if (!d.recent.length) h += '<tr><td colspan="4">কোনো কার্যকলাপ নেই।</td></tr>';
         d.recent.forEach(function (x) { h += "<tr><td>" + esc(x.time) + "</td><td>" + esc(x.user) + "</td><td>" + esc(x.action) + '</td><td class="l">' + esc(x.detail) + "</td></tr>"; });
