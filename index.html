@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ডিজিটাল ছুটির হিসাব (Leave Ledger)</title>
+    <link href="https://fonts.maateen.me/nikosh/font.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans Bengali','Hind Siliguri',Kalpurush,SolaimanLipi,'Nirmala UI','Vrinda',Arial,sans-serif;
+            font-size: 16px;
+            background-color: #f4f7f6;
+            margin: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #1b2f3d;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #0f766e;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 150px));
+            gap: 15px;
+            margin-bottom: 20px;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+        label {
+            font-weight: bold;
+            font-size: 14px;
+            color: #0f4c5c;
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            grid-column: 1 / -1;
+            padding: 10px 20px;
+            background-color: #0f766e;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #0f766e;
+        }
+
+        /* ===== সার্ভিস বুক টেবিল ===== */
+        .table-wrap {
+            overflow-x: auto;
+            margin-top: 25px;
+        }
+        table {
+            width: auto;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th, td {
+            border: 1px solid #bdc3c7;
+            text-align: center;
+            padding: 3px 4px;
+        }
+        td { white-space: nowrap; }
+        #ledgerTable th { font-size: 12px; padding: 3px 4px; }
+        th {
+            background-color: #0b5f58;
+            color: white;
+            font-weight: bold;
+            vertical-align: middle;
+        }
+        .sub-header th {
+            background-color: #0b5f58;
+            color: white;
+            font-size: 11px;
+        }
+        .bmd-row td {
+            background-color: #0b5f58;
+            color: white;
+            font-weight: bold;
+            letter-spacing: 0;
+            padding: 2px;
+            font-size: 11px;
+        }
+        .result-row td {
+            font-weight: bold;
+            background-color: #e3f4f1;
+            color: #333;
+        }
+        .note {
+            font-size: 12px;
+            color: #555;
+            margin-top: 10px;
+        }
+    
+        
+        input, select, button { font-family: inherit; font-size: inherit; }
+        button { font-size: 16px; }
+        .dtc { white-space: nowrap; }
+        label.req::after { content: " *"; color: #c0392b; }
+        .wide { grid-column: span 2; }
+        .rst { display: flex; align-items: flex-end; gap: 10px; }
+        .btn-print { background: #0f4c5c; border-color: #0f4c5c; }
+        .btn-print:hover { background: #0b3a47; }
+        .btn-reset { grid-column: auto; box-sizing: border-box; padding: 8px 16px; font-size: inherit; line-height: normal; border: 1px solid #7f8c8d; background: #7f8c8d; }
+        .btn-reset:hover { background: #636e72; }
+                .top-bar { display: flex; margin-bottom: 15px; }
+        .btn-home { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #e2e8f0; color: #334155; text-decoration: none; font-size: 15px; font-weight: 600; border-radius: 8px; transition: .3s; }
+        .btn-home:hover { background: #0f766e; color: #fff; transform: translateY(-2px); }
+        .author-box { margin-top: 25px; padding: 15px; background-color: rgb(244, 248, 251); border: 1px solid rgb(225, 232, 237); border-radius: 10px; text-align: center; line-height: 1.6; }
+        .author-title { color: rgb(11, 83, 69); font-weight: bold; font-size: 18px; }
+        .author-name { color: rgb(27, 47, 61); font-size: 18px; }
+        .author-details { color: rgb(15, 76, 92); font-size: 15px; }
+        .author-mobile { color: rgb(11, 83, 69); font-weight: bold; font-size: 16px; margin-top: 4px; }
+
+        /* ===== বাটন (হোমের মতো) ও ইনপুট বক্সের পেশাদার বিন্যাস ===== */
+        .top-bar { flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 22px; }
+        .top-bar button.btn-home { border: none; cursor: pointer; font-family: inherit; line-height: normal; grid-column: auto; }
+        .top-bar [hidden] { display: none; }
+        .form-group { grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 20px; }
+        .f { min-height: 66px; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; transition: border-color .2s, box-shadow .2s; }
+        .f label { font-size: 13px; color: #5d6d7e; margin-bottom: 2px; }
+        .f input.dt, .f select { font-size: 17px; color: #102d3b; }
+        .f select { border: 0; padding: 3px 0; background: transparent; outline: 0; width: 100%; height: auto; cursor: pointer; }
+        .wide { grid-column: span 2; }
+        @media (max-width: 900px) { .form-group { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 560px) { .form-group { grid-template-columns: 1fr; padding: 14px; } .wide { grid-column: auto; } }
+        /* ===== প্রিন্ট (Landscape, সার্ভিস বুক পুরো প্রস্থে) ===== */
+        .print-author { display: none; }
+        .print-person { display: none; }
+        /* Legal কাগজ: ৮.৫ × ১৪ ইঞ্চি, আড়াআড়ি (Landscape) = প্রস্থ ১৪ ইঞ্চি, উচ্চতা ৮.৫ ইঞ্চি */
+        @page { size: 14in 8.5in; margin: 8mm; }
+        @media print {
+            body { margin: 0; background: #fff; }
+            .container, #appView { max-width: none !important; padding: 0; box-shadow: none; border-radius: 0; }
+            .print-author { display: block; text-align: center; font-size: 12px; line-height: 1.5; color: #000; margin-bottom: 4px; }
+            .print-person { display: block; text-align: center; font-size: 14px; font-weight: bold; color: #000; margin-bottom: 4px; }
+            .top-bar, .form-group, #undoBtn, .note, .author-box, .cal-pop, .person-panel, .modal, .busy, .gate, #adminPanel { display: none !important; }
+            h2 { font-size: 17px; margin: 0 0 6px; padding-bottom: 4px; color: #000; border-bottom: 1px solid #000; }
+            .table-wrap { overflow: visible; margin: 0; }
+            table { min-width: 0; width: 100%; font-size: 10px; }
+            td { white-space: nowrap; }
+            th, td { padding: 3px 1px; border: 1px solid #000; color: #000; }
+            th, .sub-header th, .bmd-row td { background: #e6e6e6 !important; color: #000 !important; font-size: 8.5px; letter-spacing: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .result-row td { background: #fff !important; font-weight: bold; font-size: 10px; }
+            .dtc { min-width: 0; }
+            thead { display: table-header-group; }
+            tr { page-break-inside: avoid; }
+        }
+        /* তারিখ ইনপুট (ক্যালেন্ডার ও ডিডি/এমএম/ইয়ইয়ই) */
+        :root{--cal:#0f766e}
+        .f{padding:8px 12px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:text}
+        .f label{margin-bottom:2px}
+        .f input.dt{border:0;padding:3px 0;font-size:16px;outline:0;background:transparent;width:100%}
+        .f:focus-within{border-color:#0f766e;box-shadow:0 0 5px rgba(39,174,96,.3)}
+        .f.bad{border-color:#c0392b}
+        .cal-pop button,.cal-pop select{font-family:inherit}
+        .cal-pop button{grid-column:auto;padding:0;box-sizing:border-box;transition:none;line-height:normal}
+        .cal-pop{position:absolute;z-index:1000;width:17em;max-width:calc(100vw - 16px);box-sizing:border-box;padding:.2em .2em .3em;background:#fff;border:1px solid #c5c5c5;border-radius:3px;box-shadow:0 4px 14px rgba(0,0,0,.25);font-size:15px;color:#333;text-align:left}
+        .cal-pop .cal-hd{display:flex;align-items:center;gap:4px;padding:.25em;margin-bottom:6px;background:#e9e9e9;border:1px solid #ddd;border-radius:3px}
+        .cal-pop .cal-hd button{flex:none;width:1.9em;height:1.9em;padding:0;margin:0;border:1px solid transparent;border-radius:3px;background:transparent;color:#333;font-size:11px;line-height:normal;cursor:pointer;grid-column:auto;transition:none;font-family:inherit}
+        .cal-pop .cal-hd button:hover{background:#ededed;border-color:#ccc}
+        .cal-pop .cal-hd select{flex:1;min-width:0;height:auto;padding:1px;border:1px solid #ccc;border-radius:3px;background:#fff;color:#333;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+        .cal-pop .cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center}
+        .cal-pop .cal-g b{padding:.4em 0;font-size:12px;color:#333}
+        .cal-pop .cal-g button{height:auto;padding:.25em .35em;border:1px solid #c5c5c5;border-radius:0;background:#f6f6f6;color:#454545;font:inherit;font-size:14px;text-align:right;line-height:normal;cursor:pointer;grid-column:auto;transition:none}
+        .cal-pop .cal-g button:hover{background:#ededed;border-color:#ccc;color:#2b2b2b}
+        .cal-pop .cal-g button.tod{background:#fffa90;border-color:#dad55e;color:#777620}
+        .cal-pop .cal-g button.sel,.cal-pop .cal-g button.sel:hover{background:#007fff;border-color:#003eff;color:#fff}
+        .cal-pop .cal-ft{display:flex;justify-content:space-between;margin-top:8px;padding:0 .2em}
+        .cal-pop .cal-ft button{height:auto;padding:.3em .9em;border:1px solid #c5c5c5;border-radius:3px;background:#f6f6f6;color:#454545;font:inherit;font-size:14px;line-height:normal;cursor:pointer;grid-column:auto;transition:none}
+        .cal-pop .cal-ft button:hover{background:#ededed;border-color:#ccc}
+    </style>
+<meta name="theme-color" content="#0f4c5c">
+<style id="hisabpata-theme">
+/* ======================================================================
+   হিসাবপাতা থিম — ড্যাশবোর্ডের সাথে একই রং, ফন্ট, হেডার ও ফুটার।
+   (এটি শুধু চেহারা বদলায়; ক্যালকুলেটরের কোনো হিসাব/ফাংশন বদলায় না।)
+   ====================================================================== */
+:root{--hp-primary:#0f766e;--hp-dark:#0f4c5c;--hp-soft:#e3f4f1;--hp-ink:#1b2f3d;--hp-muted:#55687a;--hp-line:#dde6ec;--hp-page:#f2f6f8}
+
+.hp-header{background:linear-gradient(120deg,#0f766e,#164e63);color:#fff;padding:16px}
+.hp-header-inner{width:min(1120px,100%);margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 12px}
+.hp-brand{display:flex;align-items:center;gap:11px;color:#fff;text-decoration:none;min-width:0}
+.hp-mark{flex:0 0 auto;width:44px;height:44px;display:grid;place-items:center;border-radius:14px;background:rgba(255,255,255,.17);border:1px solid rgba(255,255,255,.22);font-size:24px;font-weight:700;line-height:1}
+.hp-name{display:block;font-size:23px;font-weight:800;letter-spacing:-.3px;line-height:1.25}
+.hp-tag{display:block;font-size:12px;opacity:.85;line-height:1.3}
+.hp-pill{flex:0 1 auto;font-size:13px;padding:8px 12px;border:1px solid rgba(255,255,255,.3);border-radius:999px;white-space:nowrap}
+.hp-footer{background:#102d3b;color:#d7e4e9;padding:22px 16px;font-size:13px;line-height:1.6}
+.hp-footer-inner{width:min(1120px,100%);margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:14px}
+.hp-footer strong{color:#fff}
+.hp-note{color:#a9c0ca}
+.hp-center{text-align:center}
+.hp-sub{font-size:12px;color:#a9c0ca;margin-top:2px}
+@media (max-width:650px){.hp-footer-inner{flex-direction:column;text-align:center;gap:4px}}
+@media (max-width:560px){.hp-name{font-size:20px}.hp-mark{width:40px;height:40px;font-size:22px}.hp-pill{font-size:12px;padding:7px 10px}}
+@media (max-width:380px){.hp-pill{font-size:11px;padding:6px 9px}}
+
+@media screen{
+  html{background:var(--hp-page)}
+  body{
+    background:var(--hp-page) !important;background-image:none !important;
+    font-family:'Noto Sans Bengali','Hind Siliguri',Kalpurush,SolaimanLipi,'Nirmala UI','Vrinda',Arial,sans-serif !important;
+    color:var(--hp-ink);
+    display:block !important;margin:0 !important;padding:0 !important;min-height:100vh;
+  }
+  body > .container, body > .calculator-card{
+    margin:22px auto !important;width:calc(100% - 28px) !important;box-sizing:border-box !important;
+    border-radius:16px !important;border:1px solid var(--hp-line);
+    box-shadow:0 10px 30px rgba(20,48,60,.09) !important;
+  }
+  button,input,select,textarea{font-family:inherit}
+  .top-bar .btn-home{
+    background:var(--hp-soft) !important;color:var(--hp-dark) !important;border:1px solid #cfeae5 !important;
+    border-radius:999px !important;
+  }
+  .top-bar .btn-home:hover{background:#cfeae5 !important}
+}
+@media print{.hp-header,.hp-footer{display:none !important}}
+@media screen{.author-box{display:none !important}}
+</style>
+<style id="auth-style">
+/* ===== লগইন, অ্যাডমিন প্যানেল, সার্ভিস বুক নির্বাচন, পপআপ ===== */
+[hidden]{display:none !important}
+.gate{max-width:460px !important}
+.gate h2{font-size:22px}
+.fld{margin-bottom:14px}
+.fld label{margin-bottom:4px}
+.fld input{padding:10px;font-size:16px;border-radius:8px}
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:44px !important;width:100%;box-sizing:border-box}
+.pw-eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);grid-column:auto !important;width:36px;height:36px;padding:0 !important;margin:0;background:transparent !important;color:#64748b !important;border:0 !important;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pw-eye:hover{color:#0f766e !important;background:#f1f5f9 !important}
+.pw-eye svg{width:20px;height:20px;pointer-events:none}
+.f.auto{pointer-events:none}
+.f.auto input{background:#eef2f6 !important;color:#475569}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.stat{background:#fff;border:1px solid #dde6ec;border-radius:12px;padding:14px;text-align:center}
+.stat-v{font-size:28px;font-weight:700;color:#0f766e}.stat-t{font-size:14px;color:#334155}.stat-s{font-size:12px;color:#64748b;margin-top:2px}
+.hist{max-height:220px;overflow:auto;margin-bottom:10px;font-size:14px}.hist div{padding:3px 0;border-bottom:1px solid #eef2f6}
+.hok{color:#0f766e}.hbad{color:#c0392b}
+.pbtn{display:inline-block;grid-column:auto;padding:10px 18px;background:#0f766e;color:#fff;border:0;border-radius:8px;font:inherit;font-size:16px;cursor:pointer}
+.pbtn:hover{background:#0b5f58}
+.pbtn.sec{background:#e2e8f0;color:#334155}
+.pbtn.sec:hover{background:#cbd5e1}
+.pbtn.danger{background:#c0392b}
+.pbtn.danger:hover{background:#a5301f}
+.pbtn.sm{padding:5px 11px;font-size:13px;border-radius:6px}
+.pbtn.full{width:100%}
+.hint{font-size:13px;color:#55687a;margin-top:6px;line-height:1.5}
+.who{margin-left:auto;font-size:15px;color:#0f4c5c;font-weight:600}
+.top-bar .who + button{margin-left:0}
+.person-panel{background:#f6fafb;border:1px solid #dde6ec;border-radius:12px;padding:16px;margin-bottom:18px}
+.person-panel h3{margin:0 0 10px;color:#0f4c5c;font-size:18px}
+.ps-row{display:flex;flex-wrap:wrap;gap:10px}
+.ps-row input{flex:1 1 280px;width:auto;padding:10px;font-size:16px;border-radius:8px}
+.ps-list{margin-top:12px;display:grid;gap:8px}
+.ps-item{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;background:#fff;border:1px solid #dde6ec;border-radius:10px;padding:10px 14px}
+.ps-item b{color:#1b2f3d}
+.ps-item span{color:#55687a;font-size:14px}
+.ps-item.locked{background:#f6f8fa;border-style:dashed}
+.ps-new{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;align-items:start;background:#fff;border:1px dashed #0f766e;border-radius:10px;padding:14px}
+.ps-new .ps-hint{grid-column:1/-1;margin:0}
+.ps-new .acts{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap}
+@media (max-width:760px){.ps-new{grid-template-columns:1fr}}
+.banner{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px}
+.banner .nm{font-size:19px;font-weight:700;color:#0b5345}
+.banner .sub{font-size:14px;color:#55687a}
+#appView{max-width:1500px !important}
+.f.bad{background:#fdecea;border-color:#e74c3c;box-shadow:0 0 0 2px rgba(231,76,60,.25)}
+.modal{position:fixed;inset:0;background:rgba(15,40,50,.55);display:flex;align-items:center;justify-content:center;z-index:3000}
+.modal .box{background:#fff;border-radius:16px;padding:26px 28px;max-width:430px;width:calc(100% - 40px);text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.modal .ico{width:64px;height:64px;border-radius:50%;margin:0 auto 12px;display:grid;place-items:center;font-size:36px;font-weight:700;color:#fff;background:#0f766e}
+.modal.error .ico{background:#c0392b}
+.modal.warn .ico{background:#d68910}
+.modal h3{margin:0 0 8px;color:#1b2f3d;font-size:20px}
+.modal p{margin:0 0 18px;color:#55687a;line-height:1.6;white-space:pre-line}
+.busy{position:fixed;inset:0;background:rgba(255,255,255,.65);display:flex;align-items:center;justify-content:center;z-index:4000;font-size:18px;color:#0f4c5c;font-weight:600}
+.st{display:block;font-size:11px;margin-top:2px;font-weight:600}
+.st.saving{color:#55687a}.st.failed{color:#c0392b}
+.st button{grid-column:auto;padding:1px 8px;font-size:11px;border-radius:6px;background:#c0392b;color:#fff;border:0;cursor:pointer}
+@media print{.st{display:none !important}}
+.chk{display:flex;align-items:center;gap:8px;margin:6px 0 12px;font-size:14px;color:#334155}
+.chk input{width:auto}
+.modal .box .fld{text-align:left}
+.msg-err{color:#c0392b;font-size:14px;min-height:20px;margin-bottom:8px}
+.adm-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.adm-tabs button{grid-column:auto;background:#e2e8f0;color:#334155;border-radius:999px;padding:8px 16px;font-size:15px}
+.adm-tabs button.on{background:#0f766e;color:#fff}
+.adm-card{background:#f6fafb;border:1px solid #dde6ec;border-radius:12px;padding:16px;margin-bottom:18px}
+.adm-card h3{margin:0 0 12px;color:#0f4c5c;font-size:18px}
+.adm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.adm-card input{padding:9px;border-radius:8px}
+.lf-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+@media(max-width:900px){.lf-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.lf-grid{grid-template-columns:1fr}}
+.lf-grid .f select.dt{border:0;padding:3px 0;font-size:16px;outline:0;background:transparent;width:100%}
+.lg-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.lg-head h3{margin:0;color:#0f4c5c;font-size:18px}
+.lg-s{grid-column:auto;background:#e2e8f0;color:#334155;border-radius:999px;width:34px;height:34px;padding:0;font-size:16px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+.lg-s.on{background:#0f766e;color:#fff}
+.dm-note{background:#fff7e0;border:1px solid #f1dcae;color:#7a5200;border-radius:10px;padding:10px 14px;margin:0 0 12px;font-size:14px}
+.dm-open{display:contents}
+.dm-open[hidden]{display:none}
+@media(min-width:1100px){#bookArea .form-group.dm-first{grid-template-columns:1.35fr 1.35fr 1fr 1fr 1fr 1fr 1.5fr}}
+.person-line input.dm-title{font:inherit;font-size:17px;font-weight:700;color:#0b5345;text-align:center;border:1px solid #ccc;border-radius:8px;background:#fff;outline:0;width:min(680px,100%);box-sizing:border-box;padding:10px 14px}
+.person-line input.dm-title::placeholder{color:#8a96a3;font-weight:400;opacity:1}
+.person-line input.dm-title:focus{border-color:#0f766e;box-shadow:0 0 5px rgba(39,174,96,.3)}
+.bmd-in{display:flex;align-items:center;gap:4px}
+.bmd-in input{width:2.1em;min-width:0;border:1px solid #cbd5e1;border-radius:6px;padding:4px 6px;font-size:16px;text-align:center;background:#fff}
+.bmd-in span{font-size:14px;color:#334155}
+@media print{.dm-note,.dm-open{display:none !important}}
+.adm-table{min-width:0;width:100%;font-size:14px}
+.adm-table th{background:#0b5f58;padding:8px}
+.adm-table td{padding:7px 6px;background:#fff}
+.adm-table td.l{text-align:left}
+.adm-scroll{overflow-x:auto}
+.tag{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.tag.on{background:#d5f5e3;color:#1e8449}
+.tag.off{background:#fadbd8;color:#a93226}
+</style>
+<style id="custom-v3">
+/* ===== টুলবার: দুই গ্রুপ (বাঁয়ে কাজের বাটন, ডানে ইউজার/লগআউট) ===== */
+.top-bar.tb{justify-content:space-between;align-items:center;gap:10px 16px;padding-bottom:14px;margin-bottom:18px;border-bottom:1px solid #e3ebef}
+.tb-group{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.tb-right{margin-left:auto}
+.tb .btn-home{padding:7px 14px !important;font-size:14px !important;gap:6px}
+.tb .btn-home.warn{background:#fdf3e1 !important;color:#8a5a00 !important;border-color:#f1dcae !important}
+.tb .btn-home.warn:hover{background:#f9e6c2 !important;color:#8a5a00 !important}
+.tb .btn-home.out{background:#fdecea !important;color:#a93226 !important;border-color:#f3c9c4 !important}
+.tb .btn-home.out:hover{background:#f8d7d3 !important;color:#a93226 !important}
+.tb .who{margin:0 6px 0 0;padding-right:12px;border-right:1px solid #d5dee4;font-size:14px;color:#0f4c5c;font-weight:600}
+@media (max-width:700px){
+  .top-bar.tb{flex-direction:column;align-items:stretch}
+  .tb-right{margin-left:0}
+  .tb .btn-home{flex:1 1 auto;justify-content:center}
+  .tb .who{width:100%;border-right:0;margin:0;padding:0;text-align:center}
+}
+/* ===== সার্ভিস বুকের গ্রুপ-বিভাজক দাগ: আগের তুলনায় দ্বিগুণ মোটা (১px → ২px) ===== */
+#ledgerTable thead tr:first-child th:nth-child(-n+5){border-right-width:2px}
+#ledgerTable .sub-header th{border-right-width:2px}
+#ledgerTable .bmd-row td:nth-child(3n){border-right-width:2px}
+#ledgerTable tbody td:nth-child(1),#ledgerTable tbody td:nth-child(2),#ledgerTable tbody td:nth-child(5),#ledgerTable tbody td:nth-child(8),
+#ledgerTable tbody td:nth-child(11),#ledgerTable tbody td:nth-child(14),#ledgerTable tbody td:nth-child(17),#ledgerTable tbody td:nth-child(18),
+#ledgerTable tbody td:nth-child(19),#ledgerTable tbody td:nth-child(20),#ledgerTable tbody td:nth-child(23),#ledgerTable tbody td:nth-child(26),
+#ledgerTable tbody td:nth-child(29),#ledgerTable tbody td:nth-child(32),#ledgerTable tbody td:nth-child(35),#ledgerTable tbody td:nth-child(38),
+#ledgerTable tbody td:nth-child(41){border-right-width:2px}
+/* ===== পেজের কাঠামো: ফুটার সবসময় সবার শেষে, কনটেন্ট কম হলে স্ক্রিনের নিচে ===== */
+@media screen{
+  body{display:flex !important;flex-direction:column;min-height:100vh;min-height:100dvh}
+  body > *{flex-shrink:0}
+  .hp-footer{margin-top:auto}
+}
+/* অ্যাডমিন: মন্তব্য তালিকা */
+.rm-edit{display:flex;gap:8px;flex-wrap:wrap}
+.rm-edit input{flex:1 1 220px;width:auto}
+/* ===== সংস্করণ ৫ ===== */
+/* হেডারের মাঝে শিরোনাম */
+.hp-title{flex:1 1 auto;text-align:center;font-size:20px;font-weight:700;color:#fff;padding:0 12px;line-height:1.35}
+@media (max-width:900px){.hp-title{order:3;flex:1 0 100%;font-size:16px;padding:0}}
+/* ব্যক্তির পরিচয় এক লাইনে */
+.person-line{font-size:19px;margin:0 0 16px;padding-bottom:10px;white-space:nowrap}
+.person-line b{color:#0b5345}
+.person-line .sep{margin:0 12px;color:#9db3bd;font-weight:400}
+@media (max-width:900px){.person-line{font-size:16px;white-space:normal}}
+.print-title{display:none}
+/* ইনপুট: বড় স্ক্রিনে ৬টি ঘর এক লাইনে (ছোট স্ক্রিনে আগের বিন্যাস) */
+@media (min-width:1100px){
+  .form-group{grid-template-columns:1fr 1fr 1fr 1fr 1.9fr 1.4fr;gap:10px;padding:12px 14px}
+  .form-group .wide{grid-column:auto}
+  .f{min-height:50px;padding:5px 10px}
+  .f label{font-size:12px}
+  .f input.dt,.f select{font-size:15px}
+}
+/* সার্ভিস বুক: সব তারিখের ঘর সমান, সব ব-মা-দি ঘর সমান, ছুটির প্রকার ও মন্তব্য ঘর সমান */
+#ledgerTable{table-layout:fixed;width:100%;min-width:1200px}
+#ledgerTable td{padding-left:1px;padding-right:1px}
+#ledgerTable tbody td:last-child{white-space:normal;word-break:break-word}
+/* পপআপ: ছোট ও গোছানো */
+.modal .box{padding:24px 26px;box-sizing:border-box}
+.modal.success .box{max-width:340px}
+.modal h3{margin:0 0 14px}
+.modal p{margin:0 0 16px}
+@media print{
+  .print-title{display:block;text-align:center;font-size:17px;font-weight:bold;color:#000;margin:0 0 6px;padding-bottom:4px;border-bottom:1px solid #000}
+  #personLine{display:none !important}
+  #ledgerTable{min-width:0 !important}
+  #ledgerTable tbody td:last-child{white-space:normal !important}
+}
+</style>
+</head>
+<body>
+<header class="hp-header">
+  <div class="hp-header-inner">
+    <a class="hp-brand" href="https://manik-rmch.github.io/dashboard/" aria-label="হিসাবপাতা — ড্যাশবোর্ডে ফিরুন">
+      <span class="hp-mark" aria-hidden="true">হি</span>
+      <span><span class="hp-name">হিসাবপাতা</span><span class="hp-tag">বাংলা স্মার্ট টুলস</span></span>
+    </a>
+    <div class="hp-title">অনলাইন অর্জিত ছুটি (Earned Leave) ক্যালকুলেটর</div>
+    <span class="hp-pill">সহজ হিসাব • এক জায়গায়</span>
+  </div>
+</header>
+
+<!-- ======================= ইউজার লগইন ======================= -->
+<div class="container gate" id="userGate" hidden>
+    <h2>লগইন করুন</h2>
+    <form id="loginForm" autocomplete="on">
+        <div class="fld"><label for="lgUser">ইউজারনেম</label><input id="lgUser" name="username" autocomplete="username" autocapitalize="none" required></div>
+        <div class="fld"><label for="lgPass">পাসওয়ার্ড</label><input id="lgPass" name="password" type="password" autocomplete="current-password" required></div>
+        <label class="chk"><input type="checkbox" id="lgRemember" checked> এই ডিভাইসে লগইন মনে রাখুন</label>
+        <div class="msg-err" id="lgErr"></div>
+        <button type="submit" class="pbtn full">প্রবেশ করুন</button>
+    </form>
+    <p class="hint">ইউজারনেম ও পাসওয়ার্ড না থাকলে আপনার অ্যাডমিনের সাথে যোগাযোগ করুন।</p>
+</div>
+
+<!-- ======================= অ্যাডমিন লগইন ======================= -->
+<div class="container gate" id="adminGate" hidden>
+    <h2>অ্যাডমিন লগইন</h2>
+    <form id="adminLoginForm" autocomplete="off">
+        <div class="fld"><label for="adUser">অ্যাডমিন ইউজারনেম</label><input id="adUser" autocomplete="username" autocapitalize="none" required></div>
+        <div class="fld"><label for="adPass">অ্যাডমিন পাসওয়ার্ড</label><input id="adPass" type="password" autocomplete="current-password" required></div>
+        <div class="hint">অ্যাডমিন পাসওয়ার্ড অবশ্যই শক্তিশালী হতে হবে: কমপক্ষে ১০ অক্ষর, বড় হাতের ও ছোট হাতের ইংরেজি অক্ষর, সংখ্যা এবং একটি চিহ্ন (যেমন @ # !)।</div>
+        <div class="msg-err" id="adErr"></div>
+        <button type="submit" class="pbtn full">অ্যাডমিন হিসেবে প্রবেশ</button>
+    </form>
+    <p class="hint"><a href="#" id="toUserLogin">← সাধারণ লগইনে ফিরুন</a></p>
+</div>
+
+<!-- ======================= অ্যাডমিন প্যানেল ======================= -->
+<div class="container" id="adminPanel" hidden>
+    <div class="top-bar">
+        <a href="#" class="btn-home" id="admToApp">← ক্যালকুলেটর</a>
+        <span class="who">অ্যাডমিন প্যানেল</span>
+        <button type="button" class="btn-home" id="admLogout">লগআউট</button>
+    </div>
+    <h2>অ্যাডমিন প্যানেল</h2>
+    <div class="adm-tabs" id="admTabs">
+        <button type="button" data-t="dash">ড্যাশবোর্ড</button>
+        <button type="button" data-t="users">ব্যবহারকারী</button>
+        <button type="button" data-t="persons">সার্ভিস বুক</button>
+        <button type="button" data-t="settings">হিসাবের নিয়ম</button>
+        <button type="button" data-t="remarks">ছুটির মন্তব্য</button>
+        <button type="button" data-t="pass">অ্যাডমিন পাসওয়ার্ড</button>
+        <button type="button" data-t="log">কার্যকলাপ লগ</button>
+        <button type="button" data-t="trash">রিসাইকেল বিন</button>
+    </div>
+    <div style="text-align:right;margin:6px 0"><button type="button" class="pbtn sec sm" id="admRefresh">↻ নতুন করে আনুন</button></div>
+    <div id="admBody"></div>
+</div>
+
+<!-- ======================= মূল ক্যালকুলেটর ======================= -->
+<div class="container" id="appView" hidden>
+    <div class="top-bar tb">
+        <div class="tb-group">
+            <a href="https://manik-rmch.github.io/dashboard" class="btn-home"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3z"/></svg> হোম</a>
+            <button type="button" class="btn-home" id="resetBtn">রিসেট</button>
+            <button type="button" class="btn-home" id="printBtn">প্রিন্ট</button>
+            <button type="button" class="btn-home" id="psChange" hidden>অন্য ব্যক্তির সার্ভিস বুক</button>
+            <button type="button" class="btn-home warn" id="undoBtn" hidden>সর্বশেষ সারি মুছে সংশোধন করুন</button>
+        </div>
+        <div class="tb-group tb-right">
+            <span class="who" id="whoName"></span>
+            <button type="button" class="btn-home" id="pwBtn">পাসওয়ার্ড বদলান</button>
+            <button type="button" class="btn-home out" id="logoutBtn">লগআউট</button>
+        </div>
+    </div>
+    <div class="print-author"><strong>প্রস্তুতকারক: মোঃ মানিক</strong><br>গাড়ি চালক, রাজশাহী মেডিকেল কলেজ হাসপাতাল, রাজশাহী। &nbsp;|&nbsp; <strong>মোবাইল: ০১৭২৯-৮১৫২৯১</strong></div>
+    <h2 id="personLine" class="person-line" hidden></h2>
+
+    <!-- সার্ভিস বুক নির্বাচন -->
+    <section class="person-panel" id="personPanel">
+        <div id="personPick">
+            <h3>সার্ভিস বুক নির্বাচন করুন</h3>
+            <div class="ps-row">
+                <input id="psQuery" data-bn placeholder="ব্যক্তির নাম / জাতীয় পরিচয়পত্র নম্বর / মোবাইল নম্বর" autocomplete="off">
+                <button type="button" class="pbtn" id="psSearch">অনুসন্ধান</button>
+                <button type="button" class="pbtn sec" id="psNew">+ নতুন সার্ভিস বুক</button>
+                <button type="button" class="pbtn sec" id="psDummy">ডামি সার্ভিস বুক</button>
+            </div>
+            <div class="ps-list" id="psResults"></div>
+            <div class="ps-new" id="psNewBox" hidden>
+                <div class="f"><label class="req" for="pnName">ব্যক্তির নাম</label><input type="text" class="dt" id="pnName" autocomplete="off"></div>
+                <div class="f"><label class="req" for="pnKey">জাতীয় পরিচয়পত্র নম্বর / মোবাইল নম্বর</label><input type="text" class="dt" id="pnKey" data-bn inputmode="numeric" autocomplete="off"></div>
+                <div class="f"><label class="req" for="pnJoin_t">চাকরিতে যোগদানের তারিখ</label><input type="text" class="dt" id="pnJoin_t" inputmode="numeric" autocomplete="off" placeholder="দিন/মাস/বছর"><input type="date" id="pnJoin" hidden></div>
+                <div class="hint ps-hint">তিনটি ঘরই আবশ্যক। নম্বর কমপক্ষে ১০ ডিজিটের হতে হবে। যোগদানের তারিখই প্রথম সারির "ডিউটি শুরু (হইতে)" হবে এবং পরে বদলানো যাবে না।</div>
+                <div class="acts"><button type="button" class="pbtn" id="pnSave">সার্ভিস বুক তৈরি করুন</button><button type="button" class="pbtn sec" id="pnCancel">বাতিল</button></div>
+            </div>
+        </div>
+    </section>
+
+    <div id="bookArea" hidden>
+    <div class="print-title">অনলাইন অর্জিত ছুটি (Earned Leave) ক্যালকুলেটর</div>
+    <div class="print-person" id="printPerson"></div>
+
+    <div class="dm-note" id="dmNote" hidden><b>ডামি সার্ভিস বুক:</b> এটি অনলাইনে সংরক্ষিত হয় না। পাতা রিফ্রেশ করলে, বন্ধ করলে বা লগআউট করলে সব তথ্য মুছে যাবে। দরকার হলে আগেই প্রিন্ট করে নিন।</div>
+    <div class="form-group" id="bookForm">
+        <div class="dm-open" id="dmOpen" hidden>
+            <div class="f"><label>অবশিষ্ট পূর্ণ গড় বেতনে অর্জিত ছুটি</label><div class="bmd-in"><input id="dmFy" data-bn inputmode="numeric" maxlength="2" placeholder="০"><span>ব</span><input id="dmFm" data-bn inputmode="numeric" maxlength="2" placeholder="০"><span>মা</span><input id="dmFd" data-bn inputmode="numeric" maxlength="2" placeholder="০"><span>দি</span></div></div>
+            <div class="f"><label>অবশিষ্ট অর্ধ গড় বেতনে অর্জিত ছুটি</label><div class="bmd-in"><input id="dmHy" data-bn inputmode="numeric" maxlength="2" placeholder="০"><span>ব</span><input id="dmHm" data-bn inputmode="numeric" maxlength="2" placeholder="০"><span>মা</span><input id="dmHd" data-bn inputmode="numeric" maxlength="2" placeholder="০"><span>দি</span></div></div>
+        </div>
+        <div class="f">
+            <label class="req" for="dutyFrom_t">ডিউটি শুরু (হইতে)</label>
+            <input type="text" class="dt" id="dutyFrom_t" inputmode="numeric" autocomplete="off" placeholder="দিন/মাস/বছর"><input type="date" id="dutyFrom" hidden>
+        </div>
+        <div class="f">
+            <label class="req" for="dutyTo_t">ডিউটি শেষ (পর্যন্ত)</label>
+            <input type="text" class="dt" id="dutyTo_t" inputmode="numeric" autocomplete="off" placeholder="দিন/মাস/বছর"><input type="date" id="dutyTo" hidden>
+        </div>
+        <div class="f">
+            <label for="leaveFrom_t">ছুটি শুরু (হইতে)</label>
+            <input type="text" class="dt" id="leaveFrom_t" inputmode="numeric" autocomplete="off" placeholder="দিন/মাস/বছর"><input type="date" id="leaveFrom" hidden>
+        </div>
+        <div class="f">
+            <label class="req" for="leaveTo_t">ছুটি শেষ (পর্যন্ত)</label>
+            <input type="text" class="dt" id="leaveTo_t" inputmode="numeric" autocomplete="off" placeholder="দিন/মাস/বছর"><input type="date" id="leaveTo" hidden>
+        </div>
+        <div class="f wide">
+            <label class="req" for="leaveType">ছুটির প্রকার</label>
+            <select id="leaveType">
+                <option value="">ছুটির প্রকার বাছুন</option>
+                <option value="EL_FAP">EL FAP-অর্জিত ছুটি (পূর্ণ গড় বেতনে)</option>
+                <option value="EL_HAP">EL HAP-অর্জিত ছুটি (অর্ধ গড় বেতনে)</option>
+                <option value="XL_LWP">XL LWP-অসাধারণ ছুটি (বিনা বেতনে ছুটি)</option>
+                <option value="Others">Others-অন্যান্য ছুটি (বেতন সহ)</option>
+            </select>
+        </div>
+        <div class="f wide" id="remarkBox">
+            <label for="remark">মন্তব্য (ছুটির বিবরণ) — ঐচ্ছিক</label>
+            <select id="remark">
+                <option value="">মন্তব্য বাছুন (ঐচ্ছিক)</option>
+                <option value="Department Leave">Department Leave</option>
+                <option value="Disability Leave">Disability Leave</option>
+                <option value="Ex-BD Leave">Ex-BD Leave</option>
+                <option value="Hospital Leave">Hospital Leave</option>
+                <option value="Maternity Leave">Maternity Leave</option>
+                <option value="Quarantine Leave">Quarantine Leave</option>
+                <option value="Rest &amp; Rec. Leave">Rest &amp; Rec. Leave</option>
+                <option value="Sickness Leave">Sickness Leave</option>
+                <option value="Study Leave">Study Leave</option>
+                <option value="Vacation Leave">Vacation Leave</option>
+            </select>
+        </div>
+        <button type="button" id="addBtn">সার্ভিস বুকে হিসাব যুক্ত করুন</button>
+    </div>
+
+    <div class="table-wrap">
+    <table id="ledgerTable">
+        <colgroup><col style="width:6%"><col style="width:6%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:6%"><col style="width:6%"><col style="width:7.5%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:1.6944%"><col style="width:7.5%"></colgroup>
+        <thead>
+            <tr>
+                <th colspan="5">কার্যকাল</th>
+                <th colspan="6">অর্জিত ছুটি</th>
+                <th colspan="6">মোট অর্জিত ছুটি</th>
+                <!-- "৪ মাসের অতিরিক্ত অর্জিত পূর্ণ গড় বেতনে মোট জমা ছুটি" কলামটি আপাতত বাদ -->
+                <th colspan="18">ছুটি ভোগ করিয়াছে</th>
+                <th colspan="6">ছুটি ভোগ করার পর<br>অবশিষ্ট ছুটি</th>
+                <th rowspan="3">মন্তব্য<br>(ছুটির বিবরণ)</th>
+            </tr>
+            <tr class="sub-header">
+                <th rowspan="2">হইতে</th><th rowspan="2">পর্যন্ত</th>
+                <th colspan="3">সময়কাল</th><th colspan="3">পূর্ণ গড় বেতনে ছুটি (১/১১)</th><th colspan="3">অর্ধ গড় বেতনে ছুটি (১/১২)</th><th colspan="3">পূর্ণ গড় বেতনে ছুটি</th><th colspan="3">অর্ধ গড় বেতনে ছুটি</th>
+                <th rowspan="2">হইতে</th><th rowspan="2">পর্যন্ত</th><th rowspan="2">ছুটির প্রকার</th>
+                <th colspan="3">পূর্ণ গড় বেতনে ছুটি</th><th colspan="3">অর্ধ গড় বেতনে ছুটি</th><th colspan="3">*বিনা বেতনে ছুটি</th><th colspan="3">*বেতন সহ অন্যান্য ছুটি</th><th colspan="3">মোট ভোগকৃত ছুটি</th><th colspan="3">পূর্ণ গড় বেতনে ছুটি (১/১১)</th><th colspan="3">অর্ধ গড় বেতনে ছুটি (১/১২)</th>
+            </tr>
+            <tr class="bmd-row">
+                <td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td><td>ব</td><td>মা</td><td>দি</td>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- ডাটা এখানে ডাইনামিকালি যুক্ত হবে -->
+        </tbody>
+    </table>
+    </div>
+    <p class="note" hidden>
+        নিয়ম: ১১ দিনে ১ দিন পূর্ণ গড় বেতনে ও ১২ দিনে ১ দিন অর্ধ গড় বেতনে ছুটি অর্জিত হয় (কর্মকাল থেকে ভোগ করা ছুটির দিন বাদ দিয়ে)।
+        পূর্ণ গড় ছুটি একত্রে সর্বোচ্চ ৪ মাস (১২০ দিন) জমা থাকে; অর্ধ গড় ছুটির জমার সীমা নেই।
+        দ্বিতীয় সারি থেকে আগের সারির অবশিষ্ট ছুটি স্বয়ংক্রিয়ভাবে জের হিসেবে যুক্ত হয়।
+        ছুটির পরিমাণ ব-মা-দি রূপে দেখানো হয় (১ মাস = ৩০ দিন, ১ বছর = ১২ মাস ধরে)।
+    </p>
+    </div>
+    <div class="author-box"><span class="author-title">প্রস্তুতকারক:</span> <span class="author-name">মোঃ মানিক</span><br><div class="author-details">গাড়ি চালক, রাজশাহী মেডিকেল কলেজ হাসপাতাল, রাজশাহী।</div><div class="author-mobile">মোবাইল: ০১৭২৯-৮১৫২৯১</div></div>
+</div>
+
+<!-- পপআপ বার্তা -->
+<div class="modal" id="okModal" hidden>
+    <div class="box" role="dialog" aria-modal="true">
+        <div class="ico" id="mIcon">✓</div>
+        <h3 id="mTitle"></h3>
+        <p id="mMsg"></p>
+        <button type="button" class="pbtn" id="okBtn">ঠিক আছে</button>
+    </div>
+</div>
+<div class="modal" id="pwModal" hidden>
+    <div class="box" role="dialog" aria-modal="true">
+        <h3>পাসওয়ার্ড বদলান</h3>
+        <form id="pwForm" autocomplete="off">
+            <div class="fld"><label for="pwOld">বর্তমান পাসওয়ার্ড</label><input id="pwOld" type="password" autocomplete="current-password" required></div>
+            <div class="fld"><label for="pwNew">নতুন পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)</label><input id="pwNew" type="password" autocomplete="new-password" required></div>
+            <div class="fld"><label for="pwNew2">নতুন পাসওয়ার্ড আবার</label><input id="pwNew2" type="password" autocomplete="new-password" required></div>
+            <div class="msg-err" id="pwErr"></div>
+            <button type="submit" class="pbtn">বদলান</button> <button type="button" class="pbtn sec" id="pwCancel">বাতিল</button>
+        </form>
+    </div>
+</div>
+<div class="busy" id="busy" hidden>অপেক্ষা করুন…</div>
+
+<script>
+(function () {
+    // ★★★ Google Apps Script ওয়েব অ্যাপের লিংক এখানে বসান (SETUP গাইড দেখুন) ★★★
+    var API_URL = "https://script.google.com/macros/s/AKfycby6gkLw8jAlauqlvDbyLslz7UxTw_s7oYguk2yCv69UwePNptZA5ms7Kfa0W5M6Y5kZ/exec";
+
+    function $(i) { return document.getElementById(i); }
+    var BNd = "০১২৩৪৫৬৭৮৯";
+    function bn(s) { return String(s).replace(/\d/g, function (d) { return BNd[d]; }); }
+    function en(s) { return String(s).replace(/[০-৯]/g, function (c) { return BNd.indexOf(c); }); }
+    function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+    var S = { dummy: false, dopen: null, dname: "", person: null, rows: [], people: [], queue: [], sending: false, cfg: { dpm: 30, mpy: 12, fd: 11, hd: 12 } };
+    var busyN = 0;
+    function busy(n) { busyN += n; $("busy").hidden = busyN <= 0; }
+    function tok(w) { try { return w === "admin" ? sessionStorage.getItem("el_adm") : localStorage.getItem("el_tok"); } catch (e) { return null; } }
+    function setTok(w, v) { try { var st = w === "admin" ? sessionStorage : localStorage, k = w === "admin" ? "el_adm" : "el_tok"; if (v) st.setItem(k, v); else st.removeItem(k); } catch (e) {} }
+
+    // ---------- পপআপ ----------
+    var modalClose = null;
+    function showModal(kind, title, msg, onClose) {
+        var prev = document.activeElement;
+        var m = $("okModal");
+        m.className = "modal " + kind;
+        $("mIcon").textContent = kind === "success" ? "✓" : "!";
+        $("mTitle").textContent = title;
+        $("mMsg").textContent = msg || "";
+        $("mMsg").hidden = !msg;
+        m.hidden = false;
+        modalClose = function () {
+            m.hidden = true; modalClose = null;
+            if (onClose) onClose(); else if (prev && prev.focus) prev.focus();
+        };
+        $("okBtn").focus();
+    }
+    $("okBtn").addEventListener("click", function () { if (modalClose) modalClose(); });
+    $("okBtn").addEventListener("keydown", function (e) { if (e.key === "Tab") e.preventDefault(); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") { if (modalClose) modalClose(); else if (!$("pwModal").hidden) closePw(); } });
+
+    // ---------- পাসওয়ার্ডের চোখ আইকন ----------
+    var EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 20C5 20 1 12 1 12a18.6 18.6 0 0 1 5.06-5.94"/><path d="M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12A3 3 0 1 1 9.88 9.88"/><path d="M1 1l22 22"/></svg>';
+    var EYE_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    function eyeSet(btn, inp, show) {
+        inp.type = show ? "text" : "password";
+        btn.innerHTML = show ? EYE_ON : EYE_OFF;
+        btn.setAttribute("aria-label", show ? "পাসওয়ার্ড লুকান" : "পাসওয়ার্ড দেখান");
+        btn.title = show ? "পাসওয়ার্ড লুকান" : "পাসওয়ার্ড দেখান";
+    }
+    function attachEyes(root) {
+        [].forEach.call((root || document).querySelectorAll('input[type="password"]'), function (inp) {
+            if (inp.parentNode.classList.contains("pw-wrap")) return;
+            var w = document.createElement("div"); w.className = "pw-wrap";
+            inp.parentNode.insertBefore(w, inp); w.appendChild(inp);
+            var b = document.createElement("button"); b.type = "button"; b.className = "pw-eye"; b.tabIndex = -1;
+            eyeSet(b, inp, false);
+            b.addEventListener("mousedown", function (e) { e.preventDefault(); });
+            b.addEventListener("click", function () { eyeSet(b, inp, inp.type === "password"); inp.focus(); });
+            w.appendChild(b);
+        });
+    }
+    function eyesHide(root) {
+        [].forEach.call((root || document).querySelectorAll(".pw-wrap"), function (w) { eyeSet(w.querySelector(".pw-eye"), w.querySelector("input"), false); });
+    }
+    attachEyes(document);
+
+    // ---------- সার্ভার যোগাযোগ ----------
+    function api(action, data, who, quiet) {
+        data = data || {}; data.action = action;
+        var t = tok(who === "admin" ? "admin" : "user"); if (t) data.token = t;
+        if (API_URL.indexOf("PASTE") === 0) return Promise.reject(new Error("ব্যাকএন্ডের লিংক এখনো বসানো হয়নি। (index.html-এ API_URL বসান)"));
+        if (!quiet) busy(1);
+        return fetch(API_URL, { method: "POST", body: JSON.stringify(data) })
+            .then(function (r) { return r.json(); })
+            .then(function (j) {
+                if (!quiet) busy(-1);
+                if (!j.ok) { var e = new Error(j.msg); e.code = j.code; throw e; }
+                return j.data;
+            }, function () {
+                if (!quiet) busy(-1);
+                throw new Error("সার্ভারের সাথে যোগাযোগ করা যায়নি। ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।");
+            });
+    }
+    function handleErr(e) {
+        if (e && e.code === "AUTH") { setTok("user", null); view("userGate"); $("lgErr").textContent = e.message; return; }
+        showModal("error", "সমস্যা হয়েছে", e && e.message ? e.message : "অজানা সমস্যা");
+    }
+
+    // ---------- পৃষ্ঠা পরিবর্তন ----------
+    var VIEWS = ["userGate", "adminGate", "adminPanel", "appView"];
+    function view(v) { VIEWS.forEach(function (x) { $(x).hidden = (x !== v); }); }
+    function route() {
+        if (location.hash === "#admin") {
+            if (tok("admin")) {
+                api("adminPing", {}, "admin").then(function () { view("adminPanel"); loadTab(); })
+                    .catch(function () { adClear(); setTok("admin", null); view("adminGate"); $("adUser").focus(); });
+            } else { view("adminGate"); $("adUser").focus(); }
+        } else {
+            if (tok("user")) {
+                api("ping", {}, "user").then(enterApp).catch(function () { setTok("user", null); view("userGate"); $("lgUser").focus(); });
+            } else { view("userGate"); $("lgUser").focus(); }
+        }
+    }
+    window.addEventListener("hashchange", route);
+    $("toUserLogin").addEventListener("click", function (e) { e.preventDefault(); history.replaceState(null, "", location.pathname + location.search); route(); });
+    $("admToApp").addEventListener("click", function (e) { e.preventDefault(); history.replaceState(null, "", location.pathname + location.search); route(); });
+
+    // ---------- ইউজার লগইন ----------
+    $("loginForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        $("lgErr").textContent = "";
+        api("userLogin", { username: $("lgUser").value, password: $("lgPass").value, remember: $("lgRemember").checked }).then(function (d) {
+            setTok("user", d.token); $("lgPass").value = "";
+            enterApp(d);
+        }).catch(function (er) { $("lgErr").textContent = er.message; });
+    });
+    function fillRemarks(list) {
+        var sel = $("remark"), cur = sel.value;
+        while (sel.options.length > 1) sel.remove(1);
+        list.forEach(function (x) { var o = document.createElement("option"); o.value = x; o.textContent = x; sel.appendChild(o); });
+        sel.value = cur;
+        if (sel.value !== cur) sel.selectedIndex = 0;
+    }
+    function enterApp(d) {
+        if (d.remarks) fillRemarks(d.remarks);
+        if (d.cfg) S.cfg = d.cfg;
+        if (d.people) S.people = d.people;
+        $("whoName").textContent = d.name || "";
+        view("appView");
+        if (!S.person) { $("psQuery").focus(); }
+    }
+    $("logoutBtn").addEventListener("click", function () {
+        if (S.queue.length && !confirm("কিছু সারি এখনো সংরক্ষণ হয়নি। এখন লগআউট করলে সেগুলো হারিয়ে যেতে পারে। তবুও লগআউট করবেন?")) return;
+        api("logout", {}, "user").catch(function () {});
+        setTok("user", null); S.person = null; S.rows = []; S.queue = []; S.people = [];
+        clearPerson(); view("userGate"); $("lgUser").focus();
+    });
+    window.addEventListener("beforeunload", function (e) { if (S.queue.length) { e.preventDefault(); e.returnValue = ""; } });
+
+    // ---------- সার্ভিস বুক নির্বাচন ----------
+    function normKey(s) { return en(s).replace(/[\s-]/g, ""); }
+    function localSearch(q) {
+        var ql = q.toLowerCase(), qk = normKey(q), num = /^\d+$/.test(qk);
+        return S.people.filter(function (p) { return String(p.name).toLowerCase().indexOf(ql) >= 0 || (num && String(p.key).indexOf(qk) >= 0); }).slice(0, 30);
+    }
+    function showPeople(list, emptyMsg) {
+        var box = $("psResults");
+        if (!list.length) { box.innerHTML = emptyMsg ? '<div class="hint">' + emptyMsg + "</div>" : ""; return; }
+        box.innerHTML = list.map(function (p) {
+            if (p.locked) return '<div class="ps-item locked"><div><b>' + esc(p.name) + "</b> <span>— " + esc(p.key) + ' 🔒</span></div><button type="button" class="pbtn sm sec" data-locked="1">সার্ভিস বুক খুলুন</button></div>';
+            return '<div class="ps-item"><div><b>' + esc(p.name) + "</b> <span>— " + esc(p.key) + '</span></div><button type="button" class="pbtn sm" data-id="' + esc(p.id) + '">সার্ভিস বুক খুলুন</button></div>';
+        }).join("");
+    }
+    function doSearch() {
+        var q = en($("psQuery").value).trim();
+        if (!q) { showModal("error", "অনুসন্ধান", "নাম, জাতীয় পরিচয়পত্র নম্বর বা মোবাইল নম্বর লিখুন।"); return; }
+        // অনুসন্ধান বাটন/Enter: সার্ভার থেকে দেখা (অন্য কেউ হয়তো নতুন বানিয়েছে; অনুমতিহীন বইও এভাবে জানা যায়)
+        api("personSearch", { q: q }).then(function (d) {
+            d.people.forEach(function (p) { if (!p.locked && !S.people.some(function (x) { return x.id === p.id; })) S.people.push(p); });
+            showPeople(d.people, 'কোনো সার্ভিস বুক পাওয়া যায়নি। নতুন সার্ভিস বুক তৈরি করতে "+ নতুন সার্ভিস বুক" চাপুন।');
+        }).catch(handleErr);
+    }
+    $("psSearch").addEventListener("click", doSearch);
+    $("psQuery").addEventListener("input", function () { var q = this.value.trim(); showPeople(q ? localSearch(q) : []); });
+    $("psQuery").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); doSearch(); } });
+    $("psResults").addEventListener("click", function (e) {
+        var lk = e.target.closest("button[data-locked]");
+        if (lk) { showModal("warn", "অনুমতি নেই", "এই সার্ভিস বুক দেখার অনুমতি আপনার নেই। অনুমতির জন্য অ্যাডমিনের সাথে যোগাযোগ করুন।"); return; }
+        var b = e.target.closest("button[data-id]"); if (!b) return;
+        api("personLoad", { personId: b.dataset.id }).then(setPerson).catch(handleErr);
+    });
+    $("psNew").addEventListener("click", function () { $("psNewBox").hidden = false; $("pnName").value = en($("psQuery").value).replace(/[\d\s+-]/g, "") ? $("psQuery").value : ""; $("pnName").focus(); });
+    $("pnCancel").addEventListener("click", function () { $("psNewBox").hidden = true; });
+    function createPerson() {
+        api("personCreate", { name: $("pnName").value, key: en($("pnKey").value), joinDate: $("pnJoin").value }).then(function (d) {
+            $("psNewBox").hidden = true; $("pnName").value = ""; $("pnKey").value = ""; $("pnJoin_t").value = ""; $("pnJoin_t")._p = ""; $("pnJoin").value = "";
+            S.people.push(d.person);
+            setPerson(d);
+        }).catch(handleErr);
+    }
+    $("pnSave").addEventListener("click", createPerson);
+    ["pnName", "pnKey", "pnJoin_t"].forEach(function (id) {
+        $(id).addEventListener("keydown", function (e) {
+            if (e.key !== "Enter") return; e.preventDefault();
+            if (id === "pnName") $("pnKey").focus(); else if (id === "pnKey") $("pnJoin_t").focus(); else createPerson();
+        });
+    });
+
+    function clearPerson() {
+        S.person = null; S.rows = []; S.dummy = false; S.dopen = null; S.dname = ""; S.dinputs = []; S.dver++; dmUi();
+        $("personPanel").hidden = false; $("personPick").hidden = false; $("personLine").hidden = true; $("bookArea").hidden = true; $("psChange").hidden = true;
+        $("psResults").innerHTML = ""; $("psQuery").value = ""; $("psNewBox").hidden = true;
+        $("undoBtn").hidden = true; resetForm();
+    }
+    function blockIfPending() {
+        if (!S.queue.length) return false;
+        showModal("warn", "একটু অপেক্ষা করুন", "সর্বশেষ হিসাবটি সংরক্ষণ হচ্ছে বা সংরক্ষণ হয়নি। সংরক্ষণ শেষ হলে আবার চেষ্টা করুন।");
+        return true;
+    }
+    $("psChange").addEventListener("click", function () {
+        if (S.dummy) { if (S.rows.length && !confirm("ডামি সার্ভিস বুকের সব তথ্য মুছে যাবে। বন্ধ করবেন?")) return; clearPerson(); $("psQuery").focus(); return; }
+        if (blockIfPending()) return; clearPerson(); $("psQuery").focus();
+    });
+    // ---------- ডামি সার্ভিস বুক (অনলাইনে সংরক্ষণ হয় না; হিসাব ব্যাকএন্ড করে) ----------
+    function dmUi() {   // ডামি মোডের দেখানো/লুকানো অংশ
+        var first = S.dummy && !S.rows.length;
+        $("dmNote").hidden = !S.dummy; $("dmOpen").hidden = !first; $("bookForm").classList.toggle("dm-first", first);
+        $("remarkBox").style.display = first ? "none" : "";
+        $("psChange").textContent = S.dummy ? "ডামি বন্ধ করুন" : "অন্য ব্যক্তির সার্ভিস বুক";
+    }
+    function dmNum(id) { var v = en($(id).value).trim(); return v === "" ? 0 : (/^\d+$/.test(v) ? Number(v) : NaN); }
+    function dmReadOpen() {
+        var o = { full: { y: dmNum("dmFy"), m: dmNum("dmFm"), d: dmNum("dmFd") }, half: { y: dmNum("dmHy"), m: dmNum("dmHm"), d: dmNum("dmHd") } };
+        return o;
+    }
+    $("psDummy").addEventListener("click", function () {
+        S.dummy = true; S.dopen = null; S.dname = ""; S.rows = []; S.queue = []; S.dinputs = []; S.dver++; S.dopenIn = null; S.dfrom = "";
+        S.person = { id: "dummy", name: "", key: "", joinDate: "" };
+        ["dmFy", "dmFm", "dmFd", "dmHy", "dmHm", "dmHd"].forEach(function (i) { $(i).value = ""; });
+        resetForm(); dmUi(); renderBook();
+        $("personPanel").hidden = true; $("bookArea").hidden = false; $("psChange").hidden = false;
+        $("dmFy").focus();
+    });
+    $("personLine").addEventListener("input", function (e) { if (e.target.id === "dmName") S.dname = e.target.value.trim(); });
+    window.addEventListener("beforeunload", function (e) { if (S.dummy && S.rows.length) { e.preventDefault(); e.returnValue = ""; } });
+
+    function nextDay(iso) { var d = new Date(iso + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10); }
+    function dmy(s) { return s.slice(8) + "/" + s.slice(5, 7) + "/" + s.slice(0, 4); }
+
+    function setPerson(d) {
+        S.person = d.person; S.rows = d.rows || []; if (d.cfg) S.cfg = d.cfg;
+        resetForm();
+        renderBook();
+        $("personPanel").hidden = true; $("bookArea").hidden = false; $("psChange").hidden = false;
+        firstField().focus();
+    }
+    function renderBook() {
+        var p = S.person;
+        if (S.dummy) {
+            var ttl = S.dname || "ডামি সার্ভিস বুক", op = "";
+            if (S.dopen && S.rows.length) op = "আগের জমা: পূর্ণ গড় " + S.dopen.full[1] + " ব " + S.dopen.full[2] + " মা " + S.dopen.full[3] + " দি, অর্ধ গড় " + S.dopen.half[1] + " ব " + S.dopen.half[2] + " মা " + S.dopen.half[3] + " দি";
+            if (!S.rows.length) {   // প্রথম সারির আগে: শিরোনামের জায়গাতেই নাম লেখা যায় (না লিখলে "ডামি সার্ভিস বুক")
+                $("personLine").innerHTML = '<input type="text" class="dm-title" id="dmName" maxlength="60" autocomplete="off" placeholder="ডামি সার্ভিস বুক (নাম দিন ঐচ্ছিক)" title="নাম লিখতে পারেন (ঐচ্ছিক)" value="' + esc(S.dname) + '">';
+            } else {
+                $("personLine").innerHTML = "<b>" + esc(ttl) + "</b>" + (op ? '<span class="sep">|</span>' + op : "") + '<span class="sep">|</span>পরবর্তী কার্যকাল শুরু: ' + dmy(nextDay(S.rows[S.rows.length - 1].leaveTo));
+            }
+            $("personLine").hidden = false;
+            $("printPerson").textContent = ttl + " (অনলাইনে সংরক্ষিত নয়)" + (op ? "   |   " + op : "");
+            $("ledgerTable").querySelector("tbody").innerHTML = S.rows.map(rowHTML).join("");
+            $("undoBtn").hidden = S.rows.length === 0; dmUi();
+            return;
+        }
+        var line = "<b>" + esc(p.name) + "</b><span class=\"sep\">|</span>জাতীয় পরিচয়পত্র/মোবাইল: " + esc(p.key);
+        if (S.rows.length) line += "<span class=\"sep\">|</span>পরবর্তী কার্যকাল শুরু: " + dmy(nextDay(S.rows[S.rows.length - 1].leaveTo));
+        $("personLine").innerHTML = line; $("personLine").hidden = false;
+        $("printPerson").textContent = "নাম: " + p.name + "   |   জাতীয় পরিচয়পত্র/মোবাইল: " + p.key;
+        $("ledgerTable").querySelector("tbody").innerHTML = S.rows.map(rowHTML).join("");
+        $("undoBtn").hidden = S.rows.length === 0;
+    }
+
+    // ---------- সংখ্যা ও তারিখ প্রদর্শন ----------
+    // তারিখ দেখানোর রূপ: দিন-মাস-বছর (দুই অঙ্ক করে), যেমন ০২-১০-৮৮। সংরক্ষিত মূল তারিখ (yyyy-mm-dd) বদলায় না।
+    function fmtDate(s) { if (!s) return "-"; return s.slice(8, 10) + "-" + s.slice(5, 7) + "-" + s.slice(2, 4); }
+    // ব-মা-দি-র হিসাব ব্যাকএন্ড করে পাঠায় (r.y.<ঘর> = [চিহ্ন, বছর, মাস, দিন]); এখানে শুধু দেখানো হয়
+    function ymdCell(a) {
+        if (!a) return "<td>…</td><td>…</td><td>…</td>";
+        return "<td>" + a[0] + a[1] + "</td><td>" + a[2] + "</td><td>" + a[3] + "</td>";
+    }
+    function stHTML(r) {
+        if (r._st === "saving") return '<span class="st saving">' + (S.dummy ? "হিসাব হচ্ছে…" : "সংরক্ষণ হচ্ছে…") + '</span>';
+        if (r._st === "failed") return '<span class="st failed">সংরক্ষণ হয়নি <button type="button" data-retry="1">আবার পাঠান</button></span>';
+        return "";
+    }
+    function rowHTML(r) {
+        return '<tr class="result-row">' +
+            '<td class="dtc">' + fmtDate(r.dutyFrom) + '</td><td class="dtc">' + fmtDate(r.dutyTo) + '</td>' +
+            (r.dy === undefined ? "<td>…</td><td>…</td><td>…</td>" : "<td>" + r.dy + "</td><td>" + r.dm + "</td><td>" + r.dd + "</td>") +
+            ymdCell(r.y && r.y.earnedFull) + ymdCell(r.y && r.y.earnedHalf) + ymdCell(r.y && r.y.totalFull) + ymdCell(r.y && r.y.totalHalf) +
+            // (৪ মাসের অতিরিক্ত জমা ছুটির কলাম আপাতত বাদ)
+            '<td class="dtc">' + fmtDate(r.leaveFrom) + '</td><td class="dtc">' + fmtDate(r.leaveTo) + "</td>" +
+            "<td>" + esc(r.typeShort || "…") + "</td>" +
+            ymdCell(r.y && r.y.takenFull) + ymdCell(r.y && r.y.takenHalf) + ymdCell(r.y && r.y.takenUnpaid) + ymdCell(r.y && r.y.takenOthers) + ymdCell(r.y && r.y.takenTotal) +
+            ymdCell(r.y && r.y.remFull) + ymdCell(r.y && r.y.remHalf) +
+            "<td>" + (esc(r.remark) || "-") + stHTML(r) + "</td></tr>";
+    }
+    // ---------- ফর্ম ----------
+    var DATE_IDS = ["dutyFrom", "dutyTo", "leaveFrom", "leaveTo"];
+    function resetForm() {
+        DATE_IDS.forEach(function (i) {
+            var t = $(i + "_t"); t.value = ""; t._p = ""; $(i).value = "";
+            t.closest(".f").classList.remove("bad");
+        });
+        $("leaveType").selectedIndex = 0; $("remark").selectedIndex = 0;
+        refreshAuto();
+    }
+    // "ডিউটি শুরু" ও "ছুটি শুরু" ঘর স্বয়ংক্রিয়। আসল নির্ধারণ ব্যাকএন্ড করে; এখানে শুধু দেখানো হয়।
+    function setDate(id, iso) {
+        var t = $(id + "_t"), p = iso ? iso.slice(8) + "/" + iso.slice(5, 7) + "/" + iso.slice(0, 4) : "";
+        $(id).value = iso || ""; t._p = p; t.value = bn(p); t.closest(".f").classList.remove("bad");
+    }
+    function dutyFromFree() { return !!S.person && !S.rows.length && !S.person.joinDate; }   // যোগদানের তারিখ নেই এমন পুরোনো খালি বই
+    function refreshAuto() {
+        if (!S.person) return;
+        var last = S.rows.length ? S.rows[S.rows.length - 1] : null, free = dutyFromFree();
+        if (!free) setDate("dutyFrom", last ? nextDay(last.leaveTo) : S.person.joinDate);
+        setDate("leaveFrom", $("dutyTo").value ? nextDay($("dutyTo").value) : "");
+        [["dutyFrom_t", !free], ["leaveFrom_t", true]].forEach(function (x) {
+            var el = $(x[0]); el.readOnly = x[1]; el.tabIndex = x[1] ? -1 : 0; el.closest(".f").classList.toggle("auto", x[1]);
+        });
+    }
+    function firstField() { return dutyFromFree() ? $("dutyFrom_t") : $("dutyTo_t"); }
+    $("dutyTo_t").addEventListener("input", function () { setTimeout(refreshAuto, 0); });
+    $("resetBtn").addEventListener("click", function () {
+        resetForm();
+        if (S.dummy && !S.rows.length) {   // ডামির প্রথম সারির আগে: নাম বাদে বাকি সব ঘর ফাঁকা, কার্সর প্রথম ঘরে
+            ["dmFy", "dmFm", "dmFd", "dmHy", "dmHm", "dmHd"].forEach(function (i) { $(i).value = ""; });
+            $("dmFy").focus(); return;
+        }
+        if (S.person) firstField().focus();
+    });
+    $("printBtn").addEventListener("click", function () {
+        if (!S.person || !S.rows.length) { showModal("error", "প্রিন্ট", "সার্ভিস বুকে প্রিন্ট করার মতো কোনো হিসাব যুক্ত করা হয়নি।"); return; }
+        if (S.dummy && S.rows.some(function (r) { return r._st; })) { showModal("warn", "একটু অপেক্ষা করুন", "হিসাব শেষ হচ্ছে। কয়েক সেকেন্ড পর আবার প্রিন্ট চাপুন।"); return; }
+        window.print();
+    });
+
+    function ms(s) { return Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10)); }
+    function localCheck(v) {   // শুধু দ্রুত সতর্কতার জন্য; আসল যাচাই ব্যাকএন্ড করে
+        if (v.dutyTo < v.dutyFrom) return "ডিউটির শেষ তারিখ " + dmy(v.dutyFrom) + " বা তার পরের হতে হবে।";
+        if (v.leaveTo < v.leaveFrom) return "ছুটির শেষ তারিখ " + dmy(v.leaveFrom) + " বা তার পরের হতে হবে।";
+        return "";
+    }
+    // আসল হিসাব ব্যাকএন্ড করে। এখানে শুধু সংরক্ষণের সময় "…" সহ একটি অস্থায়ী সারি দেখানো হয়।
+    function pendingRow(v, last) {
+        return { personId: S.person.id, seq: last ? last.seq + 1 : 1, dutyFrom: v.dutyFrom, dutyTo: v.dutyTo, leaveFrom: v.leaveFrom, leaveTo: v.leaveTo, leaveType: v.leaveType, remark: String(v.remark || "").slice(0, 60) };
+    }
+    function calc() {
+        var v = {
+            dutyFrom: $("dutyFrom").value, dutyTo: $("dutyTo").value,
+            leaveFrom: $("leaveFrom").value, leaveTo: $("leaveTo").value,
+            leaveType: $("leaveType").value, remark: $("remark").value
+        };
+        var miss = [];
+        if (!v.dutyFrom) miss.push("ডিউটি শুরু (হইতে)");
+        if (!v.dutyTo) miss.push("ডিউটি শেষ (পর্যন্ত)");
+        if (!v.leaveTo) miss.push("ছুটি শেষ (পর্যন্ত)");
+        if (!v.leaveType) miss.push("ছুটির প্রকার");
+        ["dutyFrom", "dutyTo", "leaveTo", "leaveType"].forEach(function (k) {
+            $(k === "leaveType" ? k : k + "_t").closest(".f").classList.toggle("bad", !v[k]);
+        });
+        if (miss.length) { showModal("error", "তথ্য অসম্পূর্ণ", "সবগুলো বাধ্যতামূলক ঘর পূরণ করুন।\nঅপূর্ণ: " + miss.join(", ")); return; }
+        if (S.queue.some(function (i) { return i.state === "failed"; })) { showModal("error", "আগের সারি সংরক্ষণ হয়নি", "আগের সারিটি সংরক্ষণ হয়নি। টেবিলে লাল লেখার পাশে \"আবার পাঠান\" চাপুন।"); return; }
+        if (S.queue.some(function (i) { return i.kind === "undo"; })) { blockIfPending(); return; }
+        var last = S.rows.length ? S.rows[S.rows.length - 1] : null;
+        var err = localCheck(v);
+        if (err) { showModal("error", "তারিখে সমস্যা", err); return; }
+        if (S.dummy) { dummyAdd(v); return; }
+        var row = pendingRow(v, last);
+        row._st = "saving";
+        S.rows.push(row); renderBook();
+        var payload = { personId: S.person.id, dutyTo: v.dutyTo, leaveTo: v.leaveTo, leaveType: v.leaveType, remark: v.remark };
+        if (dutyFromFree()) payload.dutyFrom = v.dutyFrom;   // বাকি তারিখ ব্যাকএন্ড নিজে ঠিক করে
+        S.queue.push({ row: row, payload: payload, state: "saving" });
+        pump();
+        showModal("success", "সফলভাবে যুক্ত হয়েছে", "", function () { $("resetBtn").focus(); });
+    }
+
+    // সারি যোগ করলে সঙ্গে সঙ্গে সারিটি টেবিলে আসে (সংখ্যার ঘরে "…"); হিসাব ব্যাকএন্ডে পেছনে চলে, শেষ হলে সংখ্যা বসে যায়।
+    S.dver = 0; S.dbusy = false;
+    function dummyAdd(v) {
+        var first = !S.rows.length, open = first ? dmReadOpen() : S.dopenIn;
+        var bad = [open.full.y, open.full.m, open.full.d, open.half.y, open.half.m, open.half.d].some(function (x) { return isNaN(x); });
+        if (bad) { showModal("error", "অবশিষ্ট ছুটি", "ব-মা-দি ঘরে শুধু সংখ্যা দিন (ফাঁকা রাখলে ০ ধরা হবে)।"); return; }
+        if (first) { S.dfrom = v.dutyFrom; S.dopenIn = open; S.dopen = null; }
+        S.dinputs.push({ dutyTo: v.dutyTo, leaveTo: v.leaveTo, leaveType: v.leaveType, remark: first ? "" : v.remark });
+        S.rows.push({ seq: S.rows.length + 1, dutyFrom: v.dutyFrom, dutyTo: v.dutyTo, leaveFrom: v.leaveFrom, leaveTo: v.leaveTo, leaveType: v.leaveType, remark: first ? "" : String(v.remark || "").slice(0, 60), _st: "saving" });
+        S.dver++;
+        renderBook(); resetForm();
+        showModal("success", "সফলভাবে যুক্ত হয়েছে", "", function () { $("resetBtn").focus(); });
+        dmFlush();
+    }
+    function dmFlush() {
+        if (S.dbusy || !S.dummy || !S.dinputs.length) return;
+        S.dbusy = true;
+        var ver = S.dver, snap = S.dinputs.slice(), open = S.dopenIn, from = S.dfrom;
+        api("dummyCalc", { dutyFrom: from, openFull: open.full, openHalf: open.half, rows: snap }, "user", true).then(function (d) {
+            S.dbusy = false;
+            if (!S.dummy) return;
+            if (ver === S.dver) { S.rows = d.rows; S.dopen = d.open; renderBook(); if (d.warning) showModal("warn", "সতর্কতা", d.warning); }
+            else dmFlush();   // এর মধ্যে আরও বদল হয়েছে: সর্বশেষ অবস্থা আবার পাঠানো
+        }).catch(function (e) {
+            S.dbusy = false;
+            if (!S.dummy) return;
+            if (e && e.code === "AUTH") { handleErr(e); return; }
+            var rm = S.rows.pop(); S.dinputs.pop(); S.dver++; renderBook();
+            if (rm) restoreInputs(rm);
+            showModal("error", "হিসাব হয়নি", (e && e.message ? e.message + "\n" : "") + "সারিটি ফর্মে ফিরিয়ে আনা হয়েছে।");
+            dmFlush();
+        });
+    }
+
+    // ---------- পেছনে সংরক্ষণের সারি (একটার পর একটা) ----------
+    function pump() {
+        if (S.sending) return;
+        if (S.queue.some(function (i) { return i.state === "failed"; })) return;
+        var it = S.queue[0];
+        if (!it) return;
+        S.sending = true;
+        if (it.kind === "undo") {   // সর্বশেষ সারি মুছে সংশোধন: ব্রাউজারে সঙ্গে সঙ্গে হয়ে গেছে, এখন ব্যাকএন্ডে হালনাগাদ
+            api("rowUndo", { personId: S.person.id }, "user", true).then(function () {
+                S.queue.shift(); S.sending = false; pump();
+            }).catch(function (e) {
+                S.queue.shift(); S.sending = false; S.rows.push(it.row); renderBook();
+                if (e && e.code === "AUTH") handleErr(e);
+                else showModal("error", "মোছা যায়নি", (e && e.message ? e.message + "\n" : "") + "সারিটি আবার টেবিলে ফিরিয়ে আনা হয়েছে।");
+            });
+            return;
+        }
+        api("rowAdd", it.payload, "user", true).then(function (d) {
+            Object.assign(it.row, d.row); delete it.row._st;
+            if (d.joinDate && S.person) S.person.joinDate = d.joinDate;
+            S.queue.shift(); S.sending = false; renderBook(); pump();
+            if (d.warning) showModal("warn", "সফলভাবে যুক্ত হয়েছে", d.warning);
+        }).catch(function (e) {
+            S.sending = false; it.state = "failed"; it.row._st = "failed"; renderBook();
+            if (e && e.code === "AUTH") handleErr(e);
+        });
+    }
+    $("ledgerTable").addEventListener("click", function (e) {
+        if (!e.target.closest("[data-retry]")) return;
+        var it = S.queue.filter(function (i) { return i.state === "failed"; })[0];
+        if (!it) return;
+        it.state = "saving"; it.row._st = "saving"; renderBook();
+        // আগের চেষ্টায় সার্ভারে সংরক্ষণ হয়ে গিয়ে থাকলে দ্বিতীয়বার যুক্ত না করে মিলিয়ে নেওয়া
+        api("personLoad", { personId: S.person.id }, "user", true).then(function (d) {
+            var hit = d.rows.filter(function (r) { return r.seq === it.row.seq && r.dutyFrom === it.row.dutyFrom && r.leaveTo === it.row.leaveTo; })[0];
+            if (hit) { Object.assign(it.row, hit); delete it.row._st; S.queue.shift(); renderBook(); pump(); }
+            else pump();
+        }).catch(function (er) {
+            it.state = "failed"; it.row._st = "failed"; renderBook();
+            if (er && er.code === "AUTH") handleErr(er);
+        });
+    });
+
+    $("addBtn").addEventListener("click", calc);
+
+    function restoreInputs(inp) {
+        DATE_IDS.forEach(function (i) {
+            var v = inp[i], t = $(i + "_t");
+            $(i).value = v; t._p = v.slice(8) + "/" + v.slice(5, 7) + "/" + v.slice(0, 4); t.value = bn(t._p);
+            t.closest(".f").classList.remove("bad");
+        });
+        $("leaveType").value = inp.leaveType; $("remark").value = inp.remark || "";
+    }
+    $("undoBtn").addEventListener("click", function () {
+        if (!S.person || !S.rows.length) return;
+        if (S.dummy) {
+            if (!confirm("সর্বশেষ সারিটি মুছে ফেলে তথ্যগুলো ফর্মে ফিরিয়ে আনা হবে। ঠিক আছে?")) return;
+            var rm = S.rows.pop(); S.dinputs.pop(); S.dver++; renderBook(); restoreInputs(rm); if (S.rows.some(function (r) { return r._st; })) dmFlush(); return;
+        }
+        if (S.queue.length) {   // শুধু সংরক্ষণ-না-হওয়া একমাত্র সারিটি ব্রাউজার থেকেই ফেরানো যায়
+            var it = S.queue[0];
+            if (S.queue.length === 1 && it.state === "failed") {
+                S.queue = []; S.rows.pop(); renderBook(); restoreInputs(it.payload); return;
+            }
+            blockIfPending(); return;
+        }
+        if (!confirm("সর্বশেষ সারিটি সার্ভিস বুক থেকে মুছে ফেলে তথ্যগুলো ফর্মে ফিরিয়ে আনা হবে। ঠিক আছে?")) return;
+        var removed = S.rows.pop();
+        renderBook(); restoreInputs(removed);
+        S.queue.push({ kind: "undo", row: removed, state: "saving" });
+        pump();
+    });
+
+    // ---------- ইউজারের নিজের পাসওয়ার্ড বদল ----------
+    function closePw() { $("pwModal").hidden = true; $("pwForm").reset(); eyesHide($("pwForm")); $("pwErr").textContent = ""; }
+    $("pwBtn").addEventListener("click", function () { $("pwModal").hidden = false; $("pwOld").focus(); });
+    $("pwCancel").addEventListener("click", closePw);
+    $("pwForm").addEventListener("submit", function (e) {
+        e.preventDefault(); $("pwErr").textContent = "";
+        var n1 = $("pwNew").value;
+        if (n1.length < 6) { $("pwErr").textContent = "নতুন পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।"; return; }
+        if (n1 !== $("pwNew2").value) { $("pwErr").textContent = "নতুন পাসওয়ার্ড দুইবার একই হয়নি।"; return; }
+        api("userChangePassword", { oldPassword: $("pwOld").value, newPassword: n1 }).then(function (d) {
+            setTok("user", d.token); closePw();
+            showModal("success", "সফল", "আপনার পাসওয়ার্ড বদলানো হয়েছে।");
+        }).catch(function (er) {
+            if (er && er.code === "AUTH") handleErr(er); else $("pwErr").textContent = er.message;
+        });
+    });
+
+    // ---------- Enter বাটনে পরের ধাপে যাওয়া ----------
+    var ORDER_ALL = ["dutyFrom_t", "dutyTo_t", "leaveFrom_t", "leaveTo_t", "leaveType", "addBtn"];
+    var FIELD = { dutyFrom_t: "dutyFrom", dutyTo_t: "dutyTo", leaveFrom_t: "leaveFrom", leaveTo_t: "leaveTo", leaveType: "leaveType" };
+    var DM_ORDER = ["dmName", "dmFy", "dmFm", "dmFd", "dmHy", "dmHm", "dmHd"];
+    document.addEventListener("keydown", function (e) {
+        if (e.key !== "Enter" || e.isComposing) return;
+        var di = DM_ORDER.indexOf(e.target.id);
+        if (di >= 0 && S.dummy) {   // ডামির নাম ও অবশিষ্ট ছুটির ঘরগুলোতে Enter চাপলে পরের ঘরে যাবে
+            e.preventDefault();
+            var nx = $(di < DM_ORDER.length - 1 ? DM_ORDER[di + 1] : "dutyFrom_t"); nx.focus(); if (nx.select) nx.select();
+            return;
+        }
+        var ORDER = ORDER_ALL.filter(function (id) { return !$(id).readOnly; });
+        var i = ORDER.indexOf(e.target.id);
+        if (i < 0 || i >= ORDER.length - 1) return;   // addBtn ও রিসেট বাটন নিজেই Enter-এ কাজ করে
+        e.preventDefault();
+        var box = e.target.closest(".f");
+        if (!$(FIELD[e.target.id]).value) {          // তারিখ/প্রকার সঠিক না হলে পরের ধাপে যাবে না
+            box.classList.add("bad");
+            return;
+        }
+        box.classList.remove("bad");
+        $(ORDER[i + 1]).focus();
+    });
+    $("leaveType").addEventListener("change", function () { if (this.value) this.closest(".f").classList.remove("bad"); });
+
+    // =====================================================================
+    //                           অ্যাডমিন
+    // =====================================================================
+    function strongPw(p) { return p.length >= 10 && /[a-z]/.test(p) && /[A-Z]/.test(p) && /\d/.test(p) && /[^A-Za-z0-9]/.test(p); }
+    $("adminLoginForm").addEventListener("submit", function (e) {
+        e.preventDefault(); $("adErr").textContent = "";
+        var p = $("adPass").value;
+        if (!strongPw(p)) { $("adErr").textContent = "শক্তিশালী পাসওয়ার্ড ছাড়া অ্যাডমিন প্যানেলে প্রবেশ করা যাবে না (১০+ অক্ষর, বড় ও ছোট হাতের অক্ষর, সংখ্যা ও চিহ্ন)।"; return; }
+        api("adminLogin", { username: $("adUser").value, password: p }, "admin").then(function (d) {
+            adClear(); setTok("admin", d.token); $("adPass").value = ""; view("adminPanel"); AD.tab = "dash"; loadTab();
+        }).catch(function (er) { $("adErr").textContent = er.message; });
+    });
+    $("admLogout").addEventListener("click", function () {
+        api("logout", {}, "admin").catch(function () {});
+        adClear(); setTok("admin", null); eyesHide($("adminGate")); view("adminGate"); $("adUser").focus();
+    });
+
+    var AD = { tab: "dash", logF: null, hist: null, editing: null, rmEdit: null, users: [], people: [], remarks: [], cache: {}, ttl: 10 * 60 * 1000 };
+    var READS = { userList: 1, personList: 1, settingsGet: 1, remarkList: 1, logList: 1, adminStats: 1, adminTrashList: 1, userLoginHistory: 1, exportCsv: 1 };
+    function admFail(e) {
+        if (e.code === "AUTH") { adClear(); setTok("admin", null); view("adminGate"); $("adErr").textContent = e.message; }
+        else showModal("error", "সমস্যা হয়েছে", e.message);
+        return null;
+    }
+    function adClear() { AD.cache = {}; AD.pending = {}; AD.prefetching = false; AD.epoch = (AD.epoch || 0) + 1; }
+    function admApi(a, d) {
+        if (!READS[a]) adClear(); // কোনো তথ্য বদলালে জমানো কপি বাতিল
+        return api(a, d || {}, "admin").catch(admFail);
+    }
+    // জমানো কপি থাকলে সঙ্গে সঙ্গে দেয়; না থাকলে সার্ভার থেকে এনে জমায়
+    function adGet(a, force, quiet) {
+        var c = AD.cache[a];
+        if (!force && c && Date.now() - c.t < AD.ttl) return Promise.resolve(c.d);
+        AD.pending = AD.pending || {};
+        if (!force && AD.pending[a]) return AD.pending[a];   // একই তথ্য আগে থেকেই আনা হচ্ছে হলে দ্বিতীয়বার চাওয়া হয় না
+        var ep = AD.epoch || 0;
+        var pr = api(a, {}, "admin", true).then(function (d) { if ((AD.epoch || 0) === ep) { delete AD.pending[a]; AD.cache[a] = { t: Date.now(), d: d }; } return d; }, function (e) { delete AD.pending[a]; throw e; });
+        AD.pending[a] = pr;
+        return pr;
+    }
+    function adPrefetch() {
+        if (AD.prefetching) return; AD.prefetching = true;
+        var list = ["adminStats", "userList", "personList", "settingsGet", "remarkList", "logList", "adminTrashList"], i = 0;
+        (function next() {
+            if (!AD.prefetching || i >= list.length) { AD.prefetching = false; return; }
+            var a = list[i++];
+            if (AD.cache[a]) return next();
+            adGet(a).then(next, function () { AD.prefetching = false; });
+        })();
+    }
+    $("admTabs").addEventListener("click", function (e) {
+        var b = e.target.closest("button[data-t]"); if (!b) return;
+        AD.tab = b.dataset.t; AD.editing = null; AD.rmEdit = null; AD.pAcc = null; AD.hist = null; loadTab();
+    });
+    $("admRefresh").addEventListener("click", function () { adClear(); loadTab(); });
+    var TABACT = { dash: "adminStats", users: "userList", persons: "personList", settings: "settingsGet", remarks: "remarkList", log: "logList", trash: "adminTrashList" };
+    function loadTab() {
+        var t = AD.tab, a = TABACT[t];
+        [].forEach.call(document.querySelectorAll("#admTabs button"), function (b) { b.classList.toggle("on", b.dataset.t === t); });
+        if (t === "pass") { renderPass(); return; }
+        var hit = AD.cache[a] && Date.now() - AD.cache[a].t < AD.ttl && !(t === "log" && AD.logF);
+        if (!hit) $("admBody").innerHTML = '<div class="hint" style="padding:18px">লোড হচ্ছে…</div>';
+        var fetcher = (t === "log" && AD.logF) ? api("logList", AD.logF, "admin", true) : adGet(a);
+        fetcher.then(function (d) {
+            if (AD.tab !== t) return; // ইতিমধ্যে অন্য ট্যাবে চলে গেছেন
+            if (t === "dash") renderDash(d);
+            else if (t === "trash") renderTrash(d);
+            else if (t === "users") { AD.users = d.users; renderUsers(); }
+            else if (t === "persons") { AD.people = d.people; renderPeople(); }
+            else if (t === "settings") renderSettings(d.settings);
+            else if (t === "remarks") { AD.remarks = d.remarks; renderRemarks(); }
+            else if (t === "log") renderLog(d);
+            adPrefetch();
+        }).catch(admFail);
+    }
+
+    function renderUsers() {
+        var hh = "";
+        if (AD.hist) {
+            hh = '<div class="adm-card"><h3>লগইন ইতিহাস: ' + esc(AD.hist.username) + '</h3>';
+            hh += AD.hist.history.length ? '<div class="hist">' + AD.hist.history.map(function (x) { return '<div class="' + (x.ok ? "hok" : "hbad") + '">' + (x.ok ? "✔ সফল" : "✘ ভুল পাসওয়ার্ড") + " — " + esc(x.time) + "</div>"; }).join("") + "</div>" : '<div class="hint">কোনো লগইনের তথ্য নেই।</div>';
+            hh += '<button type="button" class="pbtn sec sm" data-act="uHistClose">বন্ধ করুন</button></div>';
+        }
+        var ed = null; AD.users.forEach(function (u) { if (u.username === AD.editing) ed = u; });
+        var h = hh + '<div class="adm-card"><h3>' + (ed ? "ব্যবহারকারী সম্পাদনা: " + esc(ed.username) : "নতুন ব্যবহারকারী যুক্ত করুন") + '</h3><div class="adm-grid">' +
+            '<div class="fld"><label>ইউজারনেম (ইংরেজি অক্ষর/সংখ্যা)</label><input id="uName" autocomplete="off" autocapitalize="none" ' + (ed ? 'value="' + esc(ed.username) + '" readonly' : "") + "></div>" +
+            '<div class="fld"><label>নাম (ঐচ্ছিক)</label><input id="uDisp" autocomplete="off" value="' + esc(ed ? ed.displayName : "") + '"></div>' +
+            '<div class="fld"><label>পাসওয়ার্ড ' + (ed ? "(ইউজার ভুলে গেলে এখানে নতুন দিন; না বদলাতে ফাঁকা রাখুন)" : "(কমপক্ষে ৬ অক্ষর)") + '</label><input id="uPass" autocomplete="new-password"></div></div>' +
+            '<button type="button" class="pbtn" data-act="uSave">সংরক্ষণ করুন</button> ' + (ed ? '<button type="button" class="pbtn sec" data-act="uCancel">বাতিল</button>' : "") + "</div>";
+        h += '<div class="adm-scroll"><table class="adm-table"><thead><tr><th>ইউজারনেম</th><th>নাম</th><th>অবস্থা</th><th>তৈরি</th><th>সর্বশেষ লগইন</th><th>পাসওয়ার্ড সর্বশেষ বদল</th><th>কাজ</th></tr></thead><tbody>';
+        if (!AD.users.length) h += '<tr><td colspan="7">কোনো ব্যবহারকারী নেই। উপরে থেকে যুক্ত করুন।</td></tr>';
+        AD.users.forEach(function (u) {
+            var on = u.active === "Y";
+            h += "<tr><td>" + esc(u.username) + "</td><td>" + esc(u.displayName) + '</td><td><span class="tag ' + (on ? "on" : "off") + '">' + (on ? "সক্রিয়" : "নিষ্ক্রিয়") + "</span></td><td>" + esc(u.createdAt) + "</td><td>" + esc(u.lastLogin || "-") + "</td><td>" + (u.pwChangedAt ? esc(u.pwChangedAt) + "<br><small>(" + esc(u.pwChangedBy) + ")</small>" : "-") + "</td><td>" +
+                '<button type="button" class="pbtn sm" data-act="uEdit" data-id="' + esc(u.username) + '">সম্পাদনা</button> ' +
+                '<button type="button" class="pbtn sm sec" data-act="uToggle" data-id="' + esc(u.username) + '">' + (on ? "নিষ্ক্রিয় করুন" : "সক্রিয় করুন") + "</button> " +
+                '<button type="button" class="pbtn sm sec" data-act="uHist" data-id="' + esc(u.username) + '">লগইন ইতিহাস</button> ' +
+                '<button type="button" class="pbtn sm sec" data-act="uForce" data-id="' + esc(u.username) + '">জোর করে লগআউট</button> ' +
+                '<button type="button" class="pbtn sm danger" data-act="uDel" data-id="' + esc(u.username) + '">মুছুন</button></td></tr>';
+        });
+        $("admBody").innerHTML = h + "</tbody></table></div>";
+    }
+
+    function renderPeople() {
+        var h = "";
+        var ap = null; AD.people.forEach(function (x) { if (x.id === AD.pAcc) ap = x; });
+        if (ap) {
+            var allOn = ap.shared !== "N";
+            h += '<div class="adm-card"><h3>কে দেখতে পারবে: ' + esc(ap.name) + '</h3><label class="chk"><input type="checkbox" id="pAccShared"' + (allOn ? " checked" : "") + '> সবাই দেখতে পারবে</label>' +
+                '<div class="hint">উপরের ঘর টিক থাকলে সব ইউজার বইটি দেখতে ও সারি যোগ করতে পারবে। টিক তুলে দিলে শুধু নিচে টিক দেওয়া ইউজাররা (এবং অ্যাডমিন) পারবে।</div><div class="adm-grid">';
+            AD.users.forEach(function (u) {
+                var on = ap.owners.indexOf(String(u.username).toLowerCase()) >= 0;
+                h += '<label class="chk"><input type="checkbox" class="pAccU" data-u="' + esc(u.username) + '"' + (on ? " checked" : "") + '> ' + esc(u.username) + (u.displayName ? " (" + esc(u.displayName) + ")" : "") + "</label>";
+            });
+            h += '</div><button type="button" class="pbtn" data-act="pAccSave" data-id="' + esc(ap.id) + '">সংরক্ষণ করুন</button> <button type="button" class="pbtn sec" data-act="pAccCancel">বাতিল</button></div>';
+        }
+        var ep0 = null; AD.people.forEach(function (x) { if (x.id === AD.pEditId) ep0 = x; });
+        if (ep0) {
+            h += '<div class="adm-card"><h3>সম্পাদনা: ' + esc(ep0.name) + '</h3><div class="adm-grid">' +
+                '<div class="fld"><label>ব্যক্তির নাম</label><input id="peName" value="' + esc(ep0.name) + '" autocomplete="off"></div>' +
+                '<div class="fld"><label>জাতীয় পরিচয়পত্র / মোবাইল নম্বর</label><input id="peKey" data-bn inputmode="numeric" value="' + esc(bn(ep0.key)) + '" autocomplete="off"></div>' +
+                (ep0.rows === 0
+                    ? '<div class="f"><label for="peJoin_t">চাকরিতে যোগদানের তারিখ</label><input type="text" class="dt" id="peJoin_t" inputmode="numeric" autocomplete="off" placeholder="দিন/মাস/বছর"><input type="date" id="peJoin" value="' + esc(ep0.joinDate || "") + '" hidden></div>'
+                    : '<div class="fld"><label>চাকরিতে যোগদানের তারিখ</label><div class="hint">' + esc(ep0.joinDate ? fmtDate(ep0.joinDate) : "-") + ' (সারি যুক্ত হয়ে গেছে, তাই বদলানো যাবে না)</div></div>') +
+                '</div><div style="margin-top:12px"><button type="button" class="pbtn" data-act="pEditSave" data-id="' + esc(ep0.id) + '">সংরক্ষণ করুন</button> <button type="button" class="pbtn sec" data-act="pEditCancel">বাতিল</button></div></div>';
+        }
+        h += '<div class="hint" style="margin-bottom:10px">মোট সার্ভিস বুক: ' + AD.people.length + ' &nbsp; <button type="button" class="pbtn sm" data-act="pCsvAll">⬇ সব বইয়ের ব্যাকআপ (CSV) ডাউনলোড</button></div><div class="adm-scroll"><table class="adm-table"><thead><tr><th>নাম</th><th>জাতীয় পরিচয়পত্র/মোবাইল</th><th>যোগদান</th><th>কে দেখতে পারবে</th><th>সারি সংখ্যা</th><th>তৈরি করেছেন</th><th>তৈরির সময়</th><th>কাজ</th></tr></thead><tbody>';
+        if (!AD.people.length) h += '<tr><td colspan="8">কোনো সার্ভিস বুক নেই।</td></tr>';
+        AD.people.forEach(function (p) {
+            h += '<tr><td class="l">' + esc(p.name) + "</td><td>" + esc(p.key) + "</td><td>" + esc(p.joinDate ? fmtDate(p.joinDate) : "-") + "</td><td>" + (p.shared === "N" ? (p.owners.length ? esc(p.owners.join(", ")) : "শুধু অ্যাডমিন") : "সবাই") + "</td><td>" + p.rows + "</td><td>" + esc(p.createdBy) + "</td><td>" + esc(p.createdAt) + "</td><td>" +
+                '<button type="button" class="pbtn sm" data-act="pEdit" data-id="' + esc(p.id) + '">সম্পাদনা</button> ' +
+                '<button type="button" class="pbtn sm sec" data-act="pAcc" data-id="' + esc(p.id) + '">কে দেখতে পারবে</button> ' +
+                '<button type="button" class="pbtn sm sec" data-act="pCsv" data-id="' + esc(p.id) + '">⬇ CSV</button> ' +
+                (p.rows ? '<button type="button" class="pbtn sm sec" data-act="pRecalc" data-id="' + esc(p.id) + '">নতুন নিয়মে পুনর্গণনা</button> <button type="button" class="pbtn sm sec" data-act="pRowDel" data-id="' + esc(p.id) + '">সর্বশেষ সারি মুছুন</button> ' : "") +
+                '<button type="button" class="pbtn sm danger" data-act="pDel" data-id="' + esc(p.id) + '">মুছুন</button></td></tr>';
+        });
+        $("admBody").innerHTML = h + "</tbody></table></div>";
+        if (ep0 && ep0.rows === 0 && window.initDateField) initDateField("peJoin");
+    }
+
+    function renderSettings(list) {
+        var h = '<div class="adm-card"><h3>হিসাবের নিয়ম (ফরমুলার মান)</h3><div class="adm-grid">';
+        list.forEach(function (s) { h += '<div class="fld"><label>' + esc(s.label) + '</label><input data-bn data-k="' + esc(s.key) + '" inputmode="numeric" value="' + esc(bn(s.value)) + '"></div>'; });
+        h += '</div><div class="hint">সতর্কতা: নিয়ম বদলালে শুধু ভবিষ্যতে যুক্ত হওয়া সারির হিসাব বদলাবে; আগের সারি অপরিবর্তিত থাকবে। টেবিলের হেডারের "১/১১", "১/১২" লেখা নিজে থেকে বদলায় না।</div><br><button type="button" class="pbtn" data-act="sSave">সংরক্ষণ করুন</button></div>';
+        $("admBody").innerHTML = h;
+    }
+
+    function renderRemarks() {
+        var h = '<div class="adm-card"><h3>নতুন মন্তব্য যুক্ত করুন</h3><div class="rm-edit"><input id="rmNew" maxlength="60" autocomplete="off" placeholder="যেমন: Casual Leave"><button type="button" class="pbtn" data-act="rmAdd">যুক্ত করুন</button></div>' +
+            '<div class="hint">এই তালিকাই ইউজারদের "মন্তব্য (ছুটির বিবরণ)" ড্রপডাউনে দেখায়। মন্তব্য বদলালে বা মুছলে আগে যুক্ত হওয়া সার্ভিস বুকের সারির লেখা বদলায় না। ইউজাররা পেজ রিফ্রেশ করলে নতুন তালিকা পাবেন।</div></div>';
+        h += '<div class="adm-scroll"><table class="adm-table"><thead><tr><th style="width:60px">ক্রম</th><th>মন্তব্য</th><th>কাজ</th></tr></thead><tbody>';
+        if (!AD.remarks.length) h += '<tr><td colspan="3">কোনো মন্তব্য নেই। উপরে থেকে যুক্ত করুন।</td></tr>';
+        AD.remarks.forEach(function (x, i) {
+            if (AD.rmEdit === x.id) {
+                h += "<tr><td>" + (i + 1) + '</td><td class="l"><div class="rm-edit"><input id="rmEditText" maxlength="60" value="' + esc(x.text) + '"></div></td><td>' +
+                    '<button type="button" class="pbtn sm" data-act="rmSave" data-id="' + esc(x.id) + '">সংরক্ষণ</button> <button type="button" class="pbtn sm sec" data-act="rmCancel">বাতিল</button></td></tr>';
+            } else {
+                h += "<tr><td>" + (i + 1) + '</td><td class="l">' + esc(x.text) + "</td><td>" +
+                    '<button type="button" class="pbtn sm" data-act="rmEdit" data-id="' + esc(x.id) + '">সম্পাদনা</button> <button type="button" class="pbtn sm danger" data-act="rmDel" data-id="' + esc(x.id) + '">মুছুন</button></td></tr>';
+            }
+        });
+        $("admBody").innerHTML = h + "</tbody></table></div>";
+        if (AD.rmEdit) { var ei = $("rmEditText"); if (ei) { ei.focus(); ei.setSelectionRange(ei.value.length, ei.value.length); } }
+    }
+    function rmDone(d) { if (d) { AD.remarks = d.remarks; AD.rmEdit = null; renderRemarks(); } }
+    $("admBody").addEventListener("keydown", function (e) {
+        if (e.key !== "Enter") return;
+        if (/^lf(User|Q)$/.test(e.target.id)) { e.preventDefault(); e.target.closest(".adm-card").querySelector("[data-act=lfGo]").click(); return; }
+        if (e.target.id === "rmNew") { e.preventDefault(); admApi("remarkAdd", { text: e.target.value }).then(rmDone); }
+        else if (e.target.id === "rmEditText") { e.preventDefault(); admApi("remarkUpdate", { id: AD.rmEdit, text: e.target.value }).then(rmDone); }
+    });
+    function renderPass() {
+        $("admBody").innerHTML = '<div class="adm-card"><h3>অ্যাডমিন পাসওয়ার্ড পরিবর্তন</h3><div class="adm-grid">' +
+            '<div class="fld"><label>বর্তমান পাসওয়ার্ড</label><input id="cpOld" type="password" autocomplete="current-password"></div>' +
+            '<div class="fld"><label>নতুন পাসওয়ার্ড</label><input id="cpNew" type="password" autocomplete="new-password"></div>' +
+            '<div class="fld"><label>নতুন পাসওয়ার্ড আবার</label><input id="cpNew2" type="password" autocomplete="new-password"></div></div>' +
+            '<div class="hint">কমপক্ষে ১০ অক্ষর; বড় হাতের ও ছোট হাতের ইংরেজি অক্ষর, সংখ্যা এবং একটি চিহ্ন (@ # ! ইত্যাদি) থাকতে হবে।</div><br>' +
+            '<button type="button" class="pbtn" data-act="cpSave">পাসওয়ার্ড বদলান</button></div>';
+        attachEyes($("admBody"));
+    }
+
+    function renderLog(d) {
+        var list = d.log, F = AD.logF || {}, open = AD.logOpen || !!AD.logF;
+        function dateBox(id, label, v) { return '<div class="f"><label for="' + id + '_t">' + label + '</label><input type="text" class="dt" id="' + id + '_t" inputmode="numeric" autocomplete="off" placeholder="দিন/মাস/বছর"><input type="date" id="' + id + '" value="' + esc(v || "") + '" hidden></div>'; }
+        var h = '<div class="lg-head"><h3>কার্যকলাপ লগ</h3><button type="button" class="lg-s' + (open ? " on" : "") + '" data-act="lfToggle" title="খুঁজুন" aria-label="খুঁজুন">&#128269;</button></div>' +
+            '<div class="adm-card" id="lfCard"' + (open ? "" : ' style="display:none"') + '><h3>খুঁজুন</h3><div class="lf-grid">' +
+            '<div class="f"><label for="lfUser">ইউজার</label><input class="dt" id="lfUser" value="' + esc(F.user || "") + '" autocomplete="off"></div>' +
+            '<div class="f"><label for="lfAct">কাজের ধরন</label><select id="lfAct" class="dt"><option value="">সব</option>' + (d.actions || []).map(function (x) { return '<option value="' + esc(x) + '"' + (F.logAction === x ? " selected" : "") + ">" + esc(x) + "</option>"; }).join("") + '</select></div>' +
+            '<div class="f"><label for="lfQ">বিবরণে লেখা</label><input class="dt" id="lfQ" value="' + esc(F.q || "") + '" autocomplete="off"></div>' +
+            dateBox("lfFrom", "তারিখ থেকে", F.from) + dateBox("lfTo", "তারিখ পর্যন্ত", F.to) + '</div>' +
+            '<div style="margin-top:12px"><button type="button" class="pbtn" data-act="lfGo">খুঁজুন</button> <button type="button" class="pbtn sec" data-act="lfClear">বাতিল</button></div></div>';
+        h += '<div class="adm-scroll"><table class="adm-table"><thead><tr><th>সময়</th><th>ইউজার</th><th>কাজ</th><th>বিবরণ</th></tr></thead><tbody>';
+        if (!list.length) h += '<tr><td colspan="4">কোনো লগ নেই।</td></tr>';
+        list.forEach(function (x) { h += "<tr><td>" + esc(x.time) + "</td><td>" + esc(x.user) + "</td><td>" + esc(x.action) + '</td><td class="l">' + esc(x.detail) + "</td></tr>"; });
+        $("admBody").innerHTML = h + "</tbody></table></div>";
+        if (window.initDateField) { initDateField("lfFrom"); initDateField("lfTo"); }
+    }
+
+    function renderDash(d) {
+        function card(t, v, sub) { return '<div class="stat"><div class="stat-v">' + bn(v) + '</div><div class="stat-t">' + t + "</div>" + (sub ? '<div class="stat-s">' + sub + "</div>" : "") + "</div>"; }
+        var h = '<div class="stats">' +
+            card("ব্যবহারকারী", d.users, "সক্রিয় " + bn(d.usersActive)) + card("সার্ভিস বুক", d.persons) + card("মোট সারি", d.rows) +
+            card("আজ যুক্ত সারি", d.rowsToday, "গত ৭ দিনে " + bn(d.rowsWeek)) + card("আজ লগইন", d.loginsToday, "আলাদা ইউজার " + bn(d.activeUsersToday)) +
+            card("আজ ভুল লগইন", d.failsToday) + card("রিসাইকেল বিনে", d.trash) + "</div>";
+        h += '<div class="hint" style="margin:-6px 0 14px">শেষ স্বয়ংক্রিয় ব্যাকআপ (Google Drive): ' + (d.lastBackup ? esc(d.lastBackup) : "এখনো চালু হয়নি (গাইডের ধাপ \"ভ\" দেখুন)") + "</div>";
+        h += '<div class="adm-card"><h3>সাম্প্রতিক কার্যকলাপ</h3><div class="adm-scroll"><table class="adm-table"><thead><tr><th>সময়</th><th>ইউজার</th><th>কাজ</th><th>বিবরণ</th></tr></thead><tbody>';
+        if (!d.recent.length) h += '<tr><td colspan="4">কোনো কার্যকলাপ নেই।</td></tr>';
+        d.recent.forEach(function (x) { h += "<tr><td>" + esc(x.time) + "</td><td>" + esc(x.user) + "</td><td>" + esc(x.action) + '</td><td class="l">' + esc(x.detail) + "</td></tr>"; });
+        $("admBody").innerHTML = h + "</tbody></table></div></div>";
+    }
+
+    function renderTrash(d) {
+        var h = '<div class="hint" style="margin-bottom:10px">মুছে ফেলা তথ্য এখানে ' + bn(d.days) + ' দিন থাকে, তারপর নিজে থেকে মুছে যায়। "ফিরিয়ে আনুন" চাপলে আগের অবস্থায় ফিরে আসে (বইয়ে এর মধ্যে বদল হলে ফেরানো যাবে না)।</div>' +
+            '<div class="adm-scroll"><table class="adm-table"><thead><tr><th>কী</th><th>বিবরণ</th><th>কে মুছেছে</th><th>কখন</th><th>কাজ</th></tr></thead><tbody>';
+        if (!d.items.length) h += '<tr><td colspan="5">রিসাইকেল বিন ফাঁকা।</td></tr>';
+        d.items.forEach(function (x) {
+            h += "<tr><td>" + esc(x.kindText) + '</td><td class="l">' + esc(x.label) + "</td><td>" + esc(x.deletedBy) + "</td><td>" + esc(x.deletedAt) + "</td><td>" +
+                '<button type="button" class="pbtn sm" data-act="tRestore" data-id="' + esc(x.id) + '">ফিরিয়ে আনুন</button> ' +
+                '<button type="button" class="pbtn sm danger" data-act="tDel" data-id="' + esc(x.id) + '">চিরতরে মুছুন</button></td></tr>';
+        });
+        $("admBody").innerHTML = h + "</tbody></table></div>";
+    }
+    function downloadCsv(personId) {
+        admApi("exportCsv", personId ? { personId: personId } : {}).then(function (d) {
+            if (!d) return;
+            var blob = new Blob(["\uFEFF" + d.csv], { type: "text/csv;charset=utf-8" }), a = document.createElement("a");
+            a.href = URL.createObjectURL(blob); a.download = d.filename; document.body.appendChild(a); a.click();
+            setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+        });
+    }
+
+    $("admBody").addEventListener("click", function (e) {
+        var b = e.target.closest("[data-act]"); if (!b) return;
+        var act = b.dataset.act, id = b.dataset.id;
+        if (act === "rmAdd") { admApi("remarkAdd", { text: $("rmNew").value }).then(rmDone); }
+        else if (act === "rmEdit") { AD.rmEdit = id; renderRemarks(); }
+        else if (act === "rmCancel") { AD.rmEdit = null; renderRemarks(); }
+        else if (act === "rmSave") { admApi("remarkUpdate", { id: id, text: $("rmEditText").value }).then(rmDone); }
+        else if (act === "rmDel") {
+            var rm = AD.remarks.filter(function (x) { return x.id === id; })[0];
+            if (confirm('মন্তব্য "' + rm.text + '" মুছে ফেলবেন? আগে যুক্ত হওয়া সারির লেখায় প্রভাব পড়বে না।')) admApi("remarkDelete", { id: id }).then(rmDone);
+        }
+        else if (act === "uSave") {
+            var ed = AD.editing, body = { username: $("uName").value, displayName: $("uDisp").value, password: $("uPass").value };
+            admApi(ed ? "userUpdate" : "userAdd", body).then(function (d) { if (d) { AD.editing = null; loadTab(); showModal("success", "সংরক্ষিত", ed ? "ব্যবহারকারীর তথ্য হালনাগাদ হয়েছে।" : "নতুন ব্যবহারকারী যুক্ত হয়েছে।"); } });
+        } else if (act === "uCancel") { AD.editing = null; renderUsers(); }
+        else if (act === "uEdit") { AD.editing = id; renderUsers(); }
+        else if (act === "uToggle") {
+            var u = AD.users.filter(function (x) { return x.username === id; })[0];
+            admApi("userUpdate", { username: id, active: u.active === "Y" ? "N" : "Y" }).then(function (d) { if (d) loadTab(); });
+        } else if (act === "uDel") {
+            if (confirm('ইউজার "' + id + '" স্থায়ীভাবে মুছে ফেলবেন?')) admApi("userDelete", { username: id }).then(function (d) { if (d) loadTab(); });
+        } else if (act === "pEdit") {
+            AD.pEditId = id; AD.pAcc = null; renderPeople(); var pe = $("peName"); if (pe) pe.focus();
+        } else if (act === "pEditCancel") { AD.pEditId = null; renderPeople();
+        } else if (act === "pEditSave") {
+            var ep = AD.people.filter(function (x) { return x.id === id; })[0];
+            var upd = { id: id, name: $("peName").value, key: en($("peKey").value) };
+            if (ep && ep.rows === 0) { if (!$("peJoin").value) { showModal("error", "যোগদানের তারিখ", "যোগদানের তারিখ সঠিকভাবে দিন।"); return; } upd.joinDate = $("peJoin").value; }
+            admApi("personUpdate", upd).then(function (d) { if (d) { AD.pEditId = null; loadTab(); showModal("success", "সংরক্ষণ হয়েছে", "সার্ভিস বুকের তথ্য বদলানো হয়েছে।"); } });
+        } else if (act === "pCsvAll") { downloadCsv("");
+        } else if (act === "pCsv") { downloadCsv(id);
+        } else if (act === "pRowDel") {
+            var rp = AD.people.filter(function (x) { return x.id === id; })[0], lr = rp.last;
+            if (confirm('"' + rp.name + '" বইয়ের সর্বশেষ সারি (#' + bn(lr.seq) + ": কার্যকাল " + fmtDate(lr.dutyFrom) + " থেকে " + fmtDate(lr.dutyTo) + ", ছুটি " + fmtDate(lr.leaveFrom) + " থেকে " + fmtDate(lr.leaveTo) + ", " + lr.type + ") মুছে ফেলবেন? রিসাইকেল বিনে ৩০ দিন থাকবে।"))
+                admApi("adminRowDelete", { personId: id }).then(function (d) { if (d) { loadTab(); showModal("success", "মুছে গেছে", "সর্বশেষ সারিটি মুছে রিসাইকেল বিনে রাখা হয়েছে।"); } });
+        } else if (act === "pRecalc") {
+            var rq = AD.people.filter(function (x) { return x.id === id; })[0];
+            if (confirm('"' + rq.name + '" বইয়ের সব ' + bn(rq.rows) + "টি সারির অর্জিত, মোট ও অবশিষ্ট ছুটি এখনকার নিয়মে প্রথম থেকে নতুন করে হিসাব হবে। পুরোনো সংখ্যা বদলে যাবে (আগের সংখ্যা রিসাইকেল বিনে থাকবে)। নিশ্চিত?"))
+                admApi("personRecalc", { id: id }).then(function (d) { if (d) { loadTab(); showModal("success", "পুনর্গণনা সম্পন্ন", d.changed ? bn(d.changed) + "টি সারির সংখ্যা বদলেছে (মোট " + bn(d.total) + "টি সারি)।" : "সব সংখ্যা আগেই ঠিক ছিল, কিছু বদলায়নি।"); } });
+        } else if (act === "lfGo") {
+            var f = { user: $("lfUser").value.trim(), logAction: $("lfAct").value, q: $("lfQ").value.trim(), from: $("lfFrom").value, to: $("lfTo").value };
+            AD.logF = (f.user || f.logAction || f.q || f.from || f.to) ? f : null; loadTab();
+        } else if (act === "lfClear") { AD.logF = null; AD.logOpen = false; loadTab();
+        } else if (act === "lfToggle") {
+            AD.logOpen = !AD.logOpen; var lc = $("lfCard"); lc.style.display = AD.logOpen ? "" : "none";
+            b.classList.toggle("on", AD.logOpen); if (AD.logOpen) $("lfUser").focus();
+        } else if (act === "tRestore") {
+            admApi("adminTrashRestore", { id: id }).then(function (d) { if (d) { loadTab(); showModal("success", "ফিরে এসেছে", d.msg); } });
+        } else if (act === "tDel") {
+            if (confirm("এটি চিরতরে মুছে যাবে, আর ফেরানো যাবে না। নিশ্চিত?")) admApi("adminTrashDelete", { id: id }).then(function (d) { if (d) loadTab(); });
+        } else if (act === "uHist") {
+            admApi("userLoginHistory", { username: id }).then(function (d) { if (d) { AD.hist = d; renderUsers(); } });
+        } else if (act === "uHistClose") { AD.hist = null; renderUsers();
+        } else if (act === "uForce") {
+            if (confirm('ইউজার "' + id + '"-কে সব ডিভাইস থেকে লগআউট করা হবে। সে আবার পাসওয়ার্ড দিয়ে ঢুকতে পারবে। নিশ্চিত?'))
+                admApi("userForceLogout", { username: id }).then(function (d) { if (d) showModal("success", "লগআউট হয়েছে", "ইউজারের সব লগইন বাতিল হয়েছে।"); });
+        } else if (act === "pAcc") {
+            adGet("userList").then(function (d) { AD.users = d.users; AD.pAcc = id; AD.pEditId = null; renderPeople(); }).catch(admFail);
+        } else if (act === "pAccCancel") { AD.pAcc = null; renderPeople();
+        } else if (act === "pAccSave") {
+            var own = []; [].forEach.call(document.querySelectorAll("#admBody .pAccU"), function (c) { if (c.checked) own.push(c.dataset.u); });
+            admApi("personAccess", { id: id, owners: own, shared: $("pAccShared").checked }).then(function (d) { if (d) { AD.pAcc = null; loadTab(); showModal("success", "সংরক্ষিত", "দেখার অনুমতি হালনাগাদ হয়েছে।"); } });
+        } else if (act === "pDel") {
+            var q = AD.people.filter(function (x) { return x.id === id; })[0];
+            if (confirm('"' + q.name + '" এর সার্ভিস বুক ও তার সব সারি (' + bn(q.rows) + 'টি) মুছে যাবে (রিসাইকেল বিনে ৩০ দিন থাকবে, সেখান থেকে ফিরিয়ে আনা যাবে)। নিশ্চিত?')) admApi("personDelete", { id: id }).then(function (d) { if (d) loadTab(); });
+        } else if (act === "sSave") {
+            var vals = {}; [].forEach.call(document.querySelectorAll("#admBody input[data-k]"), function (i) { vals[i.dataset.k] = en(i.value); });
+            admApi("settingsSet", { values: vals }).then(function (d) { if (d) showModal("success", "সংরক্ষিত", "হিসাবের নিয়ম হালনাগাদ হয়েছে।"); });
+        } else if (act === "cpSave") {
+            var n1 = $("cpNew").value;
+            if (n1 !== $("cpNew2").value) { showModal("error", "মিলছে না", "নতুন পাসওয়ার্ড দুইবার একই হয়নি।"); return; }
+            if (!strongPw(n1)) { showModal("error", "দুর্বল পাসওয়ার্ড", "১০+ অক্ষর, বড় ও ছোট হাতের অক্ষর, সংখ্যা ও চিহ্ন থাকতে হবে।"); return; }
+            admApi("adminChangePassword", { oldPassword: $("cpOld").value, newPassword: n1 }).then(function (d) { if (d) { renderPass(); showModal("success", "সফল", "অ্যাডমিন পাসওয়ার্ড বদলানো হয়েছে।"); } });
+        }
+    });
+
+    // ---------- সব সংখ্যা বাংলায় দেখানো ----------
+    function bnNode(n) {
+        if (n.nodeType === 3) {
+            var p = n.parentNode;
+            if (p && /^(SCRIPT|STYLE|TEXTAREA)$/.test(p.nodeName)) return;
+            if (/\d/.test(n.nodeValue)) n.nodeValue = bn(n.nodeValue);
+        } else if (n.nodeType === 1 && !/^(SCRIPT|STYLE)$/.test(n.nodeName)) {
+            var w = document.createTreeWalker(n, NodeFilter.SHOW_TEXT, null), x, list = [];
+            while ((x = w.nextNode())) list.push(x);
+            list.forEach(bnNode);
+        }
+    }
+    bnNode(document.body);
+    new MutationObserver(function (ms) {
+        ms.forEach(function (m) {
+            if (m.type === "characterData") bnNode(m.target);
+            else [].forEach.call(m.addedNodes, bnNode);
+        });
+    }).observe(document.body, { childList: true, subtree: true, characterData: true });
+
+    // ---------- সংখ্যার ঘরে ইংরেজি লিখলেও বাংলায় দেখানো (data-bn চিহ্নিত ঘর) ----------
+    document.addEventListener("input", function (e) {
+        var el = e.target;
+        if (!el || !el.hasAttribute || !el.hasAttribute("data-bn") || !/\d/.test(el.value)) return;
+        var a = el.selectionStart, b = el.selectionEnd;
+        el.value = bn(el.value);
+        try { el.setSelectionRange(a, b); } catch (x) {}
+    });
+
+    // ---------- সার্ভার আগেই জাগিয়ে রাখা (লগইন/হিসাব দ্রুত করতে) ----------
+    function warmUp() {
+        if (API_URL.indexOf("PASTE") === 0 || document.hidden) return;
+        try { fetch(API_URL, { mode: "no-cors" }); } catch (e) {}
+    }
+    warmUp();
+    setInterval(warmUp, 240000);
+    document.addEventListener("visibilitychange", function () { if (!document.hidden) warmUp(); });
+
+    route();
+})();
+</script>
+<script>
+(function(){
+var BN="০১২৩৪৫৬৭৮৯",MN=["জানুয়ারি","ফেব্রুয়ারি","মার্চ","এপ্রিল","মে","জুন","জুলাই","আগস্ট","সেপ্টেম্বর","অক্টোবর","নভেম্বর","ডিসেম্বর"],BADD="সঠিক তারিখ দিন, যেমন ০৭/০৫/২০২৫";
+function $(i){return document.getElementById(i)}
+function bn(n){return String(n).replace(/\d/g,function(d){return BN[d]})}
+function en(s){return s.replace(/[০-৯]/g,function(c){return BN.indexOf(c)})}
+function grp(n){var s=String(n),l=s.slice(-3),r=s.slice(0,-3);return bn(r?r.replace(/\B(?=(\d{2})+(?!\d))/g,",")+","+l:l)}
+function dim(y,m){return new Date(y,m+1,0).getDate()}
+function setV(el,v){el.value=bn(v);el._p=v}
+function maskEl(el,L,S){var pv=el._p||"",nv=en(el.value),c=el.selectionStart,T=L.reduce(function(a,b){return a+b}),z=function(x){return x==="_"||/\d/.test(x)},i,t,k=0,n=0,q=0,raw,pos,o="",p=0,s;
+if(c==null)c=nv.length;var re=Math.max(0,pv.length-(nv.length-c)),a=0;
+while(a<c&&a<re&&pv[a]===nv[a])a++;
+var ins=nv.slice(a,c).replace(/\D/g,""),rem=re-a,del=!ins&&rem>0;
+if(del){if(!/\d/.test(pv.slice(a,re))){i=a-1;while(i>=0&&!/\d/.test(pv[i]))i--;if(i>=0){a=i;re=i+1}else re=a}
+if(re>a){raw=/[0-9_]/.test(pv.slice(re))?pv.slice(0,a)+pv.slice(a,re).replace(/\d/g,"_")+pv.slice(re):pv.slice(0,a)+pv.slice(re)}else raw=pv;pos=a}
+else if(ins){t=a;while(t<pv.length&&!z(pv[t]))t++;var full=(pv.match(/\d/g)||[]).length>=T&&pv.indexOf("_")<0;
+if(rem===0&&ins.length===1&&t<pv.length&&(pv[t]==="_"||full)){raw=pv.slice(0,t)+ins+pv.slice(t+1);pos=t+1}else{raw=pv.slice(0,a)+ins+pv.slice(re);pos=a+ins.length}}
+else{raw=nv;pos=c}
+var v=raw.replace(/[^0-9_]/g,"").slice(0,T).replace(/_+$/,"");
+for(i=0;i<Math.min(pos,raw.length);i++)if(z(raw[i]))k++;
+for(i=0;i<L.length;i++){s=v.slice(p,p+L[i]);if(!s)break;o+=s;p+=L[i];if(s.length===L[i]&&i<L.length-1&&(p<v.length||!del))o+=S[i]}
+for(;q<o.length&&n<k;q++)if(z(o[q]))n++;
+if(!del)while(q<o.length&&!z(o[q])&&k>0)q++;
+setV(el,o);try{el.setSelectionRange(q,q)}catch(e){}}
+function D(s){s=en(s);var m=/^(\d\d)\/(\d\d)\/(\d{4})$/.exec(s);if(!m)return(s.length<10||s.indexOf("_")>=0)?null:false;var d=+m[1],o=+m[2]-1,y=+m[3];return(y<1900||y>2100||o>11||d<1||d>dim(y,o))?false:{y:y,m:o,d:d}}
+function fmtD(o){return bn(o.d)+" "+MN[o.m]+" "+bn(o.y)}
+function two(n){return("0"+n).slice(-2)}
+function dstr(o){return two(o.d)+"/"+two(o.m+1)+"/"+o.y}
+function today(){var t=new Date();return{y:t.getFullYear(),m:t.getMonth(),d:t.getDate()}}
+function days(a,b){return Math.round((Date.UTC(b.y,b.m,b.d)-Date.UTC(a.y,a.m,a.d))/864e5)}
+function ymd(a,b){var y=b.y-a.y,m=b.m-a.m,d=b.d-a.d;if(d<0){m--;d+=b.m?dim(b.y,b.m-1):31}if(m<0){y--;m+=12}return{y:y,m:m,d:d}}
+function onDate(id,fn){var el=$(id);el.addEventListener("input",function(){maskEl(el,[2,2,4],["/","/"]);if(fn)fn()})}
+function boxClick(){document.querySelectorAll(".f").forEach(function(b){b.addEventListener("click",function(e){var i=b.querySelector("input");if(i&&!/^(INPUT|SELECT|TEXTAREA|BUTTON|OPTION)$/.test(e.target.tagName))i.focus()})})}
+window.attachCal=function(){};
+(function(){
+if(!window.matchMedia||!matchMedia("(hover:hover) and (pointer:fine)").matches)return;
+var WD=["শনি","রবি","সোম","মঙ্গল","বুধ","বৃহ","শুক্র"],pop,cur,vy,vm,LO=1930,HI=2100;
+function render(){var t=today(),s=D(cur.value),i,h='<div class="cal-hd"><button type="button" data-a="pm" title="গত মাস">◀</button><select data-a="m">';
+for(i=0;i<12;i++)h+='<option value="'+i+'"'+(i===vm?" selected":"")+">"+MN[i]+"</option>";
+h+='</select><select data-a="y">';for(i=LO;i<=HI;i++)h+='<option value="'+i+'"'+(i===vy?" selected":"")+">"+bn(i)+"</option>";
+h+='</select><button type="button" data-a="nm" title="পরের মাস">▶</button></div><div class="cal-g">';
+WD.forEach(function(w){h+="<b>"+w+"</b>"});
+var off=(new Date(vy,vm,1).getDay()+1)%7,n=dim(vy,vm);
+for(i=0;i<off;i++)h+="<span></span>";
+for(i=1;i<=n;i++){var c=(s&&s.y===vy&&s.m===vm&&s.d===i?" sel":"")+(t.y===vy&&t.m===vm&&t.d===i?" tod":"");h+='<button type="button" data-d="'+i+'" class="'+c+'">'+bn(i)+"</button>"}
+pop.innerHTML=h+'</div><div class="cal-ft"><button type="button" data-a="t">আজ</button><button type="button" data-a="x">মুছুন</button></div>'}
+function close(){if(pop)pop.style.display="none";cur=null}
+function pick(o){var el=cur;setV(el,o?dstr(o):"");el.dispatchEvent(new Event("input",{bubbles:true}));close()}
+function go(d){var t=vy*12+vm+d,y=Math.floor(t/12);if(y<LO||y>HI)return;vy=y;vm=t-y*12}
+function build(){pop=document.createElement("div");pop.className="cal-pop";pop.style.display="none";
+pop.addEventListener("mousedown",function(e){if(!/SELECT|OPTION/.test(e.target.tagName))e.preventDefault()});
+pop.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var a=b.dataset.a;if(b.dataset.d)return pick({y:vy,m:vm,d:+b.dataset.d});
+if(a==="py")vy=Math.max(LO,vy-1);else if(a==="ny")vy=Math.min(HI,vy+1);else if(a==="pm")go(-1);else if(a==="nm")go(1);else if(a==="t")return pick(today());else if(a==="x")return pick(null);render()});
+pop.addEventListener("change",function(e){var a=e.target.dataset.a;if(a==="m")vm=+e.target.value;if(a==="y")vy=+e.target.value;render()});
+document.body.appendChild(pop);
+document.addEventListener("mousedown",function(e){if(!cur)return;var bx=cur.closest(".f")||cur;if(!pop.contains(e.target)&&!bx.contains(e.target))close()});
+document.addEventListener("keydown",function(e){if(cur&&(e.key==="Escape"||e.key==="Tab"||e.key==="Enter"))close()})}
+function open(el){if(!pop)build();cur=el;var s=D(el.value),t=today();if(s){vy=s.y;vm=s.m}else{vy=Math.max(LO,Math.min(HI,t.y+(el._dy||0)));vm=t.m}
+render();var b=(el.closest(".f")||el).getBoundingClientRect();pop.style.display="block";
+var w=pop.offsetWidth,h=pop.offsetHeight,l=Math.min(b.left+scrollX,scrollX+document.documentElement.clientWidth-w-8),tp=b.bottom+scrollY+4;
+if(b.bottom+h+8>innerHeight&&b.top>h+8)tp=b.top+scrollY-h-4;
+pop.style.left=Math.max(8,l)+"px";pop.style.top=tp+"px"}
+window.attachCal=function(id,dy){var el=$(id);el._dy=dy||0;(el.closest(".f")||el).addEventListener("click",function(){open(el)});
+el.addEventListener("input",function(){if(cur===el){if(D(el.value)){close();return}render()}})}
+})();
+
+var iso=function(o){return o.y+"-"+two(o.m+1)+"-"+two(o.d)};
+function initDate(id){
+var h=document.getElementById(id),t=document.getElementById(id+"_t"),b=t.closest(".f");
+function sync(){var o=D(t.value);h.value=o?iso(o):"";b.classList.toggle("bad",o===false)}
+t.addEventListener("input",function(){maskEl(t,[2,2,4],["/","/"]);sync()});
+var m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(h.value);if(m)setV(t,m[3]+"/"+m[2]+"/"+m[1]);
+attachCal(id+"_t")}
+["dutyFrom","dutyTo","leaveFrom","leaveTo","pnJoin"].forEach(initDate);
+window.initDateField=function(id){initDate(id);var b=document.getElementById(id+"_t").closest(".f");b.addEventListener("click",function(e){var i=b.querySelector("input");if(i&&e.target!==i&&e.target.tagName!=="BUTTON")i.focus()})};
+boxClick();
+})();
+</script>
+
+
+
+<footer class="hp-footer">
+  <div class="hp-footer-inner">
+    <div><strong>হিসাবপাতা</strong> · বাংলা স্মার্ট টুলস</div>
+    <div class="hp-center">
+      <div>পরিকল্পনা ও প্রস্তুতিতে: মোঃ মানিক</div>
+      <div class="hp-sub">গাড়ি চালক, রাজশাহী মেডিকেল কলেজ হাসপাতাল, রাজশাহী। মোবাইলঃ ০১৭২৯-৮১৫২৯১</div>
+    </div>
+    <div class="hp-note">সহজ হিসাব, সবার জন্য</div>
+  </div>
+</footer>
+</body>
+</html>
