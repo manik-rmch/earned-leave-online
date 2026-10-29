@@ -428,7 +428,6 @@
     <form id="loginForm" autocomplete="on">
         <div class="fld"><label for="lgUser">ইউজারনেম</label><input id="lgUser" name="username" autocomplete="username" autocapitalize="none" required></div>
         <div class="fld"><label for="lgPass">পাসওয়ার্ড</label><input id="lgPass" name="password" type="password" autocomplete="current-password" required></div>
-        <label class="chk"><input type="checkbox" id="lgRemember" checked> এই ডিভাইসে লগইন মনে রাখুন</label>
         <div class="msg-err" id="lgErr"></div>
         <button type="submit" class="pbtn full">প্রবেশ করুন</button>
     </form>
@@ -734,7 +733,7 @@
     $("loginForm").addEventListener("submit", function (e) {
         e.preventDefault();
         $("lgErr").textContent = "";
-        api("userLogin", { username: $("lgUser").value, password: $("lgPass").value, remember: $("lgRemember").checked }).then(function (d) {
+        api("userLogin", { username: $("lgUser").value, password: $("lgPass").value }).then(function (d) {
             setTok("user", d.token); $("lgPass").value = "";
             enterApp(d);
         }).catch(function (er) { $("lgErr").textContent = er.message; });
