@@ -428,6 +428,7 @@
     <form id="loginForm" autocomplete="on">
         <div class="fld"><label for="lgUser">ইউজারনেম</label><input id="lgUser" name="username" autocomplete="username" autocapitalize="none" required></div>
         <div class="fld"><label for="lgPass">পাসওয়ার্ড</label><input id="lgPass" name="password" type="password" autocomplete="current-password" required></div>
+        <label class="chk"><input type="checkbox" id="lgRemember" checked> লগইন মনে রাখুন</label>
         <div class="msg-err" id="lgErr"></div>
         <button type="submit" class="pbtn full">প্রবেশ করুন</button>
     </form>
@@ -638,8 +639,22 @@
     var S = { dummy: false, dopen: null, dname: "", person: null, rows: [], people: [], queue: [], sending: false, cfg: { dpm: 30, mpy: 12, fd: 11, hd: 12 } };
     var busyN = 0;
     function busy(n) { busyN += n; $("busy").hidden = busyN <= 0; }
-    function tok(w) { try { return w === "admin" ? sessionStorage.getItem("el_adm") : localStorage.getItem("el_tok"); } catch (e) { return null; } }
-    function setTok(w, v) { try { var st = w === "admin" ? sessionStorage : localStorage, k = w === "admin" ? "el_adm" : "el_tok"; if (v) st.setItem(k, v); else st.removeItem(k); } catch (e) {} }
+    // ইউজারের টোকেন: "লগইন মনে রাখুন" টিক থাকলে localStorage (ব্রাউজার বন্ধ করলেও থাকে), না থাকলে sessionStorage (ব্রাউজার/ট্যাব বন্ধ করলে চলে যায়)
+    function tok(w) {
+        try {
+            if (w === "admin") return sessionStorage.getItem("el_adm");
+            return sessionStorage.getItem("el_tok") || localStorage.getItem("el_tok");
+        } catch (e) { return null; }
+    }
+    function setTok(w, v, remember) {
+        try {
+            if (w === "admin") { if (v) sessionStorage.setItem("el_adm", v); else sessionStorage.removeItem("el_adm"); return; }
+            var inSession = !!sessionStorage.getItem("el_tok");
+            var useLocal = remember === undefined ? !inSession : !!remember;   // আগের জায়গাতেই রাখা (পাসওয়ার্ড বদলের সময়)
+            sessionStorage.removeItem("el_tok"); localStorage.removeItem("el_tok");
+            if (v) (useLocal ? localStorage : sessionStorage).setItem("el_tok", v);
+        } catch (e) {}
+    }
 
     // ---------- পপআপ ----------
     var modalClose = null;
@@ -734,7 +749,7 @@
         e.preventDefault();
         $("lgErr").textContent = "";
         api("userLogin", { username: $("lgUser").value, password: $("lgPass").value }).then(function (d) {
-            setTok("user", d.token); $("lgPass").value = "";
+            setTok("user", d.token, $("lgRemember").checked); $("lgPass").value = "";
             enterApp(d);
         }).catch(function (er) { $("lgErr").textContent = er.message; });
     });
